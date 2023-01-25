@@ -1,5 +1,5 @@
 #!/bin/bash
-#BSUB -n 4                    # 4 cores
+#BSUB -n 8                    # 8 cores
 #BSUB -W 120:00                   # 12-hours run-time
 #BSUB -R "rusage[mem=8000]"     # 2  GB per core
 #BSUB -J Hydro_LSTM

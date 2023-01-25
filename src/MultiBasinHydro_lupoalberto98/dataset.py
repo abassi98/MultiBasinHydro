@@ -16,7 +16,7 @@ from utils import Scale_Data, Globally_Scale_Data
 
 
 class CamelDataset(Dataset):
-    def __init__(self, dates: list, data_path: str = "../../basin_dataset_public_v1p2", source_data_set: str = "daymet", transform_input=None, transform_output=None) -> None:
+    def __init__(self, dates: list, data_path: str = "basin_dataset_public_v1p2", source_data_set: str = "daymet", transform_input=None, transform_output=None) -> None:
         super().__init__()
      
         self.data_path = data_path

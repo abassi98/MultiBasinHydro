@@ -73,7 +73,7 @@ if __name__ == '__main__':
                     lr = 0.001,
                     act=nn.LeakyReLU,
                     loss_fn=loss_fn,
-                    lstm_hidden_units=100,
+                    lstm_hidden_units=128,
                     layers_num=2,
                     linear=256)
 
@@ -98,7 +98,7 @@ if __name__ == '__main__':
 
     
     # define trainer 
-    trainer = pl.Trainer(max_epochs=10, callbacks=[metrics_callback, checkpoint_callback], accelerator=str(device), log_every_n_steps=50, check_val_every_n_epoch=1, logger=False)
+    trainer = pl.Trainer(max_epochs=3000, callbacks=[metrics_callback, checkpoint_callback], accelerator=str(device), log_every_n_steps=100, check_val_every_n_epoch=10, logger=False)
     
     trainer.fit(model=model, train_dataloaders=train_dataloader, val_dataloaders = val_dataloader)
 
