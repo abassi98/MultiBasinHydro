@@ -89,7 +89,8 @@ if __name__ == '__main__':
     metrics_callback = MetricsCallback()
     early_stopping = EarlyStopping(monitor="val_loss", patience = 10, mode="min")
     checkpoint_callback = ModelCheckpoint(
-        save_top_k=100,
+        every_n_epochs=10,
+        save_last = True,
         monitor="val_loss",
         mode="min",
         dirpath="checkpoints/",
