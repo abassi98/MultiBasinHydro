@@ -2,9 +2,9 @@
 #BSUB -n 8                    # 8 cores
 #BSUB -W 120:00                   # 12-hours run-time
 #BSUB -R "rusage[mem=8000]"     # 2  GB per core
-#BSUB -J Hydro_LSTM
-#BSUB -o Hydro_LSTM.out
-#BSUB -e Hydro_LSTM.err
+#BSUB -J cpu_LSTM_AE
+#BSUB -o cpu_LSTM_AE.out
+#BSUB -e cpu_LSTM_AE.err
 #BSUB -B
 #BSUB -N
 

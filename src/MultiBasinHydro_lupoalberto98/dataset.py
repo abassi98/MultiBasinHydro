@@ -172,7 +172,7 @@ class CamelDataset(Dataset):
                 force_dates = force_dates[bool_force_dates]
 
                 # control that dates are the same
-                print("Basin %d: " %count, basin_huc, basin_id)
+                # print("Basin %d: " %count, basin_huc, basin_id)
                 assert len(flow_data) == len(df_forcing)
                 assert all(force_dates == flow_dates)
 
