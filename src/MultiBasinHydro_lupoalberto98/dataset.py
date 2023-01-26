@@ -16,7 +16,7 @@ from utils import Scale_Data, Globally_Scale_Data
 
 
 class CamelDataset(Dataset):
-    def __init__(self, dates: list, data_path: str = "basin_dataset_public_v1p2", source_data_set: str = "daymet", transform_input=None, transform_output=None) -> None:
+    def __init__(self, dates: list, force_attributes: list,  data_path: str = "basin_dataset_public_v1p2", source_data_set: str = "daymet", transform_input=None, transform_output=None) -> None:
         super().__init__()
      
         self.data_path = data_path
@@ -36,15 +36,18 @@ class CamelDataset(Dataset):
         self.start_date = datetime.datetime.strptime(dates[0], '%Y/%m/%d').date()
         self.end_date = datetime.datetime.strptime(dates[1], '%Y/%m/%d').date()
         
+
         # initialize dates and sequence length
         self.dates = [self.start_date +datetime.timedelta(days=x) for x in range((self.end_date-self.start_date).days+1)]
         self.seq_len = len(self.dates)
+        self.force_attributes = force_attributes
+        self.num_force_attributes = len(self.force_attributes)
         
         # define max/min forcing and flow tensors
         self.min_flow = torch.zeros((1,), dtype=torch.float32)
         self.max_flow = torch.ones((1,), dtype=torch.float32)
-        self.min_force = torch.zeros((4,), dtype=torch.float32)
-        self.max_force = torch.ones((4,), dtype=torch.float32)
+        self.min_force = torch.zeros((self.num_force_attributes,), dtype=torch.float32)
+        self.max_force = torch.ones((self.num_force_attributes,), dtype=torch.float32)
         
         
         
@@ -70,11 +73,11 @@ class CamelDataset(Dataset):
         self.trimmed_basin_ids = [all_basin_ids[i] for i in missing_data_indexes]
         self.trimmed_basin_hucs = [all_basin_hucs[i] for i in missing_data_indexes]
         
-        self.len_dataset = len(self.trimmed_basin_ids)
+        self.len_dataset = 562 #len(self.trimmed_basin_ids)
         
         # containers for data
         self.input_data = torch.zeros(self.len_dataset, 1, self.seq_len, 1)
-        self.output_data = torch.zeros(self.len_dataset, 1, self.seq_len, 4)
+        self.output_data = torch.zeros(self.len_dataset, 1, self.seq_len, self.num_force_attributes)
         
     def adjust_dates(self, ):
         """
@@ -128,6 +131,7 @@ class CamelDataset(Dataset):
         # run over trimmed basins
         print("Loading Camel ...")
         # len(self.trimmed_basin_ids)
+        count = 0
         for i in range(len(self.trimmed_basin_ids)):
             # retrieve data
             basin_id = self.trimmed_basin_ids[i]
@@ -139,50 +143,54 @@ class CamelDataset(Dataset):
             with open(path_forcing_data) as myfile:
                 first_force_lines = [next(myfile) for y in range(3)]
         
-            area = float(first_force_lines[-1])
-            
+            area = float(first_force_lines[-1]) * 10**6  # area in meter squared
 
-            # read flow data and adjust dates
+            # read flow data
             df_streamflow = pd.read_csv(path_flow_data,delim_whitespace=True, header=None)
             flow_data = df_streamflow.iloc[:,4].to_numpy()
             flow_dates = np.array([datetime.date(df_streamflow.iloc[i,1], df_streamflow.iloc[i,2], df_streamflow.iloc[i,3]) for i in range(len(flow_data))])
-            bool_flow_dates = np.logical_and(self.start_date <= flow_dates, flow_dates <= self.end_date)
-            flow_data = flow_data[bool_flow_dates]
-            flow_dates  = flow_dates[bool_flow_dates]
-
-            # read forcing data and adjust dates
+            
+            # read forcing data 
             df_forcing = pd.read_csv(path_forcing_data,delim_whitespace=True, skiprows=3)
             force_dates = np.array([datetime.date(df_forcing.iloc[i,0], df_forcing.iloc[i,1], df_forcing.iloc[i,2]) for i in range(len(df_forcing))])
-            bool_force_dates = np.logical_and(self.start_date <= force_dates, force_dates <= self.end_date)
-            df_forcing = df_forcing[bool_force_dates]
-            force_dates = force_dates[bool_force_dates]
-
-            # control length and assert they are equal
-            assert len(flow_data) == len(df_forcing)
             
-            # get rid of cathcments with false values
-            bool_false_values = flow_data!= -999.0
-            if all(bool_false_values):
-                # flow_data = flow_data[bool_false_values]
-                # flow_dates = flow_dates[bool_false_values]
-                # df_forcing = df_forcing[bool_false_values]
-                # force_dates = force_dates[bool_false_values]
-                # print(basin_huc, basin_id)
+            # control length and assert they are equal
+            #assert len(flow_data) == len(df_forcing)
+            
+            # get rid of cathcments with false values and whose dates range is not the
+            interval_force_dates_bool = force_dates[0] <= self.start_date and force_dates[-1] >= self.end_date
+            interval_flow_dates_bool = flow_dates[0] <= self.start_date and flow_dates[-1] >= self.end_date
+
+            if interval_force_dates_bool and interval_flow_dates_bool:
+                count += 1
+                # adjust dates
+                bool_flow_dates = np.logical_and(self.start_date <= flow_dates, flow_dates <= self.end_date)
+                flow_data = flow_data[bool_flow_dates]
+                flow_dates  = flow_dates[bool_flow_dates]
+                bool_force_dates = np.logical_and(self.start_date <= force_dates, force_dates <= self.end_date)
+                df_forcing = df_forcing[bool_force_dates]
+                force_dates = force_dates[bool_force_dates]
 
                 # control that dates are the same
+                print("Basin %d: " %count, basin_huc, basin_id)
+                assert len(flow_data) == len(df_forcing)
                 assert all(force_dates == flow_dates)
 
+                # check that basins have with no missing data in the interval chosen
+                bool_false_values = flow_data!= -999.0
+                assert all(bool_false_values) == True
+
                 # transfer from cubic feet (304.8 mm) per second to mm/day (normalized by basin area)
-                flow_data = flow_data * (304.8**3)/(area*10**6) * 86400
+                flow_data = flow_data * (304.8**3)/area * 86400
 
                 # add tmean(C)
-                df_forcing["tmean(C)"] = (df_forcing["tmin(C)"] + df_forcing["tmax(C)"])/2.0
+                # df_forcing["tmean(C)"] = (df_forcing["tmin(C)"] + df_forcing["tmax(C)"])/2.0
                 # rescale day to hours
                 df_forcing["dayl(s)"] = df_forcing["dayl(s)"]/3600.0
                 df_forcing.rename(columns = {'dayl(s)':'dayl(h)'}, inplace = True)
 
                 # take data
-                force_data = torch.tensor(df_forcing.loc[:,("dayl(h)", "prcp(mm/day)", "tmin(C)", "tmax(C)" )].to_numpy(), dtype=torch.float32).unsqueeze(0) # shape (1, seq_len, feature_dim=4)
+                force_data = torch.tensor(df_forcing.loc[:,self.force_attributes].to_numpy(), dtype=torch.float32).unsqueeze(0) # shape (1, seq_len, feature_dim=4)
                 flow_data = torch.tensor(flow_data, dtype=torch.float32).unsqueeze(1).unsqueeze(0) # shape (1, seq_len, feature_dim=1)
 
                 # take current max/min, tensor of size (feature_dim)

@@ -44,42 +44,41 @@ class ConvEncoder(nn.Module):
         self.act = act
         self.seq_len = seq_len
         self.linear = linear 
-        
-       
       
         ### Network architecture
         # First convolutional layer (2d convolutional layer
         self.first_conv = nn.Sequential(
-            nn.Conv2d(self.in_channels[0], self.out_channels[0], self.kernel_sizes[0], padding=self.padding[0]), 
-            nn.BatchNorm2d(self.out_channels[0]),
+            nn.Conv1d(self.in_channels[0], self.out_channels[0], self.kernel_sizes[0], padding=self.padding[0]), 
+            nn.BatchNorm1d(self.out_channels[0]),
             self.act(inplace = True),
             nn.Dropout(self.drop_p, inplace = False),
-            nn.AvgPool2d((4,1))
+            nn.AvgPool1d(4)
         )
         
         # Second convolution layer
         self.second_conv = nn.Sequential(
-            nn.Conv2d(self.in_channels[1], self.out_channels[1], self.kernel_sizes[1], padding=self.padding[1]), 
-            nn.BatchNorm2d(self.out_channels[1]),
+            nn.Conv1d(self.in_channels[1], self.out_channels[1], self.kernel_sizes[1], padding=self.padding[1]), 
+            nn.BatchNorm1d(self.out_channels[1]),
             self.act(inplace = True),
             nn.Dropout(self.drop_p, inplace = False),
-            nn.AvgPool2d((2,1))
+            nn.AvgPool1d(4)
         )
         
         # Third convolutional layer
         self.third_conv = nn.Sequential(
-            nn.Conv2d(self.in_channels[2], self.out_channels[2], self.kernel_sizes[2], padding=self.padding[2]), 
-            nn.BatchNorm2d(self.out_channels[2]),
+            nn.Conv1d(self.in_channels[2], self.out_channels[2], self.kernel_sizes[2], padding=self.padding[2]), 
+            nn.BatchNorm1d(self.out_channels[2]),
             self.act(inplace = True),
             nn.Dropout(self.drop_p, inplace = False),
-            nn.AvgPool2d((4,1))
+            nn.AvgPool1d(4)
         )
-        
+
+
         # Flatten layer
         self.flatten = nn.Flatten(start_dim=1)
         
         # Liner dimension after 2 convolutional layers
-        self.lin_dim = int((((self.seq_len-self.kernel_sizes[0][0]+1)/4.+1-self.kernel_sizes[1][0])/2.+1-self.kernel_sizes[2][0])/4.)
+        self.lin_dim = int((((self.seq_len-self.kernel_sizes[0]+1)/4.+1-self.kernel_sizes[1])/4.+1-self.kernel_sizes[2])/4.)
         
         # Linear encoder
         self.encoder_lin = nn.Sequential(
@@ -127,6 +126,7 @@ class Hydro_LSTM_AE(pl.LightningModule):
                  lr = 0.001,
                  linear = 256,
                  weight_decay = 0.0,
+                 num_force_attributes = 5,
                 ):
         
         """
@@ -147,7 +147,7 @@ class Hydro_LSTM_AE(pl.LightningModule):
         """
         
         super().__init__()
-        self.save_hyperparameters() # save hyperparameters for chekpoints
+        self.save_hyperparameters(ignore=['loss_fn']) # save hyperparameters for chekpoints
         
         # Parameters
         self.seq_len = seq_len
@@ -156,6 +156,7 @@ class Hydro_LSTM_AE(pl.LightningModule):
         self.weight_decay = weight_decay
         self.sigmoid = nn.Sigmoid()
         self.loss_fn = loss_fn
+        self.num_force_attributes = num_force_attributes 
 
         # Encoder
         self.encoder = ConvEncoder(in_channels, out_channels, kernel_sizes,padding, encoded_space_dim, 
@@ -163,7 +164,7 @@ class Hydro_LSTM_AE(pl.LightningModule):
      
                     
         ### LSTM decoder
-        self.lstm = nn.LSTM(input_size=encoded_space_dim+4, 
+        self.lstm = nn.LSTM(input_size=encoded_space_dim+num_force_attributes, 
                            hidden_size=lstm_hidden_units,
                            num_layers=layers_num,
                            dropout=drop_p,
@@ -177,7 +178,7 @@ class Hydro_LSTM_AE(pl.LightningModule):
         
     def forward(self, x, y):
         # Encode data and keep track of indexes
-        enc = self.encoder(x)
+        enc = self.encoder(x.squeeze(-1))
         enc_expanded = self.sigmoid(enc.unsqueeze(1).expand(-1, self.seq_len, -1))
         # concat data
         input_lstm = torch.cat((enc_expanded.squeeze(), y.squeeze()),dim=-1)
