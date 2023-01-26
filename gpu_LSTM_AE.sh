@@ -9,4 +9,4 @@
 #SBATCH --error=gpu_LSTM_AE.err
 
 module load gcc/8.2.0 python_gpu/3.10.4    # Load modules      
-python src/MultiBasinHydro_lupoalberto98/LSTM_AE_main.py          # Execute the program
+python3 src/MultiBasinHydro_lupoalberto98/LSTM_AE_main.py          # Execute the program
