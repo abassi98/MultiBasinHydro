@@ -42,7 +42,7 @@ if __name__ == '__main__':
     print("Number of basins: %d" %num_basins)
     print("Number of points: %d" %seq_len)
 
-
+    """"
     ### Dataloader
     batch_size = 32
     # split 80/10/10
@@ -68,12 +68,12 @@ if __name__ == '__main__':
                     out_channels=(8,16,32), 
                     kernel_sizes=((6, 1), (4, 1), (4, 1)), 
                     encoded_space_dim=27,
-                    drop_p=0.5,
+                    drop_p=0.4,
                     seq_len=seq_len,
                     lr = 0.001,
                     act=nn.LeakyReLU,
                     loss_fn=loss_fn,
-                    lstm_hidden_units=128,
+                    lstm_hidden_units=256,
                     layers_num=2,
                     linear=256)
 
@@ -102,4 +102,4 @@ if __name__ == '__main__':
     trainer = pl.Trainer(max_epochs=3000, callbacks=[metrics_callback, checkpoint_callback], accelerator=str(device), log_every_n_steps=100, check_val_every_n_epoch=10, logger=False)
     
     trainer.fit(model=model, train_dataloaders=train_dataloader, val_dataloaders = val_dataloader)
-
+    """
