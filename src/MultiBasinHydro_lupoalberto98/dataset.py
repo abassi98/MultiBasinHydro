@@ -162,7 +162,6 @@ class CamelDataset(Dataset):
             interval_flow_dates_bool = flow_dates[0] <= self.start_date and flow_dates[-1] >= self.end_date
 
             if interval_force_dates_bool and interval_flow_dates_bool:
-                count += 1
                 # adjust dates
                 bool_flow_dates = np.logical_and(self.start_date <= flow_dates, flow_dates <= self.end_date)
                 flow_data = flow_data[bool_flow_dates]
@@ -172,7 +171,7 @@ class CamelDataset(Dataset):
                 force_dates = force_dates[bool_force_dates]
 
                 # control that dates are the same
-                # print("Basin %d: " %count, basin_huc, basin_id)
+                #print("Basin %d: " %count, basin_huc, basin_id)
                 assert len(flow_data) == len(df_forcing)
                 assert all(force_dates == flow_dates)
 
@@ -206,8 +205,9 @@ class CamelDataset(Dataset):
                 self.max_force = torch.maximum(self.max_force, current_max_force)
                 
                 # append
-                self.input_data[i] = flow_data
-                self.output_data[i] = force_data
+                self.input_data[count] = flow_data
+                self.output_data[count] = force_data
+                count += 1
             
         # redefine transformations
         self.transform_input = Globally_Scale_Data(self.min_flow, self.max_flow)
