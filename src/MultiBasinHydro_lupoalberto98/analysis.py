@@ -48,5 +48,6 @@ if __name__ == '__main__':
     filename="hydro-lstm-epoch=199.ckpt"
     path = os.path.join(dirpath, filename)
 
-    checkpoint = torch.load(path)
-    print(checkpoint["callbacks"]["ModelCheckpoint"])
+    loss_fn = NSELoss()
+    model = Hydro_LSTM_AE.load_from_checkpoint(path)
+    

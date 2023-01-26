@@ -33,6 +33,7 @@ class ConvEncoder(nn.Module):
             linea : linear layer units
         """
         super().__init__()
+    
         # Retrieve parameters
         self.in_channels = in_channels #tuple of int, input channels for convolutional layers
         self.out_channels = out_channels #tuple of int, of output channels 
@@ -146,6 +147,7 @@ class Hydro_LSTM_AE(pl.LightningModule):
         """
         
         super().__init__()
+        self.save_hyperparameters() # save hyperparameters for chekpoints
         
         # Parameters
         self.seq_len = seq_len
