@@ -17,7 +17,7 @@ from torchvision import transforms, datasets
 
 # user functions
 from dataset import CamelDataset
-from models import Hydro_LSTM_AE
+from models import Hydro_LSTM
 from utils import Scale_Data, MetricsCallback, NSELoss
 
 
@@ -66,11 +66,7 @@ if __name__ == '__main__':
     # define the model
     loss_fn = NSELoss()
     # possibly adjust kernel sizes according to seq_len
-    model = Hydro_LSTM_AE(in_channels=(1,8,16), 
-                    out_channels=(8,16,32), 
-                    kernel_sizes=(6,3,5), 
-                    encoded_space_dim=27,
-                    drop_p=0.5,
+    model = Hydro_LSTM(drop_p=0.5,
                     seq_len=seq_len,
                     lr = 0.001,
                     act=nn.LeakyReLU,
@@ -94,8 +90,8 @@ if __name__ == '__main__':
     checkpoint_callback = ModelCheckpoint(
         every_n_epochs=10,
         save_last = True,
-        dirpath="checkpoints/lstm-ae/",
-        filename="hydro-lstm-ae-{epoch:02d}",
+        dirpath="checkpoints/lstm/",
+        filename="hydro-lstm-{epoch:02d}",
     )
 
     

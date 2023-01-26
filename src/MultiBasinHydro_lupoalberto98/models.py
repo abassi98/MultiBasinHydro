@@ -198,7 +198,6 @@ class Hydro_LSTM_AE(pl.LightningModule):
         enc, rec = self.forward(x,y)
         # Logging to TensorBoard by default
         train_loss = self.loss_fn(x.squeeze(), rec.squeeze())
-        print(train_loss)
         self.log("train_loss", train_loss, prog_bar=True)
         return train_loss
     
@@ -210,6 +209,105 @@ class Hydro_LSTM_AE(pl.LightningModule):
         enc, rec = self.forward(x,y)
         # Logging to TensorBoard by default
         val_loss = self.loss_fn(x.squeeze(), rec.squeeze())
+        # Logging to TensorBoard by default
+        self.log("val_loss", val_loss, prog_bar=True)
+        self.log("epoch_num", float(self.current_epoch),prog_bar=True)
+        
+        return val_loss
+    
+    def configure_optimizers(self):
+        optimizer = optim.Adam(self.parameters(), lr = self.lr, weight_decay = self.weight_decay)
+        return optimizer
+
+
+
+class Hydro_LSTM(pl.LightningModule):
+    """
+    LSTM decoder
+    """
+    def __init__(self,
+                 lstm_hidden_units = 100, 
+                 bidirectional = False,
+                 layers_num = 2,
+                 act = nn.LeakyReLU, 
+                 loss_fn = nn.MSELoss(),
+                 drop_p = 0.5, 
+                 seq_len = 100,
+                 lr = 0.001,
+                 linear = 256,
+                 weight_decay = 0.0,
+                 num_force_attributes = 5,
+                ):
+        
+        """
+        Args:
+            lstm_hidden_units : hidden units of LSTM, 
+            bidirectional : if LSTMs are bidirectional or not,
+            layers_num : number of LSTM layers,
+            drop_p : dropout probability
+            act : activation function
+            seq_len : length of input sequences 
+            lr : learning rate
+        """
+        
+        super().__init__()
+        self.save_hyperparameters(ignore=['loss_fn']) # save hyperparameters for chekpoints
+        
+        # Parameters
+        self.seq_len = seq_len
+        self.lr = lr
+        self.weight_decay = weight_decay
+        self.sigmoid = nn.Sigmoid()
+        self.loss_fn = loss_fn
+        self.num_force_attributes = num_force_attributes 
+
+
+        ### LSTM decoder
+        self.lstm = nn.LSTM(input_size=num_force_attributes, 
+                           hidden_size=lstm_hidden_units,
+                           num_layers=layers_num,
+                           dropout=drop_p,
+                           batch_first=True,
+                          bidirectional=bidirectional)
+        
+        self.out = nn.Linear(lstm_hidden_units, 1)
+
+        print("LSTM initialized")
+
+        
+    def forward(self, y):
+        # Encode data and keep track of indexes
+        #enc = self.encoder(x.squeeze(-1))
+        #enc_expanded = self.sigmoid(enc.unsqueeze(1).expand(-1, self.seq_len, -1))
+        # concat data
+        #input_lstm = torch.cat((enc_expanded.squeeze(), y.squeeze()),dim=-1)
+        # Decode data
+        hidd_rec, _ = self.lstm(y.squeeze())
+        # Fully connected output layer, forced in [0,1]
+        rec = self.out(hidd_rec)
+        rec = self.sigmoid(rec)
+        # Reinsert channel dimension
+        rec = rec.unsqueeze(1)
+        return rec
+        
+    def training_step(self, batch, batch_idx):        
+        ### Unpack batch
+        x, y = batch
+        # forward pass
+        rec = self.forward(y)
+        # Logging to TensorBoard by default
+        train_loss = self.loss_fn(x, rec)
+        self.log("train_loss", train_loss, prog_bar=True)
+        return train_loss
+    
+    def validation_step(self, batch, batch_idx):
+        ### Unpack batch
+        x, y = batch
+            
+        # forward pass
+        rec = self.forward(y)
+        # Logging to TensorBoard by default
+        val_loss = self.loss_fn(x, rec)
         # Logging to TensorBoard by default
         self.log("val_loss", val_loss, prog_bar=True)
         self.log("epoch_num", float(self.current_epoch),prog_bar=True)
