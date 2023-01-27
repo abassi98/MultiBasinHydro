@@ -65,7 +65,7 @@ if __name__ == '__main__':
     print("Validation basins: %d" %num_val_data)
     #print("Test basins: %d" %num_test_data)
     train_dataset, val_dataset = random_split(camel_dataset, (num_train_data, num_val_data))
-    train_dataloader = DataLoader(train_dataset, batch_size=batch_size, num_workers=32, shuffle=True)
+    train_dataloader = DataLoader(train_dataset, batch_size=batch_size, num_workers=32, shuffle=True,  drop_last=True)
     val_dataloader = DataLoader(val_dataset, batch_size=num_val_data, num_workers=32, shuffle=False)
     #test_dataloader = DataLoader(val_dataset, batch_size=num_test_data, num_workers=8, shuffle=False)
 
