@@ -44,10 +44,10 @@ class CamelDataset(Dataset):
         self.num_force_attributes = len(self.force_attributes)
         
         # define max/min forcing and flow tensors
-        self.min_flow = torch.zeros((1,), dtype=torch.float32)
-        self.max_flow = torch.ones((1,), dtype=torch.float32)
-        self.min_force = torch.zeros((self.num_force_attributes,), dtype=torch.float32)
-        self.max_force = torch.ones((self.num_force_attributes,), dtype=torch.float32)
+        self.min_flow = 1000*torch.ones((1,), dtype=torch.float32)
+        self.max_flow = -1000*torch.ones((1,), dtype=torch.float32)
+        self.min_force = 1000*torch.ones((self.num_force_attributes,), dtype=torch.float32)
+        self.max_force = -1000*torch.ones((self.num_force_attributes,), dtype=torch.float32)
         
         
         

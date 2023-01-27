@@ -44,7 +44,16 @@ if __name__ == '__main__':
     print("Number of basins: %d" %num_basins)
     print("Sequence length: %d" %seq_len)
 
+    ### Set proper device and train
+    # check cpus and gpus available
+    num_cpus = multiprocessing.cpu_count()
+    print("Num of cpus: %d"%num_cpus)
+    num_gpus = torch.cuda.device_count()
+    print("Num of gpus: %d"%num_gpus)
     
+    device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
+    print(f"Training device: {device}")
+
     ### Dataloader
     batch_size = 32
     # split 80/10/10
@@ -56,8 +65,8 @@ if __name__ == '__main__':
     print("Validation basins: %d" %num_val_data)
     #print("Test basins: %d" %num_test_data)
     train_dataset, val_dataset = random_split(camel_dataset, (num_train_data, num_val_data))
-    train_dataloader = DataLoader(train_dataset, batch_size=batch_size, num_workers=8, shuffle=True)
-    val_dataloader = DataLoader(val_dataset, batch_size=num_val_data, num_workers=8, shuffle=False)
+    train_dataloader = DataLoader(train_dataset, batch_size=batch_size, num_workers=32, shuffle=True)
+    val_dataloader = DataLoader(val_dataset, batch_size=num_val_data, num_workers=32, shuffle=False)
     #test_dataloader = DataLoader(val_dataset, batch_size=num_test_data, num_workers=8, shuffle=False)
 
     ##########################################################
