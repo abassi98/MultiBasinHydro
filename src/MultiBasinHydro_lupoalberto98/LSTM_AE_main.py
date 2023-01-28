@@ -14,7 +14,7 @@ from pytorch_lightning.callbacks import ModelCheckpoint
 import torch.optim as optim
 from pytorch_lightning.callbacks.early_stopping import EarlyStopping 
 from torchvision import transforms, datasets
-import multiprocessing
+#import multiprocessing
 
 
 # user functions
@@ -48,8 +48,8 @@ if __name__ == '__main__':
 
     ### Set proper device and train
     # check cpus and gpus available
-    num_cpus = multiprocessing.cpu_count()
-    print("Num of cpus: %d"%num_cpus)
+    #num_cpus = multiprocessing.cpu_count()
+    #print("Num of cpus: %d"%num_cpus)
     num_gpus = torch.cuda.device_count()
     print("Num of gpus: %d"%num_gpus)
     
