@@ -44,12 +44,13 @@ if __name__ == '__main__':
     print("Number of points: %d" %seq_len)
     """
 
-    dirpath="checkpoints"
-    filename="hydro-lstm-epoch=09.ckpt"
+    dirpath="checkpoints/lstm-ae/"
+    filename="hydro-lstm-ae-epoch=29.ckpt"
     path = os.path.join(dirpath, filename)
 
     loss_fn = NSELoss()
     model = Hydro_LSTM_AE.load_from_checkpoint(path)
     checkpoint = torch.load(path, map_location=lambda storage, loc: storage)
-    val_loss = checkpoint["callbacks"]["ModelCheckpoint{'monitor': 'val_loss', 'mode': 'min', 'every_n_train_steps': 0, 'every_n_epochs': 10, 'train_time_interval': None}"]["current_score"].item()
+
+    val_loss = checkpoint["callbacks"]["ModelCheckpoint{'monitor': 'val_loss', 'mode': 'min', 'every_n_train_steps': 0, 'every_n_epochs': 10, 'train_time_interval': None}"]
     print(val_loss)

@@ -178,7 +178,7 @@ class Hydro_LSTM_AE(pl.LightningModule):
         
     def forward(self, x, y):
         # Encode data and keep track of indexes
-        enc = self.encoder(x.squeeze(-1))
+        enc = self.encoder(x.squeeze(dim=-1))
         enc_expanded = self.sigmoid(enc.unsqueeze(1).expand(-1, self.seq_len, -1))
         # concat data
         input_lstm = torch.cat((enc_expanded.squeeze(), y.squeeze()),dim=-1)
@@ -282,7 +282,7 @@ class Hydro_LSTM(pl.LightningModule):
         # concat data
         #input_lstm = torch.cat((enc_expanded.squeeze(), y.squeeze()),dim=-1)
         # Decode data
-        hidd_rec, _ = self.lstm(y.squeeze())
+        hidd_rec, _ = self.lstm(y.squeeze(1))
         # Fully connected output layer, forced in [0,1]
         rec = self.out(hidd_rec)
         rec = self.sigmoid(rec)

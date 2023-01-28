@@ -2,6 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
 import os
+import multiprocessing
 
 # pytorch
 import torch
@@ -57,6 +58,9 @@ if __name__ == '__main__':
     ### Dataloader
     batch_size = 32
     # split 80/10/10
+    num_workers = 2
+    print("Number of workers: %d"%num_workers)
+    
 
     num_train_data = int(num_basins * 0.8) 
     num_val_data = num_basins - num_train_data
@@ -65,8 +69,8 @@ if __name__ == '__main__':
     print("Validation basins: %d" %num_val_data)
     #print("Test basins: %d" %num_test_data)
     train_dataset, val_dataset = random_split(camel_dataset, (num_train_data, num_val_data))
-    train_dataloader = DataLoader(train_dataset, batch_size=batch_size, num_workers=32, shuffle=True,  drop_last=True)
-    val_dataloader = DataLoader(val_dataset, batch_size=num_val_data, num_workers=32, shuffle=False)
+    train_dataloader = DataLoader(train_dataset, batch_size=batch_size, num_workers=num_workers, shuffle=True,  drop_last=True)
+    val_dataloader = DataLoader(val_dataset, batch_size=num_val_data, num_workers=num_workers, shuffle=False)
     #test_dataloader = DataLoader(val_dataset, batch_size=num_test_data, num_workers=8, shuffle=False)
 
     ##########################################################
@@ -97,8 +101,9 @@ if __name__ == '__main__':
     metrics_callback = MetricsCallback()
     early_stopping = EarlyStopping(monitor="val_loss", patience = 10, mode="min")
     checkpoint_callback = ModelCheckpoint(
-        every_n_epochs=10,
-        save_last = True,
+        save_top_k=100,
+        monitor="val_loss",
+        mode="min",
         dirpath="checkpoints/lstm/",
         filename="hydro-lstm-{epoch:02d}",
     )
