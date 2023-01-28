@@ -1,5 +1,5 @@
 #!/bin/bash
-#SBATCH -J cpu_LSTM_AE
+#SBATCH -J cpu_LSTM
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=32                 # 8 cores
@@ -7,8 +7,8 @@
 #SBATCH --mem-per-cpu=1G            # 1  GB per core
 #SBATCH --mail-type=BEGIN
 #SBATCH --mail-type=END,FAIL
-#SBATCH --output=cpu_LSTM_AE.out
-#SBATCH --error=cpu_LSTM_AE.err
+#SBATCH --output=cpu_LSTM.out
+#SBATCH --error=cpu_LSTM.err
 
 module load gcc/8.2.0 python_gpu/3.10.4    # Load modules      
 python3 src/MultiBasinHydro_lupoalberto98/LSTM_main.py          # Execute the program
