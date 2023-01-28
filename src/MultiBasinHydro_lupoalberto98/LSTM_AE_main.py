@@ -60,7 +60,7 @@ if __name__ == '__main__':
     ### Dataloader
     batch_size = 32
     # split 80/10/10
-    num_workers = 0
+    num_workers = 4
     print("Number of workers: %d"%num_workers)
 
     num_train_data = int(num_basins * 0.8) 
@@ -115,7 +115,7 @@ if __name__ == '__main__':
 
     
     # define trainer 
-    trainer = pl.Trainer(max_epochs=3000, callbacks=[metrics_callback, checkpoint_callback], accelerator=str(device), check_val_every_n_epoch=10, logger=False)
+    trainer = pl.Trainer(max_epochs=3000, callbacks=[metrics_callback, checkpoint_callback], accelerator="cpu", check_val_every_n_epoch=10, logger=False)
     
     trainer.fit(model=model, train_dataloaders=train_dataloader, val_dataloaders = val_dataloader)
    
