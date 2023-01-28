@@ -60,7 +60,7 @@ if __name__ == '__main__':
     ### Dataloader
     batch_size = 32
     # split 80/10/10
-    num_workers = 16
+    num_workers = 0
     print("Number of workers: %d"%num_workers)
 
     num_train_data = int(num_basins * 0.8) 
