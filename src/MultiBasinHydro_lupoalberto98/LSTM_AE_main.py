@@ -89,7 +89,7 @@ if __name__ == '__main__':
                     encoded_space_dim=27,
                     drop_p=0.5,
                     seq_len=seq_len,
-                    lr = 1e-6,
+                    lr = 1e-4,
                     act=nn.LeakyReLU,
                     loss_fn=loss_fn,
                     lstm_hidden_units=256,

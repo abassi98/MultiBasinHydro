@@ -45,7 +45,7 @@ if __name__ == '__main__':
     """
     dirpath="checkpoints/lstm-ae/"
     val_loss = []
-    for i in range(39):
+    for i in range(14):
         epoch = str(i*10 +9).rjust(2,"0") 
         filename="hydro-lstm-ae-epoch="+epoch+".ckpt"
         path = os.path.join(dirpath, filename)
@@ -67,10 +67,11 @@ if __name__ == '__main__':
         path_hist = os.path.join("hist/","hist-epoch="+epoch+".png")
         fig.savefig(path_hist)
         
-    plt.plot(val_loss)
-    plt.xlabel("epoch")
-    plt.ylabel("NSE")
-    plt.savefig("hydro-lstm-ae_loss,png")
+    fig2, ax2 = plt.subplots(1,1,figsize=(10,10))
+    ax2.plot(val_loss)
+    ax2.set_xlabel("epoch")
+    ax2.set_ylabel("NSE")
+    fig2.savefig("hydro-lstm-ae_NSE.png")
 
  
  
