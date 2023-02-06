@@ -45,7 +45,7 @@ if __name__ == '__main__':
     """
     dirpath="checkpoints/lstm-ae/"
     val_loss = []
-    for i in range(14):
+    for i in range(1):
         epoch = str(i*10 +9).rjust(2,"0") 
         filename="hydro-lstm-ae-epoch="+epoch+".ckpt"
         path = os.path.join(dirpath, filename)
