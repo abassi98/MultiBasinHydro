@@ -74,7 +74,10 @@ if __name__ == '__main__':
     ax2.set_xlabel("epoch")
     ax2.set_ylabel("NSE")
     fig2.savefig("hydro-lstm-ae_NSE.png")
-
- 
+    
+    # find maximum
+    index = np.argmax(val_loss)
+    max_epoch = epoch[index]
+    print("Best model attained at epoch: %d" %max_epoch)
  
    
