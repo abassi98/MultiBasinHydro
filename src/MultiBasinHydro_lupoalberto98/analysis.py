@@ -45,7 +45,8 @@ if __name__ == '__main__':
     """
     dirpath="checkpoints/lstm-ae/"
     val_loss = []
-    for i in range(1):
+    epochs = []
+    for i in range(53):
         epoch = str(i*10 +9).rjust(2,"0") 
         filename="hydro-lstm-ae-epoch="+epoch+".ckpt"
         path = os.path.join(dirpath, filename)
@@ -53,6 +54,7 @@ if __name__ == '__main__':
         # retrieve validation loss for plotting
         checkpoint = torch.load(path, map_location=lambda storage, loc: storage)
         val_loss.append(-checkpoint["callbacks"]["ModelCheckpoint{'monitor': 'val_loss', 'mode': 'min', 'every_n_train_steps': 0, 'every_n_epochs': 1, 'train_time_interval': None}"]["current_score"].item())
+        epochs.append(float(epoch))
 
         # plot weights of linear feature space
         model = Hydro_LSTM_AE.load_from_checkpoint(path)
@@ -68,7 +70,7 @@ if __name__ == '__main__':
         fig.savefig(path_hist)
         
     fig2, ax2 = plt.subplots(1,1,figsize=(10,10))
-    ax2.plot(val_loss)
+    ax2.plot(epochs,val_loss)
     ax2.set_xlabel("epoch")
     ax2.set_ylabel("NSE")
     fig2.savefig("hydro-lstm-ae_NSE.png")
