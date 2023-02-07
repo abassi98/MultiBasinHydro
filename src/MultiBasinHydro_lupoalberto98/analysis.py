@@ -46,7 +46,7 @@ if __name__ == '__main__':
     dirpath="checkpoints/lstm-ae/"
     val_loss = []
     epochs = []
-    for i in range(53):
+    for i in range(21):
         epoch = str(i*10 +9).rjust(2,"0") 
         filename="hydro-lstm-ae-epoch="+epoch+".ckpt"
         path = os.path.join(dirpath, filename)
@@ -77,7 +77,9 @@ if __name__ == '__main__':
     
     # find maximum
     index = np.argmax(val_loss)
-    max_epoch = epoch[index]
+    print(index)
+    max_epoch = epochs[index]
     print("Best model attained at epoch: %d" %max_epoch)
+    print("Best model NSE: %d"%-val_loss[index])
  
    
