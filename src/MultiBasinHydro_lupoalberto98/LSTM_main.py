@@ -79,15 +79,17 @@ if __name__ == '__main__':
     # define the model
     loss_fn = NSELoss()
     # possibly adjust kernel sizes according to seq_len
-    model = Hydro_LSTM(drop_p=0.5,
-                    seq_len=seq_len,
-                    lr = 0.001,
-                    act=nn.LeakyReLU,
-                    loss_fn=loss_fn,
-                    lstm_hidden_units=256,
-                    layers_num=2,
-                    linear=512,
-                    num_force_attributes = len(force_attributes))
+    model = Hydro_LSTM(lstm_hidden_units = 256, 
+                 bidirectional = False,
+                 layers_num = 2,
+                 act = nn.LeakyReLU, 
+                 loss_fn = loss_fn,
+                 drop_p = 0.5, 
+                 seq_len = seq_len,
+                 lr = 1e-4,
+                 weight_decay = 0.0,
+                 num_force_attributes = len(force_attributes),
+                )
 
     ##########################################################
     # training 
@@ -110,7 +112,7 @@ if __name__ == '__main__':
 
     
     # define trainer 
-    trainer = pl.Trainer(max_epochs=3000, callbacks=[metrics_callback, checkpoint_callback], accelerator=str(device), check_val_every_n_epoch=10, logger=False)
+    trainer = pl.Trainer(max_epochs=3000, callbacks=[checkpoint_callback], accelerator=str(device), check_val_every_n_epoch=10, logger=False)
     
     trainer.fit(model=model, train_dataloaders=train_dataloader, val_dataloaders = val_dataloader)
     

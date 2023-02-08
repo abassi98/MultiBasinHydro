@@ -124,8 +124,8 @@ class Hydro_LSTM_AE(pl.LightningModule):
                  loss_fn = nn.MSELoss(),
                  drop_p = 0.5, 
                  seq_len = 100,
-                 lr = 0.001,
-                 linear = 256,
+                 lr = 1e-4,
+                 linear = 512,
                  weight_decay = 0.0,
                  num_force_attributes = 5,
                 ):
@@ -236,8 +236,7 @@ class Hydro_LSTM(pl.LightningModule):
                  loss_fn = nn.MSELoss(),
                  drop_p = 0.5, 
                  seq_len = 100,
-                 lr = 0.001,
-                 linear = 256,
+                 lr = 1e-4,
                  weight_decay = 0.0,
                  num_force_attributes = 5,
                 ):
@@ -319,7 +318,7 @@ class Hydro_LSTM(pl.LightningModule):
     
     def configure_optimizers(self):
         optimizer = optim.Adam(self.parameters(), lr = self.lr, weight_decay = self.weight_decay)
-        return optimizer
-
+        lr_scheduler = MultiStepLR(optimizer, milestones=[300,], gamma=0.1)
+        return {"optimizer":optimizer, "lr_scheduler":lr_scheduler}
 
 
