@@ -3,6 +3,7 @@ import pytorch_lightning as pl
 import torch.nn as nn
 import torch.optim as optim
 from utils import NSELoss
+from torch.optim.lr_scheduler import MultiStepLR
 
 ### Convolutional LSTM Autoencoder 
 class ConvEncoder(nn.Module):
@@ -199,6 +200,7 @@ class Hydro_LSTM_AE(pl.LightningModule):
         # Logging to TensorBoard by default
         train_loss = self.loss_fn(x.squeeze(), rec.squeeze())
         self.log("train_loss", train_loss, prog_bar=True)
+        #print(self.lr_scheduler.get_last_lr())
         return train_loss
     
     def validation_step(self, batch, batch_idx):
@@ -217,7 +219,8 @@ class Hydro_LSTM_AE(pl.LightningModule):
     
     def configure_optimizers(self):
         optimizer = optim.Adam(self.parameters(), lr = self.lr, weight_decay = self.weight_decay)
-        return optimizer
+        lr_scheduler = MultiStepLR(optimizer, milestones=[300,], gamma=0.1)
+        return {"optimizer":optimizer, "lr_scheduler":lr_scheduler}
 
 
 
