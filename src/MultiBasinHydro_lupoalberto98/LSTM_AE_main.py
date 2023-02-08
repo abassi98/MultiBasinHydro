@@ -95,7 +95,7 @@ if __name__ == '__main__':
                     layers_num=2,
                     linear=512,
                     num_force_attributes = len(force_attributes))
-
+    model.state_dict(keep_vars=True)
     ##########################################################
     # training 
     ##########################################################
