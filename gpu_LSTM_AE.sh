@@ -1,5 +1,6 @@
 #!/bin/bash
 #SBATCH --job-name=gpu_LSTM_AE       # create a short name for your job
+
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=2
@@ -11,6 +12,7 @@
 #SBATCH --output=gpu_LSTM_AE.out
 #SBATCH --error=gpu_LSTM_AE.err
 #SBATCH --account=gp0001
+#SBATCH --constraint=gpu
 
 export OMP_NUM_THREADS=$SLURM_CPUS_PER_TASK
 module load daint-gpu PyTorch     
