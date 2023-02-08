@@ -70,7 +70,7 @@ if __name__ == '__main__':
     #print("Test basins: %d" %num_test_data)
     
     train_dataset, val_dataset = random_split(camel_dataset, (num_train_data, num_val_data))
-    train_dataloader = DataLoader(train_dataset, batch_size=batch_size, num_workers=num_workers, shuffle=True, drop_last=True)
+    train_dataloader = DataLoader(train_dataset, batch_size=batch_size, num_workers=num_workers, shuffle=True, drop_last=False)
     val_dataloader = DataLoader(val_dataset, batch_size=num_val_data, num_workers=num_workers, shuffle=False)
     #test_dataloader = DataLoader(val_dataset, batch_size=num_test_data, num_workers=8, shuffle=False)
     
@@ -95,7 +95,7 @@ if __name__ == '__main__':
                     layers_num=2,
                     linear=512,
                     num_force_attributes = len(force_attributes))
-    model.state_dict(keep_vars=True)
+    
     ##########################################################
     # training 
     ##########################################################
@@ -114,7 +114,7 @@ if __name__ == '__main__':
 
     
     # define trainer 
-    trainer = pl.Trainer(max_epochs=3000, callbacks=[checkpoint_callback], accelerator=str(device),devices=2, check_val_every_n_epoch=10, logger=False)
+    trainer = pl.Trainer(max_epochs=3000, callbacks=[checkpoint_callback], accelerator=str(device), check_val_every_n_epoch=10, logger=False)
     
     trainer.fit(model=model, train_dataloaders=train_dataloader, val_dataloaders = val_dataloader)
    
