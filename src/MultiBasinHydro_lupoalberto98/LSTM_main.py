@@ -111,7 +111,7 @@ if __name__ == '__main__':
 
     
     # define trainer 
-    trainer = pl.Trainer(max_epochs=3000, callbacks=[checkpoint_callback], accelerator=str(device), check_val_every_n_epoch=10, logger=False)
+    trainer = pl.Trainer(max_epochs=3000, callbacks=[checkpoint_callback], accelerator=str(device), devices=1, check_val_every_n_epoch=10, logger=False)
     
     trainer.fit(model=model, train_dataloaders=train_dataloader, val_dataloaders = val_dataloader)
     

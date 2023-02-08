@@ -73,7 +73,7 @@ class CamelDataset(Dataset):
         self.trimmed_basin_ids = [all_basin_ids[i] for i in missing_data_indexes]
         self.trimmed_basin_hucs = [all_basin_hucs[i] for i in missing_data_indexes]
         
-        self.len_dataset = 10# 562 #len(self.trimmed_basin_ids)
+        self.len_dataset = 562 #len(self.trimmed_basin_ids)
         
         # containers for data
         self.input_data = torch.zeros(self.len_dataset, 1, self.seq_len, 1)
@@ -132,7 +132,7 @@ class CamelDataset(Dataset):
         print("Loading Camel ...")
         # len(self.trimmed_basin_ids)
         count = 0
-        for i in range(10):
+        for i in range(len(self.trimmed_basin_ids)):
             # retrieve data
             basin_id = self.trimmed_basin_ids[i]
             basin_huc = self.trimmed_basin_hucs[i]
