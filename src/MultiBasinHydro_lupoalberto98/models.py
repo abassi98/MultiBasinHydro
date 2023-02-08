@@ -277,12 +277,7 @@ class Hydro_LSTM(pl.LightningModule):
         print("LSTM initialized")
 
         
-    def forward(self, y):
-        # Encode data and keep track of indexes
-        #enc = self.encoder(x.squeeze(-1))
-        #enc_expanded = self.sigmoid(enc.unsqueeze(1).expand(-1, self.seq_len, -1))
-        # concat data
-        #input_lstm = torch.cat((enc_expanded.squeeze(), y.squeeze()),dim=-1)
+    def forward(self, y): 
         # Decode data
         hidd_rec, _ = self.lstm(y.squeeze(1))
         # Fully connected output layer, forced in [0,1]
@@ -298,7 +293,7 @@ class Hydro_LSTM(pl.LightningModule):
         # forward pass
         rec = self.forward(y)
         # Logging to TensorBoard by default
-        train_loss = self.loss_fn(x, rec)
+        train_loss = self.loss_fn(x.squeeze(), rec.squeeze())
         self.log("train_loss", train_loss, prog_bar=True)
         return train_loss
     
@@ -309,7 +304,7 @@ class Hydro_LSTM(pl.LightningModule):
         # forward pass
         rec = self.forward(y)
         # Logging to TensorBoard by default
-        val_loss = self.loss_fn(x, rec)
+        val_loss = self.loss_fn(x.squeeze(), rec.squeeze())
         # Logging to TensorBoard by default
         self.log("val_loss", val_loss, prog_bar=True)
         self.log("epoch_num", float(self.current_epoch),prog_bar=True)
