@@ -11,5 +11,7 @@
 #SBATCH --output=gpu_LSTM.out
 #SBATCH --error=gpu_LSTM.err
 
-module load gcc/8.2.0 python_gpu/3.10.4    # Load modules      
+export OMP_NUM_THREADS=$SLURM_CPUS_PER_TASK
+
+module load daint-gpu PyTorch      
 python3 src/MultiBasinHydro_lupoalberto98/LSTM_main.py          # Execute the program
