@@ -95,7 +95,7 @@ if __name__ == '__main__':
     ##########################################################
 
     ### Set proper device and train
-    device = torch.device("cuda:1") if torch.cuda.is_available() else torch.device("cpu")
+    device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
     print(f"Training device: {device}")
 
     # define callbacks
