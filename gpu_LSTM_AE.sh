@@ -10,6 +10,7 @@
 #SBATCH --mail-type=END,FAIL     
 #SBATCH --output=gpu_LSTM_AE.out
 #SBATCH --error=gpu_LSTM_AE.err
+#SBATCH --account=gp0001
 
 export OMP_NUM_THREADS=$SLURM_CPUS_PER_TASK
 module load daint-gpu PyTorch     

@@ -10,6 +10,7 @@
 #SBATCH --mail-type=END,FAIL     
 #SBATCH --output=gpu_LSTM.out
 #SBATCH --error=gpu_LSTM.err
+#SBATCH --account=gp0002
 
 export OMP_NUM_THREADS=$SLURM_CPUS_PER_TASK
 
