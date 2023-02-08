@@ -5,7 +5,7 @@
 #SBATCH --cpus-per-task=2
 #SBATCH --gres=gpu:1        # cpu-cores per task (>1 if multi-threaded tasks)
 #SBATCH --gres=gpumem:4G                 # memory per gpu-core (4G is default)
-#SBATCH --time=120:00:00          # total run time limit (HH:MM:SS)
+#SBATCH --time=24:00:00          # total run time limit (HH:MM:SS)
 #SBATCH --mail-type=BEGIN
 #SBATCH --mail-type=END,FAIL     
 #SBATCH --output=gpu_LSTM.out
