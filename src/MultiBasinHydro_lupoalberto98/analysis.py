@@ -44,8 +44,8 @@ if __name__ == '__main__':
     print("Number of basins: %d" %num_basins)
     print("Number of points: %d" %seq_len)
     """
-    data_ae = glob.glob("chcekpoints/lstm-ae/*.ckpt)")
-    data_lstm = glob.glob("chcekpoints/lstm/*.ckpt)")
+    data_ae = glob.glob("chcekpoints/lstm-ae/*.ckpt")
+    data_lstm = glob.glob("chcekpoints/lstm/*.ckpt")
     dir_ae="checkpoints/lstm-ae/"
     dir_lstm="checkpoints/lstm/"
     ae_nse = []
