@@ -64,22 +64,14 @@ if __name__ == '__main__':
         checkpoint_ae = torch.load(file, map_location=lambda storage, loc: storage)
         lstm_nse.append(-checkpoint_ae["callbacks"]["ModelCheckpoint{'monitor': 'val_loss', 'mode': 'min', 'every_n_train_steps': 0, 'every_n_epochs': 1, 'train_time_interval': None}"]["current_score"].item())
         
-    fig2, ax2 = plt.subplots(1,2,figsize=(10,10), sharey=True)
+    fig2, ax2 = plt.subplots(1,1,figsize=(10,10))
     epochs_ae, ae_nse = zip(*sorted(zip(epochs_ae, ae_nse)))
     epochs_lstm, lstm_nse = zip(*sorted(zip(epochs_lstm, lstm_nse)))
-    ax2[0].plot(epochs_ae,ae_nse, label="LSTM-AE")
-    ax2[1].plot(epochs_lstm,lstm_nse, label="LSTM")
-    ax2[0].set_xlabel("epoch")
-    ax2[0].set_ylabel("NSE")
-    ax2[1].set_xlabel("epoch")
-    ax2[1].set_ylabel("NSE")
+    ax2.plot(epochs_ae,ae_nse, label="LSTM-AE")
+    ax2.plot(epochs_lstm,lstm_nse, label="LSTM")
+    ax2.set_xlabel("epoch")
+    ax2.set_ylabel("NSE")
+    ax2.legend()
     fig2.savefig("hydro-lstm-ae_NSE.png")
     
-    # # find maximum
-    # index = np.argmax(val_loss)
-    # print(index)
-    # max_epoch = epochs[index]
-    # print("Best model attained at epoch: %d" %max_epoch)
-    # print("Best model NSE: %d"%-val_loss[index])
- 
    
