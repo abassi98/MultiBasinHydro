@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import os
 import glob
+import re
 
 # pytorch
 import torch
@@ -28,6 +29,7 @@ from utils import Scale_Data, MetricsCallback, NSELoss
 ##########################################################
 torch.manual_seed(42)
 
+
 if __name__ == '__main__':
 
     ##########################################################
@@ -44,50 +46,33 @@ if __name__ == '__main__':
     print("Number of basins: %d" %num_basins)
     print("Number of points: %d" %seq_len)
     """
-    data_ae = glob.glob("chcekpoints/lstm-ae/*.ckpt")
-    data_lstm = glob.glob("chcekpoints/lstm/*.ckpt")
-    dir_ae="checkpoints/lstm-ae/"
-    dir_lstm="checkpoints/lstm/"
+    data_ae = glob.glob("checkpoints/lstm-ae/*.ckpt")
+    data_lstm = glob.glob("checkpoints/lstm/*.ckpt")
     ae_nse = []
     lstm_nse = []
-    epochs = []
+    epochs_ae = []
+    epochs_lstm = []
     for file in data_ae:
-        # epoch = str(i*10 +9).rjust(2,"0") 
-        # file_ae="hydro-lstm-ae-epoch="+epoch+".ckpt"
-        # path_ae = os.path.join(dir_ae, file_ae)
-        # file_lstm="hydro-lstm-epoch="+epoch+".ckpt"
-        # path_lstm = os.path.join(dir_lstm, file_lstm)
-        
-        # retrieve validation loss for plotting
+        epoch = re.findall(r'\b\d+\b', file)
+        epochs_ae.append(int(epoch[0]))
         checkpoint_ae = torch.load(file, map_location=lambda storage, loc: storage)
         ae_nse.append(-checkpoint_ae["callbacks"]["ModelCheckpoint{'monitor': 'val_loss', 'mode': 'min', 'every_n_train_steps': 0, 'every_n_epochs': 1, 'train_time_interval': None}"]["current_score"].item())
-        # checkpoint_lstm = torch.load(path_lstm, map_location=lambda storage, loc: storage)
-        # lstm_nse.append(-checkpoint_lstm["callbacks"]["ModelCheckpoint{'monitor': 'val_loss', 'mode': 'min', 'every_n_train_steps': 0, 'every_n_epochs': 1, 'train_time_interval': None}"]["current_score"].item())
-        # epochs.append(float(epoch))
 
-        # # plot weights of linear feature space
-        # model = Hydro_LSTM_AE.load_from_checkpoint(path)
-        # enc_liner_2 = model.encoder.encoder_lin[4].weight # select last linear encoder layer
-        # fig, axs = plt.subplots(9,3, figsize=(18,6), sharex=True)
-        # for j in range(3):
-        #     for i in range(9):
-        #         ax = axs[i,j]
-        #         feature = j*9 + i 
-        #         ax.set_xlabel(str(feature))
-        #         ax.hist(enc_liner_2.detach().numpy()[feature,:], density=True)
-        # path_hist = os.path.join("hist/","hist-epoch="+epoch+".png")
-        # fig.savefig(path_hist)
-        
     for file in data_lstm:
-        print(file)
+        epoch = re.findall(r'\b\d+\b', file)
+        epochs_lstm.append(int(epoch[0]))
         checkpoint_ae = torch.load(file, map_location=lambda storage, loc: storage)
-        ae_nse.append(-checkpoint_ae["callbacks"]["ModelCheckpoint{'monitor': 'val_loss', 'mode': 'min', 'every_n_train_steps': 0, 'every_n_epochs': 1, 'train_time_interval': None}"]["current_score"].item())
+        lstm_nse.append(-checkpoint_ae["callbacks"]["ModelCheckpoint{'monitor': 'val_loss', 'mode': 'min', 'every_n_train_steps': 0, 'every_n_epochs': 1, 'train_time_interval': None}"]["current_score"].item())
         
-    fig2, ax2 = plt.subplots(1,1,figsize=(10,10))
-    ax2.plot(epochs,ae_nse, label="LSTM-AE")
-    ax2.plot(epochs,lstm_nse, label="LSTM")
-    ax2.set_xlabel("epoch")
-    ax2.set_ylabel("NSE")
+    fig2, ax2 = plt.subplots(1,2,figsize=(10,10), sharey=True)
+    epochs_ae, ae_nse = zip(*sorted(zip(epochs_ae, ae_nse)))
+    epochs_lstm, lstm_nse = zip(*sorted(zip(epochs_lstm, lstm_nse)))
+    ax2[0].plot(epochs_ae,ae_nse, label="LSTM-AE")
+    ax2[1].plot(epochs_lstm,lstm_nse, label="LSTM")
+    ax2[0].set_xlabel("epoch")
+    ax2[0].set_ylabel("NSE")
+    ax2[1].set_xlabel("epoch")
+    ax2[1].set_ylabel("NSE")
     fig2.savefig("hydro-lstm-ae_NSE.png")
     
     # # find maximum
