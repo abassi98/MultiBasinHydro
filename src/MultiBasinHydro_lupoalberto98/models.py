@@ -172,6 +172,7 @@ class Hydro_LSTM_AE(pl.LightningModule):
                            batch_first=True,
                           bidirectional=bidirectional)
         
+        self.dropout = nn.Dropout(drop_p, inplace = False)
         self.out = nn.Linear(lstm_hidden_units, 1)
 
         print("Convolutional LSTM Autoencoder initialized")
@@ -185,6 +186,7 @@ class Hydro_LSTM_AE(pl.LightningModule):
         input_lstm = torch.cat((enc_expanded.squeeze(), y.squeeze()),dim=-1)
         # Decode data
         hidd_rec, _ = self.lstm(input_lstm)
+        hidd_rec = self.dropout(hidd_rec)
         # Fully connected output layer, forced in [0,1]
         rec = self.out(hidd_rec)
         rec = self.sigmoid(rec)
@@ -272,6 +274,7 @@ class Hydro_LSTM(pl.LightningModule):
                            batch_first=True,
                           bidirectional=bidirectional)
         
+        self.dropout = nn.Dropout(drop_p, inplace = False)
         self.out = nn.Linear(lstm_hidden_units, 1)
 
         print("LSTM initialized")
@@ -280,6 +283,7 @@ class Hydro_LSTM(pl.LightningModule):
     def forward(self, y): 
         # Decode data
         hidd_rec, _ = self.lstm(y.squeeze(1))
+        hidd_rec = self.dropout(hidd_rec)
         # Fully connected output layer, forced in [0,1]
         rec = self.out(hidd_rec)
         rec = self.sigmoid(rec)
