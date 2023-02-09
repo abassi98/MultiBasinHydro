@@ -79,6 +79,7 @@ if __name__ == '__main__':
         # fig.savefig(path_hist)
         
     for file in data_lstm:
+        print(file)
         checkpoint_ae = torch.load(file, map_location=lambda storage, loc: storage)
         ae_nse.append(-checkpoint_ae["callbacks"]["ModelCheckpoint{'monitor': 'val_loss', 'mode': 'min', 'every_n_train_steps': 0, 'every_n_epochs': 1, 'train_time_interval': None}"]["current_score"].item())
         
