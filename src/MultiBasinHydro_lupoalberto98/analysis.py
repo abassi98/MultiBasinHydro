@@ -2,6 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
 import os
+import glob
 
 # pytorch
 import torch
@@ -43,24 +44,26 @@ if __name__ == '__main__':
     print("Number of basins: %d" %num_basins)
     print("Number of points: %d" %seq_len)
     """
+    data_ae = glob.glob("chcekpoints/lstm-ae/*.ckpt)")
+    data_lstm = glob.glob("chcekpoints/lstm/*.ckpt)")
     dir_ae="checkpoints/lstm-ae/"
     dir_lstm="checkpoints/lstm/"
     ae_nse = []
     lstm_nse = []
     epochs = []
-    for i in range(21):
-        epoch = str(i*10 +9).rjust(2,"0") 
-        file_ae="hydro-lstm-ae-epoch="+epoch+".ckpt"
-        path_ae = os.path.join(dir_ae, file_ae)
-        file_lstm="hydro-lstm-epoch="+epoch+".ckpt"
-        path_lstm = os.path.join(dir_lstm, file_lstm)
+    for file in data_ae:
+        # epoch = str(i*10 +9).rjust(2,"0") 
+        # file_ae="hydro-lstm-ae-epoch="+epoch+".ckpt"
+        # path_ae = os.path.join(dir_ae, file_ae)
+        # file_lstm="hydro-lstm-epoch="+epoch+".ckpt"
+        # path_lstm = os.path.join(dir_lstm, file_lstm)
         
         # retrieve validation loss for plotting
-        checkpoint_ae = torch.load(path_ae, map_location=lambda storage, loc: storage)
+        checkpoint_ae = torch.load(file, map_location=lambda storage, loc: storage)
         ae_nse.append(-checkpoint_ae["callbacks"]["ModelCheckpoint{'monitor': 'val_loss', 'mode': 'min', 'every_n_train_steps': 0, 'every_n_epochs': 1, 'train_time_interval': None}"]["current_score"].item())
-        checkpoint_lstm = torch.load(path_lstm, map_location=lambda storage, loc: storage)
-        lstm_nse.append(-checkpoint_lstm["callbacks"]["ModelCheckpoint{'monitor': 'val_loss', 'mode': 'min', 'every_n_train_steps': 0, 'every_n_epochs': 1, 'train_time_interval': None}"]["current_score"].item())
-        epochs.append(float(epoch))
+        # checkpoint_lstm = torch.load(path_lstm, map_location=lambda storage, loc: storage)
+        # lstm_nse.append(-checkpoint_lstm["callbacks"]["ModelCheckpoint{'monitor': 'val_loss', 'mode': 'min', 'every_n_train_steps': 0, 'every_n_epochs': 1, 'train_time_interval': None}"]["current_score"].item())
+        # epochs.append(float(epoch))
 
         # # plot weights of linear feature space
         # model = Hydro_LSTM_AE.load_from_checkpoint(path)
@@ -74,6 +77,10 @@ if __name__ == '__main__':
         #         ax.hist(enc_liner_2.detach().numpy()[feature,:], density=True)
         # path_hist = os.path.join("hist/","hist-epoch="+epoch+".png")
         # fig.savefig(path_hist)
+        
+    for file in data_lstm:
+        checkpoint_ae = torch.load(file, map_location=lambda storage, loc: storage)
+        ae_nse.append(-checkpoint_ae["callbacks"]["ModelCheckpoint{'monitor': 'val_loss', 'mode': 'min', 'every_n_train_steps': 0, 'every_n_epochs': 1, 'train_time_interval': None}"]["current_score"].item())
         
     fig2, ax2 = plt.subplots(1,1,figsize=(10,10))
     ax2.plot(epochs,ae_nse, label="LSTM-AE")

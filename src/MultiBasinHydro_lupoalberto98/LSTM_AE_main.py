@@ -105,7 +105,6 @@ if __name__ == '__main__':
     metrics_callback = MetricsCallback()
     early_stopping = EarlyStopping(monitor="val_loss", patience = 10, mode="min")
     checkpoint_callback = ModelCheckpoint(
-        save_top_k=100,
         monitor="val_loss",
         mode="min",
         dirpath="checkpoints/lstm-ae/",
