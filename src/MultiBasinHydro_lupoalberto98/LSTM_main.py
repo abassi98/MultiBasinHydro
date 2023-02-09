@@ -87,7 +87,7 @@ if __name__ == '__main__':
                  loss_fn = loss_fn,
                  drop_p = 0.5, 
                  seq_len = seq_len,
-                 lr = 1e-4,
+                 lr = 1e-5,
                  weight_decay = 0.0,
                  num_force_attributes = len(force_attributes),
                 )

@@ -220,7 +220,7 @@ class Hydro_LSTM_AE(pl.LightningModule):
     def configure_optimizers(self):
         optimizer = optim.Adam(self.parameters(), lr = self.lr, weight_decay = self.weight_decay)
         lr_scheduler = MultiStepLR(optimizer, milestones=[300,], gamma=0.1)
-        return {"optimizer":optimizer, "lr_scheduler":lr_scheduler}
+        return optimizer{"optimizer":optimizer, "lr_scheduler":lr_scheduler}
 
 
 
@@ -313,7 +313,7 @@ class Hydro_LSTM(pl.LightningModule):
     
     def configure_optimizers(self):
         optimizer = optim.Adam(self.parameters(), lr = self.lr, weight_decay = self.weight_decay)
-        lr_scheduler = MultiStepLR(optimizer, milestones=[300,], gamma=0.1)
-        return {"optimizer":optimizer, "lr_scheduler":lr_scheduler}
+        #lr_scheduler = MultiStepLR(optimizer, milestones=[300,], gamma=0.1)
+        return optimizer #{"optimizer":optimizer, "lr_scheduler":lr_scheduler}
 
 
