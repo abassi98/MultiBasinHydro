@@ -23,13 +23,12 @@ from utils import Scale_Data, MetricsCallback, NSELoss
 
 
 
-##########################################################
-# set seed
-##########################################################
-torch.manual_seed(42)
 
 if __name__ == '__main__':
-    
+    ##########################################################
+    # set seed
+    ##########################################################
+    torch.manual_seed(42)
     ##########################################################
     # dataset and dataloaders
     ##########################################################
@@ -62,17 +61,17 @@ if __name__ == '__main__':
     num_workers = 0
     print("Number of workers: %d"%num_workers)
 
-    num_train_data = int(num_basins * 0.8) 
-    num_val_data = num_basins - num_train_data
-    #num_test_data = num_basins - num_train_data - num_val_data
+    num_train_data = int(num_basins * 0.7) 
+    num_val_data = int(num_basins * 0.15) 
+    num_test_data = num_basins - num_train_data - num_val_data
     print("Train basins: %d" %num_train_data)
     print("Validation basins: %d" %num_val_data)
-    #print("Test basins: %d" %num_test_data)
-    
-    train_dataset, val_dataset = random_split(camel_dataset, (num_train_data, num_val_data))
-    train_dataloader = DataLoader(train_dataset, batch_size=batch_size, num_workers=num_workers, shuffle=True, drop_last=True)
-    val_dataloader = DataLoader(val_dataset, batch_size=num_val_data, num_workers=num_workers, shuffle=False)
-    #test_dataloader = DataLoader(val_dataset, batch_size=num_test_data, num_workers=8, shuffle=False)
+    print("Test basins: %d" %num_test_data)
+    train_dataset, val_dataset, test_dataset = random_split(camel_dataset, (num_train_data, num_val_data, num_test_data))
+    train_dataloader = DataLoader(train_dataset, batch_size=batch_size, num_workers=num_workers, shuffle=True,  drop_last=False)
+    val_dataloader = DataLoader(val_dataset, batch_size=batch_size, num_workers=num_workers, shuffle=False)
+    test_dataloader = DataLoader(test_dataset, batch_size=batch_size, num_workers=num_workers, shuffle=False)
+
     
     
 
@@ -113,7 +112,7 @@ if __name__ == '__main__':
 
     
     # define trainer 
-    trainer = pl.Trainer(max_epochs=3000, callbacks=[checkpoint_callback], accelerator=str(device),devices=1, check_val_every_n_epoch=10, logger=False)
+    trainer = pl.Trainer(max_epochs=4000, callbacks=[checkpoint_callback], accelerator=str(device),devices=1, check_val_every_n_epoch=20, logger=False)
     
     trainer.fit(model=model, train_dataloaders=train_dataloader, val_dataloaders = val_dataloader)
    
