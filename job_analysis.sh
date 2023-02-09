@@ -7,8 +7,8 @@
 #SBATCH --account=em09
 #SBATCH --mail-type=BEGIN
 #SBATCH --mail-type=END,FAIL     
-#SBATCH --output=analsyis .out
-#SBATCH --error=analsyis .err
+#SBATCH --output=analsyis.out
+#SBATCH --error=analsyis.err
 
 export OMP_NUM_THREADS=$SLURM_CPUS_PER_TASK
 module load daint-gpu PyTorch      
