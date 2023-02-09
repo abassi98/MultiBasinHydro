@@ -103,7 +103,11 @@ if __name__ == '__main__':
     # define callbacks
     metrics_callback = MetricsCallback()
     early_stopping = EarlyStopping(monitor="val_loss", patience = 10, mode="min")
+    max_epochs = 5000
+    check_val_every_n_epoch = 20
+    save_top_k = int(max_epochs/check_val_every_n_epoch)
     checkpoint_callback = ModelCheckpoint(
+        save_top_k=save_top_k,
         monitor="val_loss",
         mode="min",
         dirpath="checkpoints/lstm/",
@@ -112,7 +116,7 @@ if __name__ == '__main__':
 
     
     # define trainer 
-    trainer = pl.Trainer(max_epochs=4000, callbacks=[checkpoint_callback], accelerator=str(device), devices=1, check_val_every_n_epoch=20, logger=False)
+    trainer = pl.Trainer(max_epochs=max_epochs, callbacks=[checkpoint_callback], accelerator=str(device), devices=1, check_val_every_n_epoch=check_val_every_n_epoch, logger=False)
     
     trainer.fit(model=model, train_dataloaders=train_dataloader, val_dataloaders = val_dataloader)
     
