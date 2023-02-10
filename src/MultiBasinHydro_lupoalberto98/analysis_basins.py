@@ -82,8 +82,10 @@ if __name__ == '__main__':
     #val_dataloader = DataLoader(val_dataset, batch_size=batch_size, num_workers=num_workers, shuffle=False)
     # entire test dataset as one batch
     test_dataloader = DataLoader(test_dataset, batch_size=num_test_data, num_workers=num_workers, shuffle=False)
+    split_indices = test_dataset.indices
+    basin_names = [camel_dataset.trimmed_basin_names[idx] for idx in split_indices]
+    print("Split indices for test dataset: ", split_indices)
 
-    print(test_dataset)
     # load best model
     args = parse_args()
     start_date = datetime.datetime.strptime(dates[0], '%Y/%m/%d').date()
@@ -106,28 +108,26 @@ if __name__ == '__main__':
 
         # plot some sequences
         length_to_plot = 730 # 2 years
-        basins_n = 10
-        fig, axs = plt.subplots(basins_n,basins_n, figsize=(10,10), sharey=True)
+        basins_n = 6
+        fig, axs = plt.subplots(basins_n,basins_n, figsize=(30,30), sharey=True)
         for i in range(basins_n):
             for j in range(basins_n):
                 ax = axs[i,j]
                 basin_idx = np.random.randint(0,num_test_data)
-                basin_id = test_dataset.trimmed_basin_ids[basin_idx]
-                basin_huc = test_dataset.trimmed_basin_hucs[basin_idx]
-                basin_name = test_dataset.trimmed_basin_names[basin_idx]
+                basin_name = basin_names[basin_idx]
                 start_seq = np.random.randint(0, seq_len-length_to_plot)
                 date = start_date + datetime.timedelta(days=start_seq)
                 time = date.strftime("%Y/%m/%d")
                 ax.plot(x[basin_idx, start_seq:start_seq+length_to_plot], label="True")
                 ax.plot(rec[basin_idx, start_seq:start_seq+length_to_plot], label="Reconstructed")
-                ax.text(0.1, 0.8, time, style='italic')
-                ax.text(0.1, 0.7, basin_name, style='italic')
+                ax.set_title("Start date: "+time, style='italic')
+                ax.text(-0.1, 0.8, basin_name, style='italic')
 
-      
         handles, labels = ax.get_legend_handles_labels()
         fig.legend(handles, labels, loc='upper center')
-        fig.text(0.5, 0.04, 'time', ha='center')
-        fig.text(0.04, 0.5, 'normalized runoff', va='center', rotation='vertical')
+        fig.text(0.5, 0.04, 'Time (days)', ha='center')
+        fig.text(0.04, 0.5, 'Runoff', va='center', rotation='vertical')
+        fig.tight_layout
         fig.savefig("reconstructed-"+args.model_id+"-epoch="+str(args.best_epoch)+".png")
 
     elif args.model_id =="lstm":
