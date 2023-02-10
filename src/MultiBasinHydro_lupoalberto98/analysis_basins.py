@@ -90,8 +90,8 @@ if __name__ == '__main__':
     print("Split indices for test dataset: ", split_indices)
 
     # load best model
-    model_ids = ["lstm", "lstm-ae", "lstm-ae-nf5"]
-    best_epochs = ["4739","4699","3179"]
+    model_ids = ["lstm", "lstm-ae"]
+    best_epochs = ["4739","4699"]
     start_date = datetime.datetime.strptime(dates[0], '%Y/%m/%d').date()
     # get data 
     x, y = next(iter(test_dataloader))
