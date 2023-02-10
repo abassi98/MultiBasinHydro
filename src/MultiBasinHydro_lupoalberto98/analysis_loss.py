@@ -77,12 +77,21 @@ if __name__ == '__main__':
     epochs_ae, ae_nse = zip(*sorted(zip(epochs_ae, ae_nse)))
     epochs_lstm, lstm_nse = zip(*sorted(zip(epochs_lstm, lstm_nse)))
     epochs_ae_nf5, lstm_ae_nf5 = zip(*sorted(zip(epochs_ae_nf5, ae_nf5_nse)))
-    ax2.plot(epochs_ae,ae_nse, label="LSTM-AE-27F")
+    ax2.plot(epochs_ae,ae_nse, label="LSTM-AE-27-Features")
     ax2.plot(epochs_lstm,lstm_nse, label="LSTM")
-    ax2.plot(epochs_ae_nf5,ae_nf5_nse, label="LSTM-AE-5F")
+    ax2.plot(epochs_ae_nf5,ae_nf5_nse, label="LSTM-AE-5-Features")
     ax2.set_xlabel("epoch")
     ax2.set_ylabel("NSE")
     ax2.legend()
     fig2.savefig("hydro-lstm-ae_NSE.png")
     
-   
+    ### find the best models
+    idx_ae = np.argmax(ae_nse)[0]
+    epoch_max_nse = ae_nse[idx_ae]
+    print("Best LSTM-AE (27 features) model attained at epoch %d"%epoch_max_nse)
+    idx_lstm = np.argmax(lstm_nse)[0]
+    epoch_max_nse = epochs_lstm[idx_lstm]
+    print("Best LSTM model attained at epoch %d"%epoch_max_nse)
+    idx_ae5f = np.argmax(ae_nf5_nse)[0]
+    epoch_max_nse = epochs_ae_nf5[idx_ae5f]
+    print("Best LSTM-AE (5 features) model attained at epoch %d"%epoch_max_nse)
