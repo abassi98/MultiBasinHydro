@@ -87,7 +87,7 @@ if __name__ == '__main__':
     
     ### find the best models
     idx_ae = np.argmax(ae_nse)
-    epoch_max_nse = ae_nse[idx_ae]
+    epoch_max_nse = epochs_ae[idx_ae]
     print("Best LSTM-AE (27 features) model obtained at epoch %d"%epoch_max_nse)
     idx_lstm = np.argmax(lstm_nse)
     epoch_max_nse = epochs_lstm[idx_lstm]
