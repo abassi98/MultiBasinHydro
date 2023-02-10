@@ -52,7 +52,19 @@ class Globally_Scale_Data:
         
         x = (x - self.min) / (self.max - self.min) 
         return x
-    
+    def reverse_transform(self, x : torch.Tensor):
+        """
+        Inverse of __call__ transformation
+        Arguments
+        ---------
+            x : tensor of shape (1, seq_len, feature_dim)
+        """
+        # check dimensions
+        # min/max lengths should match last dimension of x
+        assert self.min.shape[-1] == x.shape[-1]
+        assert self.max.shape[-1] == x.shape[-1]
+        x = x * (self.max - self.min) + self.min
+        return x
 
 ### callbacks
 class MetricsCallback(Callback):

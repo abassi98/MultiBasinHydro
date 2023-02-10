@@ -23,12 +23,12 @@ import multiprocessing
 # user functions
 from dataset import CamelDataset
 from models import Hydro_LSTM_AE, Hydro_LSTM
-from utils import Scale_Data, MetricsCallback, NSELoss
+from utils import Scale_Data, MetricsCallback, NSELoss, Globally_Scale_Data
 
 def parse_args():
     parser=argparse.ArgumentParser(description="Take model id and best model epoch to analysis on test dataset")
-    parser.add_argument('--model_id', type=str, required=True, help="Identity of the model to analyize")
-    parser.add_argument('--best_epoch', type=int, required=True, help="Epoch where best model (on validation dataset) is obtained")
+    parser.add_argument('--model_ids', type=list, required=True, help="Identity of the model to analyize")
+    parser.add_argument('--best_epochs', type=list, required=True, help="Epoch where best model (on validation dataset) is obtained")
     args=parser.parse_args()
     return args
 
@@ -38,7 +38,7 @@ if __name__ == '__main__':
     # set seed
     ##########################################################
     torch.manual_seed(42)
-    
+    np.random.seed(42)
     ##########################################################
     # dataset and dataloaders
     ##########################################################
@@ -64,6 +64,9 @@ if __name__ == '__main__':
     device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
     print(f"Training device: {device}")
 
+    ### define reverse transformation
+    transform_input = Globally_Scale_Data(camel_dataset.min_flow, camel_dataset.max_flow)
+    transform_output = Globally_Scale_Data(camel_dataset.min_force, camel_dataset.max_force)
 
     ### Dataloader
     batch_size = 32
@@ -87,52 +90,72 @@ if __name__ == '__main__':
     print("Split indices for test dataset: ", split_indices)
 
     # load best model
-    args = parse_args()
+    model_ids = ["lstm", "lstm-ae"]
+    best_epochs = ["9","9"]
     start_date = datetime.datetime.strptime(dates[0], '%Y/%m/%d').date()
-    path = os.path.join("checkpoints", args.model_id,"hydro-"+args.model_id+"-epoch="+str(args.best_epoch)+".ckpt")
-    if args.model_id =="lstm-ae":
-        model = Hydro_LSTM_AE.load_from_checkpoint(path)
-        model.eval()
-        # compute squeezed encoded representation and reconstruction
-        x, y = next(iter(test_dataloader))
-        enc, rec = model(x,y)
-        enc = enc.squeeze().detach().numpy() # tensor of size (num_test_data, encoded_space_dim)
-        rec = rec.squeeze().detach().numpy() # tensor of size (num_test_data, seq_len)
-        x = x.squeeze().detach().numpy()
-        # perform tsne over encoded space
-        enc_embedded = TSNE(n_components=2, perplexity=1.0).fit_transform(enc)
+    # get data 
+    x, y = next(iter(test_dataloader))
+    x_unnorm = transform_input.reverse_transform(x.detach()).squeeze().numpy()
+    # build figure
+    length_to_plot = 730 # 2 years
+    basins_n = 6
+    fig, axs = plt.subplots(basins_n,basins_n, figsize=(30,30), sharey=True, sharex=True)
 
-        fig1, ax1 = plt.subplots(1,1,figsize=(5,5))
-        ax1.scatter(enc_embedded[:,0], enc_embedded[:,1])
-        fig1.savefig("encoded_space-"+args.model_id+"-epoch="+str(args.best_epoch)+".png")
+    # basin idxs and start sequences
+    start_sequences_list = np.random.randint(0, seq_len-length_to_plot, size=basins_n**2)
+    # plot true one
+    # plot some sequences
+    for i in range(basins_n):
+        for j in range(basins_n):
+            ax = axs[i,j]
+            val = i*basins_n + j
+            basin_name = basin_names[val]
+            start_seq = start_sequences_list[val]
+            date = start_date + datetime.timedelta(days=int(start_seq))
+            time = date.strftime("%Y/%m/%d")
+            ax.plot(x_unnorm[val, start_seq:start_seq+length_to_plot], label="Camel")
+            ax.set_title("Start date: "+time, style='italic')
+            ax.text(0,80,basin_name , style='italic')
+
+    for count in range(len(model_ids)):
+        model_id = model_ids[count]
+        best_epoch = best_epochs[count].rjust(2,"0")
+        path = os.path.join("checkpoints", model_id,"hydro-"+model_id+"-epoch="+best_epoch+".ckpt")
+        if model_id =="lstm-ae" or model_id =="lstm-ae-nf5":
+            model = Hydro_LSTM_AE.load_from_checkpoint(path)
+            model.eval()
+            # compute squeezed encoded representation and reconstruction
+            enc, rec = model(x,y)
+
+        else:
+            model = Hydro_LSTM.load_from_checkpoint(path)
+            rec = model(y)
+
+        # unnormalize input and output
+        rec = transform_input.reverse_transform(rec.detach()).squeeze().numpy()
+        # # perform tsne over encoded space
+        # enc_embedded = TSNE(n_components=2, perplexity=1.0).fit_transform(enc)
+
+        # fig1, ax1 = plt.subplots(1,1,figsize=(5,5))
+        # ax1.scatter(enc_embedded[:,0], enc_embedded[:,1])
+        # fig1.savefig("encoded_space-"+args.model_id+"-epoch="+str(args.best_epoch)+".png")
 
         # plot some sequences
-        length_to_plot = 730 # 2 years
-        basins_n = 6
-        fig, axs = plt.subplots(basins_n,basins_n, figsize=(30,30), sharey=True)
         for i in range(basins_n):
             for j in range(basins_n):
                 ax = axs[i,j]
-                basin_idx = np.random.randint(0,num_test_data)
-                basin_name = basin_names[basin_idx]
-                start_seq = np.random.randint(0, seq_len-length_to_plot)
-                date = start_date + datetime.timedelta(days=start_seq)
-                time = date.strftime("%Y/%m/%d")
-                ax.plot(x[basin_idx, start_seq:start_seq+length_to_plot], label="True")
-                ax.plot(rec[basin_idx, start_seq:start_seq+length_to_plot], label="Reconstructed")
-                ax.set_title("Start date: "+time, style='italic')
-                ax.text(-0.1, 0.8, basin_name, style='italic')
+                val = i*basins_n + j
+                start_seq = start_sequences_list[val]
+                ax.plot(rec[val, start_seq:start_seq+length_to_plot], label=model_id)
 
-        handles, labels = ax.get_legend_handles_labels()
-        fig.legend(handles, labels, loc='upper center')
-        fig.text(0.5, 0.04, 'Time (days)', ha='center')
-        fig.text(0.04, 0.5, 'Runoff', va='center', rotation='vertical')
-        fig.tight_layout
-        fig.savefig("reconstructed-"+args.model_id+"-epoch="+str(args.best_epoch)+".png")
+    handles, labels = ax.get_legend_handles_labels()
+    fig.legend(handles, labels, loc='upper left', fontsize=50)
+    fig.text(0.5, 0.04, 'Time (days)', ha='center', fontsize=50)
+    fig.text(0.04, 0.5, 'Streamflow (mm/day)', va='center', rotation='vertical', fontsize=20)
+    fig.tight_layout
+    fig.savefig("reconstructed-best-epochs=.png")
 
-    elif args.model_id =="lstm":
-        model = Hydro_LSTM.load_from_checkpoint(path)
-
+   
     
 
     
