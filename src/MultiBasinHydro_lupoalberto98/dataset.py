@@ -59,6 +59,7 @@ class CamelDataset(Dataset):
         # retrieve basin_ids and basin_hucs and convert to string, possibly padded
         all_basin_ids = [str(gauge_meta.loc[i,"GAGE_ID"]).rjust(8,"0") for i in range(gauge_meta.shape[0])]
         all_basin_hucs = [str(gauge_meta.loc[i,"HUC_02"]).rjust(2,"0") for i in range(gauge_meta.shape[0])] 
+        all_basin_names = [str(gauge_meta.loc[i,"GAGE_NAME"]) for i in range(gauge_meta.shape[0])] 
 
         # get rid of basin with missing data
         missing_data_indexes = []
@@ -72,8 +73,9 @@ class CamelDataset(Dataset):
 
         self.trimmed_basin_ids = [all_basin_ids[i] for i in missing_data_indexes]
         self.trimmed_basin_hucs = [all_basin_hucs[i] for i in missing_data_indexes]
-        
-        self.len_dataset = 562 #len(self.trimmed_basin_ids)
+        self.trimmed_basin_names = [all_basin_names[i] for i in missing_data_indexes]
+
+        self.len_dataset = 15 #562 #len(self.trimmed_basin_ids)
         
         # containers for data
         self.input_data = torch.zeros(self.len_dataset, 1, self.seq_len, 1)
@@ -132,7 +134,7 @@ class CamelDataset(Dataset):
         print("Loading Camel ...")
         # len(self.trimmed_basin_ids)
         count = 0
-        for i in range(len(self.trimmed_basin_ids)):
+        for i in range(15):
             # retrieve data
             basin_id = self.trimmed_basin_ids[i]
             basin_huc = self.trimmed_basin_hucs[i]

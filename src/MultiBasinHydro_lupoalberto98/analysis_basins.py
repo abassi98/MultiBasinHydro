@@ -4,6 +4,7 @@ import os
 import argparse
 from sklearn.manifold import TSNE
 import matplotlib.pyplot as plt
+import datetime
 
 # pytorch
 import torch
@@ -82,8 +83,10 @@ if __name__ == '__main__':
     # entire test dataset as one batch
     test_dataloader = DataLoader(test_dataset, batch_size=num_test_data, num_workers=num_workers, shuffle=False)
 
+    print(test_dataset)
     # load best model
     args = parse_args()
+    start_date = datetime.datetime.strptime(dates[0], '%Y/%m/%d').date()
     path = os.path.join("checkpoints", args.model_id,"hydro-"+args.model_id+"-epoch="+str(args.best_epoch)+".ckpt")
     if args.model_id =="lstm-ae":
         model = Hydro_LSTM_AE.load_from_checkpoint(path)
@@ -98,20 +101,28 @@ if __name__ == '__main__':
         enc_embedded = TSNE(n_components=2, perplexity=1.0).fit_transform(enc)
 
         fig1, ax1 = plt.subplots(1,1,figsize=(5,5))
-        ax1.plot(enc_embedded[:,0], enc_embedded[:,1])
+        ax1.scatter(enc_embedded[:,0], enc_embedded[:,1])
         fig1.savefig("encoded_space-"+args.model_id+"-epoch="+str(args.best_epoch)+".png")
 
         # plot some sequences
-        length_to_plot = 270
-        basins_n = 5
+        length_to_plot = 730 # 2 years
+        basins_n = 10
         fig, axs = plt.subplots(basins_n,basins_n, figsize=(10,10), sharey=True)
         for i in range(basins_n):
             for j in range(basins_n):
                 ax = axs[i,j]
                 basin_idx = np.random.randint(0,num_test_data)
+                basin_id = test_dataset.trimmed_basin_ids[basin_idx]
+                basin_huc = test_dataset.trimmed_basin_hucs[basin_idx]
+                basin_name = test_dataset.trimmed_basin_names[basin_idx]
                 start_seq = np.random.randint(0, seq_len-length_to_plot)
+                date = start_date + datetime.timedelta(days=start_seq)
+                time = date.strftime("%Y/%m/%d")
                 ax.plot(x[basin_idx, start_seq:start_seq+length_to_plot], label="True")
                 ax.plot(rec[basin_idx, start_seq:start_seq+length_to_plot], label="Reconstructed")
+                ax.text(0.1, 0.8, time, style='italic')
+                ax.text(0.1, 0.7, basin_name, style='italic')
+
       
         handles, labels = ax.get_legend_handles_labels()
         fig.legend(handles, labels, loc='upper center')
