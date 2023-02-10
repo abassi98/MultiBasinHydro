@@ -2,6 +2,8 @@ import numpy as np
 import pandas as pd
 import os
 import argparse
+from sklearn.manifold import TSNE
+import matplotlib.pyplot as plt
 
 # pytorch
 import torch
@@ -19,10 +21,15 @@ import multiprocessing
 
 # user functions
 from dataset import CamelDataset
-from models import Hydro_LSTM_AE
+from models import Hydro_LSTM_AE, Hydro_LSTM
 from utils import Scale_Data, MetricsCallback, NSELoss
 
-
+def parse_args():
+    parser=argparse.ArgumentParser(description="Take model id and best model epoch to analysis on test dataset")
+    parser.add_argument('--model_id', type=str, required=True, help="Identity of the model to analyize")
+    parser.add_argument('--best_epoch', type=int, required=True, help="Epoch where best model (on validation dataset) is obtained")
+    args=parser.parse_args()
+    return args
 
 
 if __name__ == '__main__':
@@ -30,7 +37,7 @@ if __name__ == '__main__':
     # set seed
     ##########################################################
     torch.manual_seed(42)
-
+    
     ##########################################################
     # dataset and dataloaders
     ##########################################################
@@ -74,6 +81,50 @@ if __name__ == '__main__':
     #val_dataloader = DataLoader(val_dataset, batch_size=batch_size, num_workers=num_workers, shuffle=False)
     # entire test dataset as one batch
     test_dataloader = DataLoader(test_dataset, batch_size=num_test_data, num_workers=num_workers, shuffle=False)
+
+    # load best model
+    args = parse_args()
+    path = os.path.join("checkpoints", args.model_id,"hydro-"+args.model_id+"-epoch="+str(args.best_epoch)+".ckpt")
+    if args.model_id =="lstm-ae":
+        model = Hydro_LSTM_AE.load_from_checkpoint(path)
+        model.eval()
+        # compute squeezed encoded representation and reconstruction
+        x, y = next(iter(test_dataloader))
+        enc, rec = model(x,y)
+        enc = enc.squeeze().detach().numpy() # tensor of size (num_test_data, encoded_space_dim)
+        rec = rec.squeeze().detach().numpy() # tensor of size (num_test_data, seq_len)
+        x = x.squeeze().detach().numpy()
+        # perform tsne over encoded space
+        enc_embedded = TSNE(n_components=2, perplexity=1.0).fit_transform(enc)
+
+        fig1, ax1 = plt.subplots(1,1,figsize=(5,5))
+        ax1.plot(enc_embedded[:,0], enc_embedded[:,1])
+        fig1.savefig("encoded_space-"+args.model_id+"-epoch="+str(args.best_epoch)+".png")
+
+        # plot some sequences
+        length_to_plot = 270
+        basins_n = 5
+        fig, axs = plt.subplots(basins_n,basins_n, figsize=(10,10), sharey=True)
+        for i in range(basins_n):
+            for j in range(basins_n):
+                ax = axs[i,j]
+                basin_idx = np.random.randint(0,num_test_data)
+                start_seq = np.random.randint(0, seq_len-length_to_plot)
+                ax.plot(x[basin_idx, start_seq:start_seq+length_to_plot], label="True")
+                ax.plot(rec[basin_idx, start_seq:start_seq+length_to_plot], label="Reconstructed")
+      
+        handles, labels = ax.get_legend_handles_labels()
+        fig.legend(handles, labels, loc='upper center')
+        fig.text(0.5, 0.04, 'time', ha='center')
+        fig.text(0.04, 0.5, 'normalized runoff', va='center', rotation='vertical')
+        fig.savefig("reconstructed-"+args.model_id+"-epoch="+str(args.best_epoch)+".png")
+
+    elif args.model_id =="lstm":
+        model = Hydro_LSTM.load_from_checkpoint(path)
+
+    
+
+    
 
     
     
