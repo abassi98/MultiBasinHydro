@@ -86,12 +86,12 @@ if __name__ == '__main__':
     fig2.savefig("hydro-lstm-ae_NSE.png")
     
     ### find the best models
-    idx_ae = np.argmax(ae_nse)[0]
+    idx_ae = np.argmax(ae_nse)
     epoch_max_nse = ae_nse[idx_ae]
     print("Best LSTM-AE (27 features) model obtained at epoch %d"%epoch_max_nse)
-    idx_lstm = np.argmax(lstm_nse)[0]
+    idx_lstm = np.argmax(lstm_nse)
     epoch_max_nse = epochs_lstm[idx_lstm]
     print("Best LSTM model obtained at epoch %d"%epoch_max_nse)
-    idx_ae5f = np.argmax(ae_nf5_nse)[0]
+    idx_ae5f = np.argmax(ae_nf5_nse)
     epoch_max_nse = epochs_ae_nf5[idx_ae5f]
     print("Best LSTM-AE (5 features) model obtained at epoch %d"%epoch_max_nse)
