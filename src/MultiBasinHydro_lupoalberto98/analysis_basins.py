@@ -90,8 +90,8 @@ if __name__ == '__main__':
     print("Split indices for test dataset: ", split_indices)
 
     # load best model
-    model_ids = ["lstm", "lstm-ae"]
-    best_epochs = ["9","9"]
+    model_ids = ["lstm", "lstm-ae", "lstm-ae-nf5"]
+    best_epochs = ["4739","4699","3179"]
     start_date = datetime.datetime.strptime(dates[0], '%Y/%m/%d').date()
     # get data 
     x, y = next(iter(test_dataloader))
@@ -153,7 +153,7 @@ if __name__ == '__main__':
     fig.text(0.5, 0.04, 'Time (days)', ha='center', fontsize=50)
     fig.text(0.04, 0.5, 'Streamflow (mm/day)', va='center', rotation='vertical', fontsize=20)
     fig.tight_layout
-    fig.savefig("reconstructed-best-epochs=.png")
+    fig.savefig("reconstructed-best-epochs.png")
 
    
     
