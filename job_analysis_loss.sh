@@ -3,7 +3,7 @@
 #SBATCH --job-name=analysis_loss       
 #SBATCH --time=24:00:00          
 #SBATCH --nodes=1
-#SBATCH --cpus-per-task=2
+#SBATCH --cpus-per-task=8
 #SBATCH --account=em09
 #SBATCH --mail-type=BEGIN
 #SBATCH --mail-type=END,FAIL     
