@@ -112,7 +112,7 @@ if __name__ == '__main__':
     start_sequences_list = np.random.randint(0, seq_len-length_to_plot, size=basins_n**2)
 
     # define loss function
-    fig_nse, axs_nse = plt.subplots(1,2, figsize=(10,10))
+    fig_nse, axs_nse = plt.subplots(1,2, figsize=(20,10))
     loss_fn = NSELoss(reduction=None)
     nse_df = pd.DataFrame()
     ###################################################################################
@@ -178,6 +178,8 @@ if __name__ == '__main__':
     sns.ecdfplot(nse_df, ax=axs_nse[1], legend=True)
     axs_nse[0].set_ylabel("PDF")
     axs_nse[1].set_ylabel("CDF")
+    handles, labels = axs_nse[0].get_legend_handles_labels()
+    fig_nse.legend(handles, labels, loc='upper left', fontsize=50)
     fig_nse.savefig("nse_distribution.png")
     
     # return and save the figure of runoff

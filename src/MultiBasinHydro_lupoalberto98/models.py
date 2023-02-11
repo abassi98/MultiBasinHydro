@@ -241,6 +241,7 @@ class Hydro_LSTM(pl.LightningModule):
                  lr = 1e-4,
                  weight_decay = 0.0,
                  num_force_attributes = 5,
+                 noise_dim = 0,
                 ):
         
         """
@@ -264,7 +265,7 @@ class Hydro_LSTM(pl.LightningModule):
         self.sigmoid = nn.Sigmoid()
         self.loss_fn = loss_fn
         self.num_force_attributes = num_force_attributes 
-
+        self.noise_dim = noise_dim
 
         ### LSTM decoder
         self.lstm = nn.LSTM(input_size=num_force_attributes, 
