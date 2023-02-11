@@ -109,6 +109,10 @@ class NSELoss(nn.Module):
             NSE = torch.mean(NSE_tensor)
         elif self.reduction == "sum":
             NSE = torch.sum(NSE_tensor)
+        elif self.reduction == None:
+            NSE = NSE_tensor
+        else:
+            raise Exception("Invalid reduction provided. Allowed 'mean', 'sum', None")
             
         return - NSE
 
