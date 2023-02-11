@@ -106,6 +106,7 @@ if __name__ == '__main__':
     length_to_plot = 730 # 2 years
     basins_n = 6
     fig, axs = plt.subplots(basins_n,basins_n, figsize=(30,30), sharey=True, sharex=True)
+    fig1, axs1 = plt.subplots(basins_n,basins_n, figsize=(30,30), sharey=True, sharex=True)
     
     # basin idxs and start sequences
     start_sequences_list = np.random.randint(0, seq_len-length_to_plot, size=basins_n**2)
@@ -122,6 +123,7 @@ if __name__ == '__main__':
     for i in range(basins_n):
         for j in range(basins_n):
             ax = axs[i,j]
+            ax1 = axs1[i,j]
             val = i*basins_n + j
             basin_name = basin_names[val]
             start_seq = start_sequences_list[val]
@@ -131,6 +133,8 @@ if __name__ == '__main__':
             ax.set_title("Start date: "+time, style='italic')
             at = AnchoredText(basin_name,loc='upper left', prop=dict(size=8), frameon=True)
             ax.add_artist(at)
+            ax1.set_title("Start date: "+time, style='italic')
+            ax1.add_artist(at)
 
     for count in range(len(model_ids)):
         model_id = model_ids[count]
@@ -162,13 +166,15 @@ if __name__ == '__main__':
         for i in range(basins_n):
             for j in range(basins_n):
                 ax = axs[i,j]
+                ax1 = axs1[i,j]
                 val = i*basins_n + j
                 start_seq = start_sequences_list[val]
                 ax.plot(rec[val, start_seq:start_seq+length_to_plot], label=model_dict[model_id])
+                ax1.plot(np.absolute(rec[val, start_seq:start_seq+length_to_plot]-x_unnorm[val, start_seq:start_seq+length_to_plot]), label=model_dict[model_id])
 
     # plot empirical kde nse distributions and comulatives
-    sns.displot(nse_df, kind="kde", ax=axs_nse[0], legend=True)
-    sns.displot(nse_df, kind="ecdf", ax=axs_nse[1], legend=True)
+    sns.kdeplot(nse_df, ax=axs_nse[0], legend=True)
+    sns.ecdfplot(nse_df, ax=axs_nse[1], legend=True)
     axs_nse[0].set_ylabel("PDF")
     axs_nse[1].set_ylabel("CDF")
     fig_nse.savefig("nse_distribution.png")
@@ -180,6 +186,13 @@ if __name__ == '__main__':
     fig.text(0.04, 0.5, 'Streamflow (mm/day)', va='center', rotation='vertical', fontsize=20)
     fig.tight_layout
     fig.savefig("reconstructed-best-epochs.png")
+
+    # return and save the figure of runoff
+    fig1.legend(handles, labels, loc='upper left', fontsize=50)
+    fig1.text(0.5, 0.04, 'Time (days)', ha='center', fontsize=50)
+    fig1.text(0.04, 0.5, 'Delta Streamflow (mm/day)', va='center', rotation='vertical', fontsize=20)
+    fig1.tight_layout
+    fig1.savefig("abs-diff-best-epochs.png")
 
    
     
