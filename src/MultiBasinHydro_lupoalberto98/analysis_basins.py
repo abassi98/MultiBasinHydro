@@ -152,7 +152,7 @@ if __name__ == '__main__':
             rec = model(y)
 
         # compute NSE and save in dataframe
-        nse_df[model_dict[model_id]] = loss_fn(x.squeeze(), rec.squeeze()).detach().numpy() # array of size (num_test_data)
+        nse_df[model_dict[model_id]] = - loss_fn(x.squeeze(), rec.squeeze()).detach().numpy() # array of size (num_test_data)
         
         # unnormalize input and output
         rec = transform_input.reverse_transform(rec.detach()).squeeze().numpy()
@@ -189,7 +189,7 @@ if __name__ == '__main__':
     fig.savefig("reconstructed-best-epochs.png")
 
     # return and save the figure of runoff
-    handles, labels = ax.get_legend_handles_labels()
+    handles, labels = ax1.get_legend_handles_labels()
     fig1.legend(handles, labels, loc='upper left', fontsize=50)
     fig1.text(0.5, 0.04, 'Time (days)', ha='center', fontsize=50)
     fig1.text(0.04, 0.5, 'Delta Streamflow (mm/day)', va='center', rotation='vertical', fontsize=20)
