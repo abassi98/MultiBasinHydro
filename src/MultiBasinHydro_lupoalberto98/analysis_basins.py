@@ -173,8 +173,8 @@ if __name__ == '__main__':
                 ax1.plot(np.absolute(rec[val, start_seq:start_seq+length_to_plot]-x_unnorm[val, start_seq:start_seq+length_to_plot]), label=model_dict[model_id])
 
     # plot empirical kde nse distributions and comulatives
-    sns.kdeplot(nse_df, ax=axs_nse[0], legend=True)
-    sns.ecdfplot(nse_df, ax=axs_nse[1], legend=True)
+    axs_nse[0] = sns.kdeplot(nse_df, legend=True)
+    axs_nse[1] = sns.ecdfplot(nse_df, legend=True)
     axs_nse[0].set_ylabel("PDF")
     axs_nse[1].set_ylabel("CDF")
     fig_nse.savefig("nse_distribution.png")
