@@ -13,5 +13,5 @@
 
 export OMP_NUM_THREADS=$SLURM_CPUS_PER_TASK
 module load daint-mc PyTorch 
-pip3 install scikit-learn seaborn    
+pip3 install matplotlib pandas scikit-learn seaborn 
 python3 src/MultiBasinHydro_lupoalberto98/analysis_basins.py --model_id "lstm-ae" --best_epoch 3779        
