@@ -287,7 +287,7 @@ class Hydro_LSTM(pl.LightningModule):
             hidd_rec, _ = self.lstm(y.squeeze(1))
         else:
             y_shape = y.squeeze().shape # size (batch_size, seq_len, force_attributes)
-            noise = self.sigmoid(torch.randn(size=(y_shape[0], self.seq_len, self.noise_dim)))
+            noise = self.sigmoid(torch.randn(size=(y_shape[0], self.seq_len, self.noise_dim), device=self.device))
             # concat data
             input_lstm = torch.cat((noise, y.squeeze()),dim=-1)
             hidd_rec, _ = self.lstm(input_lstm)
