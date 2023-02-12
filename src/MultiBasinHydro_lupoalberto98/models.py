@@ -268,7 +268,7 @@ class Hydro_LSTM(pl.LightningModule):
         self.noise_dim = noise_dim
 
         ### LSTM decoder
-        self.lstm = nn.LSTM(input_size=num_force_attributes, 
+        self.lstm = nn.LSTM(input_size=num_force_attributes + noise_dim, 
                            hidden_size=lstm_hidden_units,
                            num_layers=layers_num,
                            dropout=drop_p,
@@ -283,7 +283,15 @@ class Hydro_LSTM(pl.LightningModule):
         
     def forward(self, y): 
         # Decode data
-        hidd_rec, _ = self.lstm(y.squeeze(1))
+        if self.noise_dim == 0:
+            hidd_rec, _ = self.lstm(y.squeeze(1))
+        else:
+            y_shape = y.squeeze().shape # size (batch_size, seq_len, force_attributes)
+            noise = self.sigmoid(torch.randn(size=(y_shape[0], self.seq_len, self.noise_dim)))
+            # concat data
+            input_lstm = torch.cat((noise, y.squeeze()),dim=-1)
+            hidd_rec, _ = self.lstm(input_lstm)
+        
         #hidd_rec = self.dropout(hidd_rec)
         # Fully connected output layer, forced in [0,1]
         rec = self.out(hidd_rec)

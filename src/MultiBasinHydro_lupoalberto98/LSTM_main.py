@@ -2,6 +2,7 @@ import numpy as np
 import pandas as pd
 import os
 import multiprocessing
+import argparse
 
 # pytorch
 import torch
@@ -22,7 +23,11 @@ from utils import Scale_Data, MetricsCallback, NSELoss
 
 
 
-
+def parse_args():
+    parser=argparse.ArgumentParser(description="If add to LSTM some noise features")
+    parser.add_argument('--noise_dim', type=int, required=True, help="How many random noise components")
+    args=parser.parse_args()
+    return args
 
 
 if __name__ == '__main__':
@@ -79,6 +84,8 @@ if __name__ == '__main__':
     ##########################################################
     # define the model
     loss_fn = NSELoss()
+    args = parse_args()
+    assert args.noisedim >= 0
     # possibly adjust kernel sizes according to seq_len
     model = Hydro_LSTM(lstm_hidden_units = 256, 
                  bidirectional = False,
@@ -90,6 +97,7 @@ if __name__ == '__main__':
                  lr = 1e-5,
                  weight_decay = 0.0,
                  num_force_attributes = len(force_attributes),
+                 noise_dim = args.noise_dim,
                 )
 
     ##########################################################
@@ -103,16 +111,34 @@ if __name__ == '__main__':
     # define callbacks
     metrics_callback = MetricsCallback()
     early_stopping = EarlyStopping(monitor="val_loss", patience = 10, mode="min")
-    max_epochs = 5000
+    max_epochs = 10000
     check_val_every_n_epoch = 20
     save_top_k = int(max_epochs/check_val_every_n_epoch)
+
+    # select dirpath according to noise features added
+    if args.noise_dim==0:
+        dirpath="checkpoints/lstm/"
+    else:
+        dirpath="checkpoints/lstm-noise-dim"+str(args.noise_dim)+"/"
+        
+    # save only loss
     checkpoint_callback = ModelCheckpoint(
         save_top_k=save_top_k,
         monitor="val_loss",
         mode="min",
-        dirpath="checkpoints/lstm/",
+        dirpath=dirpath,
         filename="hydro-lstm-{epoch:02d}",
     )
+
+    
+    # # save top_k=20 best models
+    # checkpoint_model = ModelCheckpoint(
+    #     save_top_k=20,
+    #     monitor="val_loss",
+    #     mode="min",
+    #     dirpath=dirpath,
+    #     filename="hydro-lstm-{epoch:02d}",
+    # )
 
     
     # define trainer 
