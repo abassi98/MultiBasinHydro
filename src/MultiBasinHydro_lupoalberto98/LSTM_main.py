@@ -35,7 +35,7 @@ if __name__ == '__main__':
     # set seed
     ##########################################################
     torch.manual_seed(42)
-
+    args = parse_args()
     ##########################################################
     # dataset and dataloaders
     ##########################################################
@@ -84,8 +84,7 @@ if __name__ == '__main__':
     ##########################################################
     # define the model
     loss_fn = NSELoss()
-    args = parse_args()
-    assert args.noisedim >= 0
+    assert args.noise_dim >= 0
     # possibly adjust kernel sizes according to seq_len
     model = Hydro_LSTM(lstm_hidden_units = 256, 
                  bidirectional = False,
