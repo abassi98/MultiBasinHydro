@@ -49,12 +49,16 @@ if __name__ == '__main__':
     data_ae = glob.glob("checkpoints/lstm-ae/*.ckpt")
     data_ae_nf5 = glob.glob("checkpoints/lstm-ae-nf5/*.ckpt")
     data_lstm = glob.glob("checkpoints/lstm/*.ckpt")
+    data_lstm_noise = glob.glob("checkpoints/lstm-noise-dim27/*.ckpt")
     ae_nse = []
     ae_nf5_nse = []
     lstm_nse = []
+    lstm_noise_nse = []
     epochs_ae = []
     epochs_ae_nf5 = []
     epochs_lstm = []
+    epochs_lstm_noise = []
+
     for file in data_ae:
         epoch = re.findall(r'\b\d+\b', file)
         epochs_ae.append(int(epoch[0]))
@@ -73,13 +77,22 @@ if __name__ == '__main__':
         checkpoint_ae = torch.load(file, map_location=lambda storage, loc: storage)
         lstm_nse.append(-checkpoint_ae["callbacks"]["ModelCheckpoint{'monitor': 'val_loss', 'mode': 'min', 'every_n_train_steps': 0, 'every_n_epochs': 1, 'train_time_interval': None}"]["current_score"].item())
         
+    for file in data_lstm_noise:
+        epoch = re.findall(r'\b\d+\b', file)
+        epochs_lstm_noise.append(int(epoch[0]))
+        checkpoint = torch.load(file, map_location=lambda storage, loc: storage)
+        lstm_noise_nse.append(-checkpoint["callbacks"]["ModelCheckpoint{'monitor': 'val_loss', 'mode': 'min', 'every_n_train_steps': 0, 'every_n_epochs': 1, 'train_time_interval': None}"]["current_score"].item())
+        
     fig2, ax2 = plt.subplots(1,1,figsize=(10,10))
     epochs_ae, ae_nse = zip(*sorted(zip(epochs_ae, ae_nse)))
     epochs_lstm, lstm_nse = zip(*sorted(zip(epochs_lstm, lstm_nse)))
-    epochs_ae_nf5, lstm_ae_nf5 = zip(*sorted(zip(epochs_ae_nf5, ae_nf5_nse)))
-    ax2.plot(epochs_ae,ae_nse, label="LSTM-AE-27-Features")
+    epochs_ae_nf5, ae_nf5_nse = zip(*sorted(zip(epochs_ae_nf5, ae_nf5_nse)))
+    epochs_lstm_noise, lstm_noise_nse = zip(*sorted(zip(epochs_lstm_noise, lstm_noise_nse)))
+
+    ax2.plot(epochs_ae,ae_nse, label="LSTM-AE 27 Features")
     ax2.plot(epochs_lstm,lstm_nse, label="LSTM")
-    ax2.plot(epochs_ae_nf5,ae_nf5_nse, label="LSTM-AE-5-Features")
+    ax2.plot(epochs_ae_nf5,ae_nf5_nse, label="LSTM-AE 5 Features")
+    ax2.plot(epochs_lstm_noise,lstm_noise_nse, label="LSTM + 27 Noise")
     ax2.set_xlabel("epoch")
     ax2.set_ylabel("NSE")
     ax2.legend()
@@ -95,3 +108,6 @@ if __name__ == '__main__':
     idx_ae5f = np.argmax(ae_nf5_nse)
     epoch_max_nse = epochs_ae_nf5[idx_ae5f]
     print("Best LSTM-AE (5 features) model obtained at epoch %d"%epoch_max_nse)
+    idx_noise = np.argmax(lstm_noise_nse)
+    epoch_max_nse = epochs_lstm_noise[idx_noise]
+    print("Best LSTM + Noise (27 features) model obtained at epoch %d"%epoch_max_nse)

@@ -171,7 +171,7 @@ if __name__ == '__main__':
                 val = i*basins_n + j
                 start_seq = start_sequences_list[val]
                 ax.plot(rec[val, start_seq:start_seq+length_to_plot], label=model_dict[model_id])
-                ax1.plot(np.absolute(rec[val, start_seq:start_seq+length_to_plot]-x_unnorm[val, start_seq:start_seq+length_to_plot]), label=model_dict[model_id])
+                ax1.semilogy(np.absolute(rec[val, start_seq:start_seq+length_to_plot]-x_unnorm[val, start_seq:start_seq+length_to_plot]), label=model_dict[model_id])
 
     # plot empirical kde nse distributions and comulatives
     sns.kdeplot(nse_df, ax=axs_nse[0], legend=True)
