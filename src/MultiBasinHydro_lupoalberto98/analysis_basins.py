@@ -186,7 +186,8 @@ if __name__ == '__main__':
                 val = i*basins_n + j
                 start_seq = start_sequences_list[val]
                 ax.plot(rec[val, start_seq:start_seq+length_to_plot], label=model_dict[model_id])
-                ax1.semilogy(np.absolute(rec[val, start_seq:start_seq+length_to_plot]-x_unnorm[val, start_seq:start_seq+length_to_plot]), label=model_dict[model_id])
+                if model_id != "lstm-noise-dim27":
+                    ax1.semilogy(np.absolute(rec[val, start_seq:start_seq+length_to_plot]-x_unnorm[val, start_seq:start_seq+length_to_plot]), label=model_dict[model_id])
 
     # plot empirical kde nse distributions and comulatives
     stat_NSE = nse_df.describe()

@@ -247,8 +247,12 @@ class FeatureDataset(Dataset):
     def __init__(self, filename):
         super.__init__()
         self.filename = filename
-        self.df = pd.read_csv(filename, sep=" ")
-        self.data = torch.tensor(np.transpose(self.df.iloc[:, 2:-1]), dtype=torch.float32)
+        self.df_data = pd.read_csv(filename, sep=" ")
+        self.data_ids = self.df_data["basin_id"]
+        self.data = torch.tensor(np.transpose(self.df_data.iloc[:, 2:-1]), dtype=torch.float32)
+        self.df_statics = pd.read_csv("statiscs_features.txt", sep=",")
+        self.statics_ids = self.df_statics.iloc[:,0]
+
         
     def __len__(self):
         return self.data.shape[0]
