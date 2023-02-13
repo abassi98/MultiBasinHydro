@@ -88,7 +88,7 @@ if __name__ == '__main__':
     # entire test dataset as one batch
     test_dataloader = DataLoader(test_dataset, batch_size=num_test_data, num_workers=num_workers, shuffle=False)
     split_indices = test_dataset.indices
-    basin_names = [camel_dataset.trimmed_basin_names[idx] for idx in split_indices]
+    basin_names = [camel_dataset.loaded_basin_names[idx] for idx in split_indices]
     print("Indices for training dataset: ", train_dataset.indices)
     print("Indices for validation dataset: ", val_dataset.indices)
     print("Indices for test dataset: ", split_indices)

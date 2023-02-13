@@ -75,8 +75,12 @@ class CamelDataset(Dataset):
         self.trimmed_basin_hucs = [all_basin_hucs[i] for i in missing_data_indexes]
         self.trimmed_basin_names = [all_basin_names[i] for i in missing_data_indexes]
 
+        # set container for hucs, ids and names effectively loaded
         self.len_dataset = 562 #len(self.trimmed_basin_ids)
-        
+        self.loaded_basin_hucs = []
+        self.loaded_basin_ids = []
+        self.loaded_basin_names = []
+
         # containers for data
         self.input_data = torch.zeros(self.len_dataset, 1, self.seq_len, 1)
         self.output_data = torch.zeros(self.len_dataset, 1, self.seq_len, self.num_force_attributes)
@@ -209,6 +213,9 @@ class CamelDataset(Dataset):
                 # append
                 self.input_data[count] = flow_data
                 self.output_data[count] = force_data
+                self.loaded_basin_hucs.append(self.trimmed_basin_hucs[i])
+                self.loaded_basin_ids.append(self.trimmed_basin_ids[i])
+                self.loaded_basin_names.append(self.trimmed_basin_names[i])
                 count += 1
             
         # redefine transformations

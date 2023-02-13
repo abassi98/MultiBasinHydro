@@ -81,8 +81,9 @@ if __name__ == '__main__':
     print(enc.shape)
     filename = "encoded_features_lstm_ae.txt"
     df = pd.DataFrame()
-    df["basin_huc"] = camel_dataset.trimmed_basin_hucs
-    df["basin__id"] = camel_dataset.trimmed_basin_ids
+    df["basin_huc"] = camel_dataset.loaded_basin_hucs
+    df["basin__id"] = camel_dataset.loaded_basin_ids
+    df["basin_name"] = camel_dataset.loaded_basin_names
 
     for i in range(enc.shape[1]):
         df["encoded_feature-"+str(i)] = enc[:,i]
