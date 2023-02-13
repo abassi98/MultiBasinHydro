@@ -335,3 +335,76 @@ class Hydro_LSTM(pl.LightningModule):
         return optimizer #{"optimizer":optimizer, "lr_scheduler":lr_scheduler}
 
 
+class Hydro_FFNet(pl.LightningModule):
+
+    def __init__(self, 
+                 n_inputs, 
+                 n_outputs, 
+                 hidden_layers, 
+                 drop_p = 0.5, 
+                 lr = 1e-4, 
+                 activation = nn.LeakyReLU,
+                 weight_decay = 0,
+                ):
+        """
+        Initialize a typical feedforward network with different hidden layers
+        The input is typically a mnist image, given as a torch tensor of size = (1,784),
+        or a sequence, torch.tensor of size (1, seq_length, 3)
+        Args:
+            n_inputs : input features
+            n_outputs : output features
+            hidden_layers : list of sizes of the hidden layers
+            drop_p : dropout probability
+            lr : learning rate
+            activation : activation function
+            weight_decay : l2 regularization constant
+        """
+        super().__init__()
+        # Parameters
+        self.n_inputs = n_inputs
+        self.n_outputs = n_outputs
+        self.hidden_layers = hidden_layers
+        self.num_hidden_layers = len(self.hidden_layers)
+        self.drop_p = drop_p
+        self.lr = lr
+        self.activation = activation
+        self.weight_decay = weight_decay
+      
+        ### Network architecture
+        layers = []
+        
+        # input layer
+        layers.append(nn.Linear(self.n_inputs, self.hidden_layers[0]))
+        layers.append(nn.BatchNorm1d(self.hidden_layers[0]))
+        layers.append(nn.Dropout(self.drop_p, inplace = False))
+        layers.append(self.activation(inplace=True))
+        
+        # hidden layers
+        for l in range(self.num_hidden_layers-1):
+            layers.append(nn.Linear(self.hidden_layers[l], self.hidden_layers[l+1]))
+            layers.append(nn.BatchNorm1d(self.hidden_layers[l+1]))
+            layers.append(nn.Dropout(self.drop_p, inplace = False))
+            layers.append(self.activation(inplace=True))
+        
+        # output layer
+        layers.append(nn.Linear(self.hidden_layers[-1], self.n_outputs))
+        
+        self.layers = nn.ModuleList(layers)
+                          
+        print("Feedforward Network initialized")
+                  
+
+    def forward(self, x):
+        """
+        Input tensor of size (batch_size, features)
+        """
+        for l in range(len(self.layers)):
+            x = self.layers[l](x)
+
+        return x
+    
+
+    def configure_optimizers(self):
+        optimizer = optim.Adam(self.parameters(), lr = self.lr, weight_decay = self.weight_decay)
+        #lr_scheduler = MultiStepLR(optimizer, milestones=[300,], gamma=0.1)
+        return optimizer #{"optimizer":optimizer, "lr_scheduler":lr_scheduler}

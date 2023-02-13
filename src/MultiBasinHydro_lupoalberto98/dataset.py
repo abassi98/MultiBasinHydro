@@ -249,10 +249,9 @@ class FeatureDataset(Dataset):
         self.filename = filename
         self.df = pd.read_csv(filename, sep=" ")
         self.data = torch.tensor(np.transpose(self.df.iloc[:, 2:-1]), dtype=torch.float32)
-        self.static_attributes
-
+        
     def __len__(self):
         return self.data.shape[0]
 
     def __getitem__(self, idx):
-        return self.data[idx], self.static_attributes[idx]
+        return self.data[idx]
