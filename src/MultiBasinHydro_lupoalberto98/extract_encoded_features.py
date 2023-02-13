@@ -1,0 +1,87 @@
+import numpy as np
+import pandas as pd
+import os
+import argparse
+from sklearn.manifold import TSNE
+import matplotlib.pyplot as plt
+from matplotlib.offsetbox import AnchoredText
+import datetime
+import seaborn as sns
+
+# pytorch
+import torch
+import torch.nn as nn
+from torch.utils.data import Dataset, DataLoader, random_split, ConcatDataset, Subset
+import pytorch_lightning as pl
+from pytorch_lightning import Trainer, seed_everything
+from pytorch_lightning.callbacks import ModelCheckpoint
+
+import torch.optim as optim
+from pytorch_lightning.callbacks.early_stopping import EarlyStopping 
+from torchvision import transforms, datasets
+import multiprocessing
+
+
+# user functions
+from dataset import CamelDataset
+from models import Hydro_LSTM_AE, Hydro_LSTM
+from utils import Scale_Data, MetricsCallback, NSELoss, Globally_Scale_Data
+
+def parse_args():
+    parser=argparse.ArgumentParser(description="Take model id and best model epoch to analysis on test dataset")
+    parser.add_argument('--model_ids', type=list, required=True, help="Identity of the model to analyize")
+    parser.add_argument('--best_epochs', type=list, required=True, help="Epoch where best model (on validation dataset) is obtained")
+    args=parser.parse_args()
+    return args
+
+
+if __name__ == '__main__':
+    ##########################################################
+    # set seed
+    ##########################################################
+    torch.manual_seed(42)
+    np.random.seed(42)
+    ##########################################################
+    # dataset and dataloaders
+    ##########################################################
+    # Dataset
+    #dates = ["1989/10/01", "2009/09/30"] 
+    dates = ["1980/10/01", "2010/09/30"] # interval dates to pick
+    force_attributes = ["prcp(mm/day)", "srad(W/m2)", "tmin(C)", "tmax(C)", "vp(Pa)"] # force attributes to use
+    camel_dataset = CamelDataset(dates, force_attributes)
+    #dataset.adjust_dates() # adjust dates if necessary
+    camel_dataset.load_data() # load data
+    num_basins = camel_dataset.__len__()
+    seq_len = camel_dataset.seq_len
+    print("Number of basins: %d" %num_basins)
+    print("Sequence length: %d" %seq_len)
+
+    ### Set proper device and train
+    # check cpus and gpus available
+    num_cpus = multiprocessing.cpu_count()
+    print("Num of cpus: %d"%num_cpus)
+    num_gpus = torch.cuda.device_count()
+    print("Num of gpus: %d"%num_gpus)
+    
+    device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
+    print(f"Training device: {device}")
+
+    # define dataloader for all dataset
+    num_workers = 0
+    print("Number of workers: %d"%num_workers)
+    dataloader = DataLoader(camel_dataset, batch_size=num_basins, num_workers=num_workers, shuffle=False)
+
+    # extract forcing and streamflow
+    x, y = next(iter(dataloader))
+
+    # load model
+    ckpt_path = "checkpoints/lstm-ae/hydro-lstm-ae-epoch=9519.ckpt"
+    model = Hydro_LSTM_AE.load_from_checkpoint(ckpt_path)
+    model.eval()
+    with torch.no_grad():
+        enc, rec = model(x,y)
+    
+    # save encoded features
+    enc = enc.detach().squeeze().numpy()
+    filename = "encoded_features_lstm_ae.txt"
+    np.savetxt(filename, enc)

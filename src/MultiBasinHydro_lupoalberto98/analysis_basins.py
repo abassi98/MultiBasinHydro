@@ -89,7 +89,9 @@ if __name__ == '__main__':
     test_dataloader = DataLoader(test_dataset, batch_size=num_test_data, num_workers=num_workers, shuffle=False)
     split_indices = test_dataset.indices
     basin_names = [camel_dataset.trimmed_basin_names[idx] for idx in split_indices]
-    print("Split indices for test dataset: ", split_indices)
+    print("Indices for training dataset: ", train_dataset.indices)
+    print("Indices for validation dataset: ", val_dataset.indices)
+    print("Indices for test dataset: ", split_indices)
 
     # load best model
     model_ids = ["lstm", "lstm-ae", "lstm-noise-dim27"]
@@ -155,11 +157,13 @@ if __name__ == '__main__':
             model = Hydro_LSTM_AE.load_from_checkpoint(path)
             model.eval()
             # compute squeezed encoded representation and reconstruction
-            enc, rec = model(x,y)
+            with torch.no_grad():
+                enc, rec = model(x,y)
 
         else:
             model = Hydro_LSTM.load_from_checkpoint(path)
-            rec = model(y)
+            with torch.no_grad():
+                rec = model(y)
 
         # compute NSE, mNSE and save in dataframe
         nse_df[model_dict[model_id]] = - loss_NSE(x.squeeze(), rec.squeeze()).detach().numpy() # array of size (num_test_data)
