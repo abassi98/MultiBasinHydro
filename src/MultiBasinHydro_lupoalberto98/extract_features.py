@@ -69,6 +69,9 @@ if __name__ == '__main__':
     model.eval()
     with torch.no_grad():
         enc, rec = model(x,y)
+
+    # pass thorugh sigmoid
+    enc = nn.Sigmoid()(enc)
     
     # save encoded features
     enc = enc.detach().squeeze().numpy()
