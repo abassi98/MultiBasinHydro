@@ -93,7 +93,7 @@ if __name__ == '__main__':
 
     # load best model
     model_ids = ["lstm", "lstm-ae", "lstm-noise-dim27"]
-    best_epochs = ["8839","9019", "4019"]
+    best_epochs = ["9399","9519", "4459"]
     model_dict = {
         "lstm-ae" : "LSTM-AE-27-Features",
         "lstm" : "LSTM",
