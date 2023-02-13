@@ -102,8 +102,8 @@ class NSELoss(nn.Module):
             - NSE : minus the Nash-Sutcliffe efficiency, tensor of size ()
         """
         # compute NSE as batch
-        NSE_num = torch.sum((tar - obs)**self.alpha, dim=-1) # tensor of size (batch_size,)
-        NSE_den = torch.sum((tar - torch.mean(obs, dim=-1, keepdims=True))**self.alpha, dim=-1) # tensor of size (batch_size,)
+        NSE_num = torch.sum((torch.abs(tar - obs))**self.alpha, dim=-1) # tensor of size (batch_size,)
+        NSE_den = torch.sum((torch.abs(tar - torch.mean(obs, dim=-1, keepdims=True)))**self.alpha, dim=-1) # tensor of size (batch_size,)
         NSE_tensor = 1.0 - NSE_num / NSE_den
         if self.reduction == "mean":
             NSE = torch.mean(NSE_tensor)
