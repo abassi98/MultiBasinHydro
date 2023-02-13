@@ -1,11 +1,7 @@
 import numpy as np
-import pandas as pd
-import os
-import argparse
 from sklearn.manifold import TSNE
 import matplotlib.pyplot as plt
 from matplotlib.offsetbox import AnchoredText
-import datetime
 import seaborn as sns
 
 # pytorch
@@ -26,13 +22,6 @@ import multiprocessing
 from dataset import CamelDataset
 from models import Hydro_LSTM_AE, Hydro_LSTM
 from utils import Scale_Data, MetricsCallback, NSELoss, Globally_Scale_Data
-
-def parse_args():
-    parser=argparse.ArgumentParser(description="Take model id and best model epoch to analysis on test dataset")
-    parser.add_argument('--model_ids', type=list, required=True, help="Identity of the model to analyize")
-    parser.add_argument('--best_epochs', type=list, required=True, help="Epoch where best model (on validation dataset) is obtained")
-    args=parser.parse_args()
-    return args
 
 
 if __name__ == '__main__':
