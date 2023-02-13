@@ -197,6 +197,7 @@ if __name__ == '__main__':
     axs_nse[1].set_ylabel("CDF")
     handles, labels = axs_nse[0].get_legend_handles_labels()
     fig_nse.legend(handles, labels, loc='upper left', fontsize=50)
+    fig_nse.suptitle('Nash-Sutcliffe Efficiency for best models', fontsize=16)
     fig_nse.savefig("nse_distribution.png")
     
     # return and save the figure of runoff
@@ -204,6 +205,7 @@ if __name__ == '__main__':
     fig.legend(handles, labels, loc='upper left', fontsize=50)
     fig.text(0.5, 0.04, 'Time (days)', ha='center', fontsize=50)
     fig.text(0.04, 0.5, 'Streamflow (mm/day)', va='center', rotation='vertical', fontsize=20)
+    fig.suptitle('Streamflow of best models compared to Camel data', fontsize=16)
     fig.tight_layout
     fig.savefig("reconstructed-best-epochs.png")
 
@@ -212,6 +214,7 @@ if __name__ == '__main__':
     fig1.legend(handles, labels, loc='upper left', fontsize=50)
     fig1.text(0.5, 0.04, 'Time (days)', ha='center', fontsize=50)
     fig1.text(0.04, 0.5, 'Delta Streamflow (mm/day)', va='center', rotation='vertical', fontsize=20)
+    fig1.suptitle('Absolute Streamflow difference betwen best models and Camel data', fontsize=16)
     fig1.tight_layout
     fig1.savefig("abs-diff-best-epochs.png")
 

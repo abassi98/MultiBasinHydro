@@ -173,7 +173,12 @@ class Hydro_LSTM_AE(pl.LightningModule):
                           bidirectional=bidirectional)
         
         self.dropout = nn.Dropout(drop_p, inplace = False)
-        self.out = nn.Linear(lstm_hidden_units, 1)
+        if bidirectional:
+            D = 2
+        else:
+            D = 1
+            
+        self.out = nn.Linear(D * lstm_hidden_units, 1)
 
         print("Convolutional LSTM Autoencoder initialized")
 
