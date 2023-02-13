@@ -3,6 +3,7 @@ from sklearn.manifold import TSNE
 import matplotlib.pyplot as plt
 from matplotlib.offsetbox import AnchoredText
 import seaborn as sns
+import pandas as pd
 
 # pytorch
 import torch
@@ -74,6 +75,13 @@ if __name__ == '__main__':
     enc = nn.Sigmoid()(enc)
     
     # save encoded features
-    enc = enc.detach().squeeze().numpy()
+    enc = enc.detach().squeeze().numpy() # size (562,27)
     filename = "encoded_features_lstm_ae.txt"
-    np.savetxt(filename, enc)
+    df = pd.DataFrame()
+    df["basin_huc"] = camel_dataset.trimmed_basin_hucs
+    df["basin__id"] = camel_dataset.trimmed_basin_ids
+
+    for i in range(enc.shape[1]):
+        df["encoded_feature-"+str(i)] = enc[:,i]
+
+    df.to_csv(filename, sep=" ")
