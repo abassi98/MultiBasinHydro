@@ -63,6 +63,8 @@ if __name__ == '__main__':
 
     # extract forcing and streamflow
     x, y = next(iter(dataloader))
+    print(x.shape)
+    print(y.shape)
 
     # load model
     ckpt_path = "checkpoints/lstm-ae/hydro-lstm-ae-epoch=9519.ckpt"
@@ -76,6 +78,7 @@ if __name__ == '__main__':
     
     # save encoded features
     enc = enc.detach().squeeze().numpy() # size (562,27)
+    print(enc.shape)
     filename = "encoded_features_lstm_ae.txt"
     df = pd.DataFrame()
     df["basin_huc"] = camel_dataset.trimmed_basin_hucs
