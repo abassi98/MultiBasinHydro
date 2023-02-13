@@ -115,6 +115,7 @@ if __name__ == '__main__':
     fig_nse, axs_nse = plt.subplots(1,2, figsize=(20,10))
     loss_fn = NSELoss(reduction=None)
     nse_df = pd.DataFrame()
+
     ###################################################################################
     # PLOT
     ###################################################################################
@@ -174,8 +175,9 @@ if __name__ == '__main__':
                 ax1.semilogy(np.absolute(rec[val, start_seq:start_seq+length_to_plot]-x_unnorm[val, start_seq:start_seq+length_to_plot]), label=model_dict[model_id])
 
     # plot empirical kde nse distributions and comulatives
-    sns.kdeplot(nse_df, ax=axs_nse[0], legend=True)
-    sns.ecdfplot(nse_df, ax=axs_nse[1], legend=True)
+    stat = nse_df.describe()
+    sns.kdeplot(nse_df, ax=axs_nse[0], legend=True, binrange=[0.0,1.0])
+    sns.ecdfplot(nse_df, ax=axs_nse[1], legend=True, binrange=[0.0,1.0])
     axs_nse[0].set_ylabel("PDF")
     axs_nse[1].set_ylabel("CDF")
     handles, labels = axs_nse[0].get_legend_handles_labels()
