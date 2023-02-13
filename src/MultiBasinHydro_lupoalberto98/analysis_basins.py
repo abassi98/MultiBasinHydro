@@ -92,11 +92,12 @@ if __name__ == '__main__':
     print("Split indices for test dataset: ", split_indices)
 
     # load best model
-    model_ids = ["lstm", "lstm-ae"]
-    best_epochs = ["4739","4699"]
+    model_ids = ["lstm", "lstm-ae", "lstm-noise-dim27"]
+    best_epochs = ["8839","9019", "4019"]
     model_dict = {
         "lstm-ae" : "LSTM-AE-27-Features",
         "lstm" : "LSTM",
+        "lstm-noise-dim27" : "LSTM+NOISE-27",
     }
     start_date = datetime.datetime.strptime(dates[0], '%Y/%m/%d').date()
     # get data 
@@ -113,8 +114,10 @@ if __name__ == '__main__':
 
     # define loss function
     fig_nse, axs_nse = plt.subplots(1,2, figsize=(20,10))
-    loss_fn = NSELoss(reduction=None)
+    loss_NSE = NSELoss(reduction=None)
+    loss_mNSE = NSELoss(alpha=1, reduction=None)
     nse_df = pd.DataFrame()
+    mnse_df = pd.DataFrame()
 
     ###################################################################################
     # PLOT
@@ -141,7 +144,13 @@ if __name__ == '__main__':
     for count in range(len(model_ids)):
         model_id = model_ids[count]
         best_epoch = best_epochs[count].rjust(2,"0")
-        path = os.path.join("checkpoints", model_id,"hydro-"+model_id+"-epoch="+best_epoch+".ckpt")
+        dirpath = os.path.join("checkpoints", model_id)
+        if model_id =="lstm" or model_id=="lstm-noise-dim27":
+            filename = "hydro-"+"lstm"+"-epoch="+best_epoch+".ckpt"
+        else:
+            filename = "hydro-"+model_id+"-epoch="+best_epoch+".ckpt"
+        path  = os.path.join(dirpath, filename)
+        
         if model_id =="lstm-ae" or model_id =="lstm-ae-nf5":
             model = Hydro_LSTM_AE.load_from_checkpoint(path)
             model.eval()
@@ -152,8 +161,9 @@ if __name__ == '__main__':
             model = Hydro_LSTM.load_from_checkpoint(path)
             rec = model(y)
 
-        # compute NSE and save in dataframe
-        nse_df[model_dict[model_id]] = - loss_fn(x.squeeze(), rec.squeeze()).detach().numpy() # array of size (num_test_data)
+        # compute NSE, mNSE and save in dataframe
+        nse_df[model_dict[model_id]] = - loss_NSE(x.squeeze(), rec.squeeze()).detach().numpy() # array of size (num_test_data)
+        mnse_df[model_dict[model_id]] = - loss_mNSE(x.squeeze(), rec.squeeze()).detach().numpy() # array of size (num_test_data)
         
         # unnormalize input and output
         rec = transform_input.reverse_transform(rec.detach()).squeeze().numpy()
@@ -175,9 +185,14 @@ if __name__ == '__main__':
                 ax1.semilogy(np.absolute(rec[val, start_seq:start_seq+length_to_plot]-x_unnorm[val, start_seq:start_seq+length_to_plot]), label=model_dict[model_id])
 
     # plot empirical kde nse distributions and comulatives
-    stat = nse_df.describe()
-    sns.kdeplot(nse_df, ax=axs_nse[0], legend=True, binrange=[0.0,1.0])
-    sns.ecdfplot(nse_df, ax=axs_nse[1], legend=True, binrange=[0.0,1.0])
+    stat_NSE = nse_df.describe()
+    print("NSE statistics")
+    print(stat_NSE)
+    stat_mNSE = mnse_df.describe()
+    print("mNSE statistics")
+    print(stat_mNSE)
+    sns.kdeplot(nse_df, ax=axs_nse[0], legend=True, binrange=[-1.0,1.0])
+    sns.ecdfplot(nse_df, ax=axs_nse[1], legend=True, binrange=[-1.0,1.0])
     axs_nse[0].set_ylabel("PDF")
     axs_nse[1].set_ylabel("CDF")
     handles, labels = axs_nse[0].get_legend_handles_labels()
