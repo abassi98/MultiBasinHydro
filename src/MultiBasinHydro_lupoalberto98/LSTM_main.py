@@ -140,10 +140,10 @@ if __name__ == '__main__':
     # )
 
     # # retrieve checkpoints and continue training
-    # ckpt_path = "checkpoints/lstm/hydro-lstm-epoch=4799.ckpt"
+    ckpt_path = "checkpoints/lstm-noise-dim27/hydro-lstm-epoch=4799.ckpt"
 
     # define trainer 
     trainer = pl.Trainer(max_epochs=max_epochs, callbacks=[checkpoint_callback], accelerator=str(device), devices=1, check_val_every_n_epoch=check_val_every_n_epoch, logger=False)
     
-    trainer.fit(model=model, train_dataloaders=train_dataloader, val_dataloaders = val_dataloader)
+    trainer.fit(model=model, train_dataloaders=train_dataloader, val_dataloaders = val_dataloader, ckpt_path=ckpt_path)
     

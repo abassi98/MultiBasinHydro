@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
 import os
+import argparse 
 
 # pytorch
 import torch
@@ -22,13 +23,19 @@ from models import Hydro_LSTM_AE
 from utils import Scale_Data, MetricsCallback, NSELoss
 
 
-
+def parse_args():
+    parser=argparse.ArgumentParser(description="Arguments for Convolutional LSTM autoencoder")
+    parser.add_argument('--bidirectional', type=bool, default=False, help="Bidirectionality of LSTM decoder")
+    args=parser.parse_args()
+    return args
 
 if __name__ == '__main__':
     ##########################################################
     # set seed
     ##########################################################
     torch.manual_seed(42)
+    args = parse_args()
+
     ##########################################################
     # dataset and dataloaders
     ##########################################################
@@ -58,7 +65,7 @@ if __name__ == '__main__':
     ### Dataloader
     batch_size = 32
     # split 80/10/10
-    num_workers = 0
+    num_workers = 4 # 4 times the number of gpus
     print("Number of workers: %d"%num_workers)
 
     num_train_data = int(num_basins * 0.7) 
@@ -92,6 +99,7 @@ if __name__ == '__main__':
                     loss_fn=loss_fn,
                     lstm_hidden_units=256,
                     layers_num=2,
+                    bidirectional = args.bidirectional,
                     linear=512,
                     num_force_attributes = len(force_attributes))
     
@@ -106,19 +114,29 @@ if __name__ == '__main__':
     max_epochs = 10000
     check_val_every_n_epoch = 20
     save_top_k = int(max_epochs/check_val_every_n_epoch)
-    checkpoint_callback = ModelCheckpoint(
-        save_top_k=save_top_k,
-        monitor="val_loss",
-        mode="min",
-        dirpath="checkpoints/lstm-ae/",
-        filename="hydro-lstm-ae-{epoch:02d}",
-    )
+
+    if args.bidirectional:
+        checkpoint_callback = ModelCheckpoint(
+            save_top_k=save_top_k,
+            monitor="val_loss",
+            mode="min",
+            dirpath="checkpoints/lstm-ae-bidirectional/",
+            filename="hydro-lstm-ae-bidirectional-{epoch:02d}",
+        )
+    else:
+        checkpoint_callback = ModelCheckpoint(
+            save_top_k=save_top_k,
+            monitor="val_loss",
+            mode="min",
+            dirpath="checkpoints/lstm-ae/",
+            filename="hydro-lstm-ae-{epoch:02d}",
+        )
 
     # retrieve checkpoints and continue training
-    ckpt_path = "checkpoints/lstm-ae/hydro-lstm-ae-epoch=4799.ckpt"
+    #ckpt_path = "checkpoints/lstm-ae/hydro-lstm-ae-epoch=4799.ckpt"
 
     # define trainer 
     trainer = pl.Trainer(max_epochs=max_epochs, callbacks=[checkpoint_callback], accelerator=str(device),devices=1, check_val_every_n_epoch=check_val_every_n_epoch, logger=False)
     
-    trainer.fit(model=model, train_dataloaders=train_dataloader, val_dataloaders = val_dataloader, ckpt_path=ckpt_path)
+    trainer.fit(model=model, train_dataloaders=train_dataloader, val_dataloaders = val_dataloader)
    

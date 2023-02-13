@@ -13,4 +13,4 @@
 
 export OMP_NUM_THREADS=$SLURM_CPUS_PER_TASK
 module load daint-gpu PyTorch     
-python3 src/MultiBasinHydro_lupoalberto98/LSTM_AE_main.py         
+python3 src/MultiBasinHydro_lupoalberto98/LSTM_AE_main.py --bidirectional True       
