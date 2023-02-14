@@ -94,7 +94,7 @@ if __name__ == '__main__':
     print("Indices for test dataset: ", split_indices)
 
     # load best model
-    model_ids = ["lstm", "lstm-ae", "lstm-noise-dim27"]
+    model_ids = ["lstm", "lstm-ae", "lstm-noise-dim27", "lstm-ae-bidirectional"]
     best_epochs = ["9399","9519", "4459"]
     model_dict = {
         "lstm-ae" : "LSTM-AE-27-Features",
@@ -153,7 +153,7 @@ if __name__ == '__main__':
             filename = "hydro-"+model_id+"-epoch="+best_epoch+".ckpt"
         path  = os.path.join(dirpath, filename)
         
-        if model_id =="lstm-ae" or model_id =="lstm-ae-nf5":
+        if model_id =="lstm-ae" or model_id =="lstm-ae-nf5" or model_id=="lstm-ae-bidirectional":
             model = Hydro_LSTM_AE.load_from_checkpoint(path)
             model.eval()
             # compute squeezed encoded representation and reconstruction

@@ -124,3 +124,6 @@ if __name__ == '__main__':
     idx_noise = np.argmax(lstm_noise_nse)
     epoch_max_nse = epochs_lstm_noise[idx_noise]
     print("Best LSTM + Noise (27 features) model obtained at epoch %d"%epoch_max_nse)
+    idx_noise = np.argmax(bidir_nse)
+    epoch_max_nse = epochs_bidir[idx_noise]
+    print("Best LSTM-AE-BIDIR (27 features) model obtained at epoch %d"%epoch_max_nse)
