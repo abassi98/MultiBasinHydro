@@ -100,6 +100,7 @@ if __name__ == '__main__':
         "lstm-ae" : "LSTM-AE-27-Features",
         "lstm" : "LSTM",
         "lstm-noise-dim27" : "LSTM+NOISE-27",
+        "lstm-ae-bidirectional" : "LSTM-AE-BIDIR-27",
     }
     start_date = datetime.datetime.strptime(dates[0], '%Y/%m/%d').date()
     # get data 
