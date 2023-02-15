@@ -79,12 +79,17 @@ class MetricsCallback(Callback):
         self.dirpath = dirpath
         self.filename = filename
         self.path = os.path.join(dirpath, filename)
-        os.makedirs(self.dirpath, exist_ok = True) 
-        self.dict_metrics = {}
+        exists = os.path.exists(self.path)
+        # if already exists a saving, load it and update
+        if exists:
+            self.dict_metrics = torch.load(self.path)
+        else:
+            os.makedirs(self.dirpath, exist_ok = True) 
+            self.dict_metrics = {}
     
         
     def on_validation_epoch_end(self,trainer, pl_module):
-        epoch = trainer.logged_metrics["epoch_num"].item().cpu()
+        epoch = trainer.logged_metrics["epoch_num"].cpu().item()
         self.dict_metrics["Epoch: "+ str(epoch)] = trainer.logged_metrics
         torch.save(self.dict_metrics, self.path)
 

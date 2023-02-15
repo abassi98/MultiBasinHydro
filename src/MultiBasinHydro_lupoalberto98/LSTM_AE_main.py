@@ -125,6 +125,7 @@ if __name__ == '__main__':
 
     checkpoint_model = ModelCheckpoint(
             save_top_k=10,
+            save_last=True,
             monitor="val_loss",
             mode="min",
             dirpath=dirpath,
@@ -133,7 +134,7 @@ if __name__ == '__main__':
     
 
     # retrieve checkpoints and continue training
-    #ckpt_path = "checkpoints/lstm-ae/hydro-lstm-ae-epoch=4799.ckpt"
+    #ckpt_path = "checkpoints/lstm-ae/last.ckpt"
 
     # define trainer 
     trainer = pl.Trainer(max_epochs=max_epochs, callbacks=[checkpoint_model,metrics_callback], accelerator=str(device),devices=1, check_val_every_n_epoch=check_val_every_n_epoch, logger=False)

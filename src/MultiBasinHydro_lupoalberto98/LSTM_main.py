@@ -112,7 +112,7 @@ if __name__ == '__main__':
     metrics_callback = MetricsCallback()
     early_stopping = EarlyStopping(monitor="val_loss", patience = 10, mode="min")
     max_epochs = 10000
-    check_val_every_n_epoch = 20
+    check_val_every_n_epoch = 10
     save_top_k = int(max_epochs/check_val_every_n_epoch)
 
     # select dirpath according to noise features added
@@ -123,11 +123,12 @@ if __name__ == '__main__':
         
     metrics_callback = MetricsCallback(
         dirpath=dirpath,
-        filename="hydro-lstm-ae-metrics.pt",
+        filename="hydro-lstm-metrics.pt",
     )
 
     checkpoint_model = ModelCheckpoint(
             save_top_k=10,
+            save_last=True,
             monitor="val_loss",
             mode="min",
             dirpath=dirpath,
