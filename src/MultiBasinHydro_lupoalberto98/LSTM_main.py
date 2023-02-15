@@ -123,7 +123,7 @@ if __name__ == '__main__':
         
     metrics_callback = MetricsCallback(
         dirpath=dirpath,
-        filename="hydro-lstm-metrics.pt",
+        filename="metrics.pt",
     )
 
     checkpoint_model = ModelCheckpoint(
@@ -132,7 +132,7 @@ if __name__ == '__main__':
             monitor="val_loss",
             mode="min",
             dirpath=dirpath,
-            filename="hydro-lstm-ae-{epoch:02d}",
+            filename="model-{epoch:02d}",
         )
     
 
