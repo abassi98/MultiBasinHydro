@@ -53,7 +53,7 @@ if __name__ == '__main__':
         checkpoint_ae = torch.load(file, map_location=lambda storage, loc: storage)
         #ae_nse.append(-checkpoint_ae["callbacks"]["ModelCheckpoint{'monitor': 'val_loss', 'mode': 'min', 'every_n_train_steps': 0, 'every_n_epochs': 1, 'train_time_interval': None}"]["current_score"].item())
         val_loss = checkpoint_ae["callbacks"]["ModelCheckpoint{'monitor': 'val_loss', 'mode': 'min', 'every_n_train_steps': 0, 'every_n_epochs': 1, 'train_time_interval': None}"]["current_score"].item()
-        epoch = checkpoint_ae["callbacks"]["ModelCheckpoint{'monitor': 'val_loss', 'mode': 'min', 'every_n_train_steps': 0, 'every_n_epochs': 1, 'train_time_interval': None}"]["epoch"].item()
+        #epoch = checkpoint_ae["callbacks"]["ModelCheckpoint{'monitor': 'val_loss', 'mode': 'min', 'every_n_train_steps': 0, 'every_n_epochs': 1, 'train_time_interval': None}"]["epoch"].item()
         dict_ae["Epoch: "+str(epoch)] = {"val_loss" : val_loss}
 
     torch.save(dict_ae, "checkpoints/lstm-ae/metrics.pt")
