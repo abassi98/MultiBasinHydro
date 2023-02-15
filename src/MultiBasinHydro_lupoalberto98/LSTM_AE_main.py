@@ -119,8 +119,8 @@ if __name__ == '__main__':
 
     dirpath = "checkpoints/lstm-ae-bd"+str(args.bidirectional)+"-E"+str(args.num_features)+"/"
     
-    checkpoint_callback = ModelCheckpoint(
-            save_top_k=save_top_k,
+    checkpoint_model = ModelCheckpoint(
+            save_top_k=10,
             monitor="val_loss",
             mode="min",
             dirpath=dirpath,
