@@ -25,6 +25,7 @@ from utils import Scale_Data, MetricsCallback, NSELoss
 
 def parse_args():
     parser=argparse.ArgumentParser(description="Arguments for Convolutional LSTM autoencoder")
+    parser.add_argument('--num_features', type=int, default=False, help="Number of features in the encoded space")
     parser.add_argument('--bidirectional', type=bool, default=False, help="Bidirectionality of LSTM decoder")
     args=parser.parse_args()
     return args
@@ -91,7 +92,7 @@ if __name__ == '__main__':
     model = Hydro_LSTM_AE(in_channels=(1,8,16), 
                     out_channels=(8,16,32), 
                     kernel_sizes=(6,3,5), 
-                    encoded_space_dim=27,
+                    encoded_space_dim=args.num_features,
                     drop_p=0.5,
                     seq_len=seq_len,
                     lr = 1e-4,
@@ -115,22 +116,16 @@ if __name__ == '__main__':
     check_val_every_n_epoch = 20
     save_top_k = int(max_epochs/check_val_every_n_epoch)
 
-    if args.bidirectional:
-        checkpoint_callback = ModelCheckpoint(
+    dirpath = "checkpoints/lstm-ae-bd"+str(args.bidirectional)+"-E"+str(args.num_features)+"/"
+    
+    checkpoint_callback = ModelCheckpoint(
             save_top_k=save_top_k,
             monitor="val_loss",
             mode="min",
-            dirpath="checkpoints/lstm-ae-bidirectional/",
-            filename="hydro-lstm-ae-bidirectional-{epoch:02d}",
-        )
-    else:
-        checkpoint_callback = ModelCheckpoint(
-            save_top_k=save_top_k,
-            monitor="val_loss",
-            mode="min",
-            dirpath="checkpoints/lstm-ae/",
+            dirpath=dirpath,
             filename="hydro-lstm-ae-{epoch:02d}",
         )
+    
 
     # retrieve checkpoints and continue training
     #ckpt_path = "checkpoints/lstm-ae/hydro-lstm-ae-epoch=4799.ckpt"
