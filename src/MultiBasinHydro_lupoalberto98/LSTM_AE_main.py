@@ -111,14 +111,18 @@ if __name__ == '__main__':
 
     
     # define callbacks
-    metrics_callback = MetricsCallback()
     early_stopping = EarlyStopping(monitor="val_loss", patience = 10, mode="min")
     max_epochs = 10000
-    check_val_every_n_epoch = 20
+    check_val_every_n_epoch = 10
     save_top_k = int(max_epochs/check_val_every_n_epoch)
 
     dirpath = "checkpoints/lstm-ae-bd"+str(args.bidirectional)+"-E"+str(args.num_features)+"/"
     
+    metrics_callback = MetricsCallback(
+        dirpath=dirpath,
+        filename="hydro-lstm-ae-metrics.pt",
+    )
+
     checkpoint_model = ModelCheckpoint(
             save_top_k=10,
             monitor="val_loss",
@@ -132,7 +136,7 @@ if __name__ == '__main__':
     #ckpt_path = "checkpoints/lstm-ae/hydro-lstm-ae-epoch=4799.ckpt"
 
     # define trainer 
-    trainer = pl.Trainer(max_epochs=max_epochs, callbacks=[checkpoint_callback], accelerator=str(device),devices=1, check_val_every_n_epoch=check_val_every_n_epoch, logger=False)
+    trainer = pl.Trainer(max_epochs=max_epochs, callbacks=[checkpoint_model,metrics_callback], accelerator=str(device),devices=1, check_val_every_n_epoch=check_val_every_n_epoch, logger=False)
     
     trainer.fit(model=model, train_dataloaders=train_dataloader, val_dataloaders = val_dataloader)
    

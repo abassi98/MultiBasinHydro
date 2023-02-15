@@ -2,6 +2,7 @@ import torch
 import torch.nn as nn
 from torch import Tensor
 from pytorch_lightning import Callback
+import os
 
 class Scale_Data:
     def __init__(self, min : Tensor, max : Tensor) -> None:
@@ -68,21 +69,24 @@ class Globally_Scale_Data:
 
 ### callbacks
 class MetricsCallback(Callback):
-    """PyTorch Lightning metric callback."""
+    """
+    PyTorch Lightning metric callback.
+    Save logged metrics
+    """
 
-    def __init__(self):
+    def __init__(self, dirpath, filename):
         super().__init__()
-        self.train_loss_log = []
-        self.val_loss_log = []        
-        
-    def on_train_epoch_end(self, trainer, pl_module):
-        train_loss = trainer.logged_metrics["train_loss"].cpu()
-        self.train_loss_log.append(train_loss)
+        self.dirpath = dirpath
+        self.filename = filename
+        self.path = os.path.join(dirpath, filename)
+        os.makedirs(self.dirpath, exist_ok = True) 
+        self.dict_metrics = {}
     
         
     def on_validation_epoch_end(self,trainer, pl_module):
-        val_loss = trainer.logged_metrics["val_loss"].cpu()            
-        self.val_loss_log.append(val_loss)
+        epoch = trainer.logged_metrics["epoch_num"].item().cpu()
+        self.dict_metrics["Epoch: "+ str(epoch)] = trainer.logged_metrics
+        torch.save(self.dict_metrics, self.path)
 
 
 class NSELoss(nn.Module):

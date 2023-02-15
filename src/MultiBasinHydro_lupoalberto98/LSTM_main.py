@@ -26,6 +26,7 @@ from utils import Scale_Data, MetricsCallback, NSELoss
 def parse_args():
     parser=argparse.ArgumentParser(description="If add to LSTM some noise features")
     parser.add_argument('--noise_dim', type=int, required=True, help="How many random noise components")
+    parser.add_argument('--debug', type=bool, default=False, help="If debug mode is on load only 15 basins")
     args=parser.parse_args()
     return args
 
@@ -43,7 +44,7 @@ if __name__ == '__main__':
     #dates = ["1989/10/01", "2009/09/30"] 
     dates = ["1980/10/01", "2010/09/30"] # interval dates to pick
     force_attributes = ["prcp(mm/day)", "srad(W/m2)", "tmin(C)", "tmax(C)", "vp(Pa)"] # force attributes to use
-    camel_dataset = CamelDataset(dates, force_attributes)
+    camel_dataset = CamelDataset(dates, force_attributes, debug=args.debug)
     #dataset.adjust_dates() # adjust dates if necessary
     camel_dataset.load_data() # load data
     num_basins = camel_dataset.__len__()
@@ -120,30 +121,25 @@ if __name__ == '__main__':
     else:
         dirpath="checkpoints/lstm-noise-dim"+str(args.noise_dim)+"/"
         
-    # save only loss
-    checkpoint_callback = ModelCheckpoint(
-        save_top_k=save_top_k,
-        monitor="val_loss",
-        mode="min",
+    metrics_callback = MetricsCallback(
         dirpath=dirpath,
-        filename="hydro-lstm-{epoch:02d}",
+        filename="hydro-lstm-ae-metrics.pt",
     )
 
+    checkpoint_model = ModelCheckpoint(
+            save_top_k=10,
+            monitor="val_loss",
+            mode="min",
+            dirpath=dirpath,
+            filename="hydro-lstm-ae-{epoch:02d}",
+        )
     
-    # # save top_k=20 best models
-    # checkpoint_model = ModelCheckpoint(
-    #     save_top_k=20,
-    #     monitor="val_loss",
-    #     mode="min",
-    #     dirpath=dirpath,
-    #     filename="hydro-lstm-{epoch:02d}",
-    # )
 
     # # retrieve checkpoints and continue training
-    ckpt_path = "checkpoints/lstm-noise-dim27/hydro-lstm-epoch=4799.ckpt"
+    #ckpt_path = "checkpoints/lstm-noise-dim27/hydro-lstm-epoch=4799.ckpt"
 
     # define trainer 
-    trainer = pl.Trainer(max_epochs=max_epochs, callbacks=[checkpoint_callback], accelerator=str(device), devices=1, check_val_every_n_epoch=check_val_every_n_epoch, logger=False)
+    trainer = pl.Trainer(max_epochs=max_epochs, callbacks=[checkpoint_model,metrics_callback], accelerator=str(device), devices=1, check_val_every_n_epoch=check_val_every_n_epoch, logger=False)
     
-    trainer.fit(model=model, train_dataloaders=train_dataloader, val_dataloaders = val_dataloader, ckpt_path=ckpt_path)
+    trainer.fit(model=model, train_dataloaders=train_dataloader, val_dataloaders = val_dataloader)
     

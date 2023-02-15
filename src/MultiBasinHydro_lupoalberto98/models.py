@@ -220,7 +220,7 @@ class Hydro_LSTM_AE(pl.LightningModule):
         val_loss = self.loss_fn(x.squeeze(), rec.squeeze())
         # Logging to TensorBoard by default
         self.log("val_loss", val_loss, prog_bar=True)
-        self.log("epoch_num", float(self.current_epoch),prog_bar=True)
+        self.log("epoch_num", int(self.current_epoch),prog_bar=True)
         
         return val_loss
     
@@ -325,7 +325,7 @@ class Hydro_LSTM(pl.LightningModule):
         val_loss = self.loss_fn(x.squeeze(), rec.squeeze())
         # Logging to TensorBoard by default
         self.log("val_loss", val_loss, prog_bar=True)
-        self.log("epoch_num", float(self.current_epoch),prog_bar=True)
+        self.log("epoch_num", int(self.current_epoch),prog_bar=True)
         
         return val_loss
     
