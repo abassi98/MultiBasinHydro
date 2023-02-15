@@ -26,37 +26,79 @@ from utils import Scale_Data, MetricsCallback, NSELoss
 
 if __name__ == '__main__':
 
-    # data files
-    data_ae = glob.glob("checkpoints/lstm-ae/*.ckpt")
-    data_lstm = glob.glob("checkpoints/lstm/*.ckpt")
-    data_lstm_noise = glob.glob("checkpoints/lstm-noise-dim27/*.ckpt")
-    data_bidir = glob.glob("checkpoints/lstm-ae-bidirectional/*.ckpt")
-    data_bdir_nf5 = glob.glob("checkpoints/lstm-ae-bdTrue-E5/*.ckpt")
-    # nse containers
-    ae_nse = []
-    lstm_nse = []
-    lstm_noise_nse = []
-    bidir_nse = []
-    bdir_nf5_nse = []
-    # epochs count container
-    epochs_ae = []
-    epochs_lstm = []
-    epochs_lstm_noise = []
-    epochs_bidir = []
-    epochs_bdir_nf5 = []
 
-    dict_ae = {}
-
-    for file in data_ae:
-        epoch = int(re.findall(r'\b\d+\b', file)[0])
-        epochs_ae.append(epoch)
-        checkpoint_ae = torch.load(file, map_location=lambda storage, loc: storage)
+    #####################################################################
+    data = glob.glob("checkpoints/lstm-ae/*.ckpt")
+    dict = {}
+    for file in data:
+        epoch = re.findall(r'\b\d+\b', file)
+        epoch = int(epoch[0])
+        checkpoint = torch.load(file)
         #ae_nse.append(-checkpoint_ae["callbacks"]["ModelCheckpoint{'monitor': 'val_loss', 'mode': 'min', 'every_n_train_steps': 0, 'every_n_epochs': 1, 'train_time_interval': None}"]["current_score"].item())
-        val_loss = checkpoint_ae["callbacks"]["ModelCheckpoint{'monitor': 'val_loss', 'mode': 'min', 'every_n_train_steps': 0, 'every_n_epochs': 1, 'train_time_interval': None}"]["current_score"].item()
+        val_loss = checkpoint["callbacks"]["ModelCheckpoint{'monitor': 'val_loss', 'mode': 'min', 'every_n_train_steps': 0, 'every_n_epochs': 1, 'train_time_interval': None}"]["current_score"].item()
         #epoch = checkpoint_ae["callbacks"]["ModelCheckpoint{'monitor': 'val_loss', 'mode': 'min', 'every_n_train_steps': 0, 'every_n_epochs': 1, 'train_time_interval': None}"]["epoch"].item()
-        dict_ae["Epoch: "+str(epoch)] = {"val_loss" : val_loss}
+        dict["Epoch: "+str(epoch)] = {"val_loss" : val_loss}
 
-    torch.save(dict_ae, "checkpoints/lstm-ae/metrics.pt")
+    torch.save(dict, "checkpoints/lstm-ae/metrics.pt")
+
+    #####################################################################
+    data = glob.glob("checkpoints/lstm/*.ckpt")
+    dict = {}
+    for file in data:
+        epoch = re.findall(r'\b\d+\b', file)
+        epoch = int(epoch[0])
+        checkpoint = torch.load(file)
+        #ae_nse.append(-checkpoint_ae["callbacks"]["ModelCheckpoint{'monitor': 'val_loss', 'mode': 'min', 'every_n_train_steps': 0, 'every_n_epochs': 1, 'train_time_interval': None}"]["current_score"].item())
+        val_loss = checkpoint["callbacks"]["ModelCheckpoint{'monitor': 'val_loss', 'mode': 'min', 'every_n_train_steps': 0, 'every_n_epochs': 1, 'train_time_interval': None}"]["current_score"].item()
+        #epoch = checkpoint_ae["callbacks"]["ModelCheckpoint{'monitor': 'val_loss', 'mode': 'min', 'every_n_train_steps': 0, 'every_n_epochs': 1, 'train_time_interval': None}"]["epoch"].item()
+        dict["Epoch: "+str(epoch)] = {"val_loss" : val_loss}
+
+    torch.save(dict, "checkpoints/lstm/metrics.pt")
+
+    #####################################################################
+    data = glob.glob("checkpoints/lstm-noise-dim27/*.ckpt")
+    dict = {}
+    for file in data:
+        epoch = re.findall(r'\b\d+\b', file)
+        epoch = int(epoch[0])
+        checkpoint = torch.load(file)
+        #ae_nse.append(-checkpoint_ae["callbacks"]["ModelCheckpoint{'monitor': 'val_loss', 'mode': 'min', 'every_n_train_steps': 0, 'every_n_epochs': 1, 'train_time_interval': None}"]["current_score"].item())
+        val_loss = checkpoint["callbacks"]["ModelCheckpoint{'monitor': 'val_loss', 'mode': 'min', 'every_n_train_steps': 0, 'every_n_epochs': 1, 'train_time_interval': None}"]["current_score"].item()
+        #epoch = checkpoint_ae["callbacks"]["ModelCheckpoint{'monitor': 'val_loss', 'mode': 'min', 'every_n_train_steps': 0, 'every_n_epochs': 1, 'train_time_interval': None}"]["epoch"].item()
+        dict["Epoch: "+str(epoch)] = {"val_loss" : val_loss}
+
+    torch.save(dict, "checkpoints/lstm-noise-dim27/metrics.pt")
+
+    #####################################################################
+    data = glob.glob("checkpoints/lstm-ae-bidirectional/*.ckpt")
+    dict = {}
+    for file in data:
+        epoch = re.findall(r'\b\d+\b', file)
+        epoch = int(epoch[0])
+        checkpoint = torch.load(file)
+        #ae_nse.append(-checkpoint_ae["callbacks"]["ModelCheckpoint{'monitor': 'val_loss', 'mode': 'min', 'every_n_train_steps': 0, 'every_n_epochs': 1, 'train_time_interval': None}"]["current_score"].item())
+        val_loss = checkpoint["callbacks"]["ModelCheckpoint{'monitor': 'val_loss', 'mode': 'min', 'every_n_train_steps': 0, 'every_n_epochs': 1, 'train_time_interval': None}"]["current_score"].item()
+        #epoch = checkpoint_ae["callbacks"]["ModelCheckpoint{'monitor': 'val_loss', 'mode': 'min', 'every_n_train_steps': 0, 'every_n_epochs': 1, 'train_time_interval': None}"]["epoch"].item()
+        dict["Epoch: "+str(epoch)] = {"val_loss" : val_loss}
+
+    torch.save(dict, "checkpoints/lstm-ae-bidirectional/metrics.pt")
+
+    #####################################################################
+    data = glob.glob("checkpoints/lstm-ae-bdTrue-E5/*.ckpt")
+    dict = {}
+    for file in data:
+        epoch = re.findall(r'\b\d+\b', file)
+        epoch = int(epoch[0])
+        checkpoint = torch.load(file)
+        #ae_nse.append(-checkpoint_ae["callbacks"]["ModelCheckpoint{'monitor': 'val_loss', 'mode': 'min', 'every_n_train_steps': 0, 'every_n_epochs': 1, 'train_time_interval': None}"]["current_score"].item())
+        val_loss = checkpoint["callbacks"]["ModelCheckpoint{'monitor': 'val_loss', 'mode': 'min', 'every_n_train_steps': 0, 'every_n_epochs': 1, 'train_time_interval': None}"]["current_score"].item()
+        #epoch = checkpoint_ae["callbacks"]["ModelCheckpoint{'monitor': 'val_loss', 'mode': 'min', 'every_n_train_steps': 0, 'every_n_epochs': 1, 'train_time_interval': None}"]["epoch"].item()
+        dict["Epoch: "+str(epoch)] = {"val_loss" : val_loss}
+
+    torch.save(dict, "checkpoints/lstm-ae-bdTrue-E5/metrics.pt")
+
+
+    #####################################################################
     
     # for file in data_lstm:
     #     epoch = re.findall(r'\b\d+\b', file)
