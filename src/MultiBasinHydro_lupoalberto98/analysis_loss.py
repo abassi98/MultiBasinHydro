@@ -48,8 +48,8 @@ if __name__ == '__main__':
     dict_ae = {}
 
     for file in data_ae:
-        epoch = re.findall(r'\b\d+\b', file)
-        epochs_ae.append(int(epoch[0]))
+        epoch = int(re.findall(r'\b\d+\b', file)[0])
+        epochs_ae.append(epoch)
         checkpoint_ae = torch.load(file, map_location=lambda storage, loc: storage)
         #ae_nse.append(-checkpoint_ae["callbacks"]["ModelCheckpoint{'monitor': 'val_loss', 'mode': 'min', 'every_n_train_steps': 0, 'every_n_epochs': 1, 'train_time_interval': None}"]["current_score"].item())
         val_loss = checkpoint_ae["callbacks"]["ModelCheckpoint{'monitor': 'val_loss', 'mode': 'min', 'every_n_train_steps': 0, 'every_n_epochs': 1, 'train_time_interval': None}"]["current_score"].item()
