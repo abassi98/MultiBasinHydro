@@ -25,8 +25,9 @@ from utils import Scale_Data, MetricsCallback, NSELoss
 
 def parse_args():
     parser=argparse.ArgumentParser(description="Arguments for Convolutional LSTM autoencoder")
-    parser.add_argument('--num_features', type=int, default=False, help="Number of features in the encoded space")
+    parser.add_argument('--num_features', type=int, default=27, help="Number of features in the encoded space")
     parser.add_argument('--bidirectional', type=bool, default=False, help="Bidirectionality of LSTM decoder")
+    parser.add_argument('--debug', type=bool, default=False, help="If debug mode is on load only 15 basins")
     args=parser.parse_args()
     return args
 
@@ -44,7 +45,7 @@ if __name__ == '__main__':
     #dates = ["1989/10/01", "2009/09/30"] 
     dates = ["1980/10/01", "2010/09/30"] # interval dates to pick
     force_attributes = ["prcp(mm/day)", "srad(W/m2)", "tmin(C)", "tmax(C)", "vp(Pa)"] # force attributes to use
-    camel_dataset = CamelDataset(dates, force_attributes)
+    camel_dataset = CamelDataset(dates, force_attributes, debug=args.debug)
     #dataset.adjust_dates() # adjust dates if necessary
     camel_dataset.load_data() # load data
     num_basins = camel_dataset.__len__()

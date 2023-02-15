@@ -16,7 +16,7 @@ from utils import Scale_Data, Globally_Scale_Data
 
 
 class CamelDataset(Dataset):
-    def __init__(self, dates: list, force_attributes: list,  data_path: str = "basin_dataset_public_v1p2", source_data_set: str = "daymet", transform_input=None, transform_output=None) -> None:
+    def __init__(self, dates: list, force_attributes: list,  data_path: str = "basin_dataset_public_v1p2", source_data_set: str = "daymet", debug=False, transform_input=None, transform_output=None) -> None:
         super().__init__()
      
         self.data_path = data_path
@@ -27,7 +27,7 @@ class CamelDataset(Dataset):
         7376000,7377000,8025500,8155200,9423350,9484000,9497800,9505200,10173450,
         10258000,12025000,12043000,12095000,12141300,12374250,13310700]
         self.basins_with_missing_data = [str(x).rjust(8, "0") for x in self.basins_with_missing_data] # convert to string and pad
-        
+        self.debug = debug # debug mode default off
         self.transform_input = transform_input
         self.transform_output = transform_output
         
@@ -77,6 +77,9 @@ class CamelDataset(Dataset):
 
         # set container for hucs, ids and names effectively loaded
         self.len_dataset = 562 #len(self.trimmed_basin_ids)
+        if self.debug:
+            self.len_dataset = 15
+      
         self.loaded_basin_hucs = []
         self.loaded_basin_ids = []
         self.loaded_basin_names = []
@@ -138,7 +141,11 @@ class CamelDataset(Dataset):
         print("Loading Camel ...")
         # len(self.trimmed_basin_ids)
         count = 0
-        for i in range(len(self.trimmed_basin_ids)):
+        num_iter = len(self.trimmed_basin_ids)
+        if self.debug:
+            num_iter = 15
+    
+        for i in range(num_iter):
             # retrieve data
             basin_id = self.trimmed_basin_ids[i]
             basin_huc = self.trimmed_basin_hucs[i]
