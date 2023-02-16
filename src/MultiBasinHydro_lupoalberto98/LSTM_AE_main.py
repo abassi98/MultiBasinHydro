@@ -26,8 +26,8 @@ from utils import Scale_Data, MetricsCallback, NSELoss
 def parse_args():
     parser=argparse.ArgumentParser(description="Arguments for Convolutional LSTM autoencoder")
     parser.add_argument('--num_features', type=int, default=27, help="Number of features in the encoded space")
-    parser.add_argument('--bidirectional', type=bool, default=False, help="Bidirectionality of LSTM decoder")
-    parser.add_argument('--debug', type=bool, default=False, help="If debug mode is on load only 15 basins")
+    parser.add_argument('--bidirectional', type=int, default=0, help="Bidirectionality of LSTM decoder. 0 False, else True")
+    parser.add_argument('--debug', type=int, default=0, help="If debug mode is on load only 15 basins. 0 False, else True")
     args=parser.parse_args()
     return args
 
@@ -38,6 +38,7 @@ if __name__ == '__main__':
     torch.manual_seed(42)
     args = parse_args()
 
+
     ##########################################################
     # dataset and dataloaders
     ##########################################################
@@ -45,7 +46,10 @@ if __name__ == '__main__':
     #dates = ["1989/10/01", "2009/09/30"] 
     dates = ["1980/10/01", "2010/09/30"] # interval dates to pick
     force_attributes = ["prcp(mm/day)", "srad(W/m2)", "tmin(C)", "tmax(C)", "vp(Pa)"] # force attributes to use
-    camel_dataset = CamelDataset(dates, force_attributes, debug=args.debug)
+    camel_dataset = CamelDataset(dates, force_attributes, debug=bool(args.debug))
+    print("Debug mode: ", bool(camel_dataset.debug))
+    print("Bidirectional LSTM: ", bool(args.bidirectional))
+
     #dataset.adjust_dates() # adjust dates if necessary
     camel_dataset.load_data() # load data
     num_basins = camel_dataset.__len__()
@@ -101,7 +105,7 @@ if __name__ == '__main__':
                     loss_fn=loss_fn,
                     lstm_hidden_units=256,
                     layers_num=2,
-                    bidirectional = args.bidirectional,
+                    bidirectional = bool(args.bidirectional),
                     linear=512,
                     num_force_attributes = len(force_attributes))
     
@@ -116,7 +120,7 @@ if __name__ == '__main__':
     check_val_every_n_epoch = 10
     save_top_k = int(max_epochs/check_val_every_n_epoch)
 
-    dirpath = "checkpoints/lstm-ae-bd"+str(args.bidirectional)+"-E"+str(args.num_features)+"/"
+    dirpath = "checkpoints/lstm-ae-bd"+str(bool(args.bidirectional))+"-E"+str(args.num_features)+"/"
     
     metrics_callback = MetricsCallback(
         dirpath=dirpath,

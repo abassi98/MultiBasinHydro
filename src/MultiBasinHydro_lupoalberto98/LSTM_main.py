@@ -26,9 +26,10 @@ from utils import Scale_Data, MetricsCallback, NSELoss
 def parse_args():
     parser=argparse.ArgumentParser(description="If add to LSTM some noise features")
     parser.add_argument('--noise_dim', type=int, required=True, help="How many random noise components")
-    parser.add_argument('--debug', type=bool, default=False, help="If debug mode is on load only 15 basins")
-    args=parser.parse_args()
+    parser.add_argument('--bidirectional', type=int, default=0, help="Bidirectionality of LSTM decoder. 0 False, else True")
+    parser.add_argument('--debug', type=int, default=0, help="If debug mode is on load only 15 basins. 0 False, else True")
     return args
+
 
 
 if __name__ == '__main__':
@@ -44,7 +45,10 @@ if __name__ == '__main__':
     #dates = ["1989/10/01", "2009/09/30"] 
     dates = ["1980/10/01", "2010/09/30"] # interval dates to pick
     force_attributes = ["prcp(mm/day)", "srad(W/m2)", "tmin(C)", "tmax(C)", "vp(Pa)"] # force attributes to use
-    camel_dataset = CamelDataset(dates, force_attributes, debug=args.debug)
+    camel_dataset = CamelDataset(dates, force_attributes, debug=bool(args.debug))
+    print("Debug mode: ", bool(camel_dataset.debug))
+    print("Bidirectional LSTM: ", bool(args.bidirectional))
+
     #dataset.adjust_dates() # adjust dates if necessary
     camel_dataset.load_data() # load data
     num_basins = camel_dataset.__len__()
@@ -88,7 +92,7 @@ if __name__ == '__main__':
     assert args.noise_dim >= 0
     # possibly adjust kernel sizes according to seq_len
     model = Hydro_LSTM(lstm_hidden_units = 256, 
-                 bidirectional = False,
+                 bidirectional = bool(args.bidirectional),
                  layers_num = 2,
                  act = nn.LeakyReLU, 
                  loss_fn = loss_fn,
@@ -119,7 +123,7 @@ if __name__ == '__main__':
     if args.noise_dim==0:
         dirpath="checkpoints/lstm/"
     else:
-        dirpath="checkpoints/lstm-noise-dim"+str(args.noise_dim)+"/"
+        dirpath="checkpoints/lstm-noise-dim"+str(args.noise_dim)+"-bd"+str(bool(args.bidirectional))+"/"
         
     metrics_callback = MetricsCallback(
         dirpath=dirpath,
