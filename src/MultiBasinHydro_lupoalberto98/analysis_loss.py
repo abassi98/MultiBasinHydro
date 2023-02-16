@@ -44,6 +44,11 @@ if __name__ == '__main__':
     best_model_idx = np.argpartition(nse, -10)[-10:]
     best_model_idx = np.sort(best_model_idx)
     print(best_model_idx)
+    print(data[best_model_idx])
+
+    data_to_delete = list(set(data) - set(data[best_model_idx]))
+    print(data_to_delete)
+
 
     # #####################################################################
     # # data = glob.glob("checkpoints/lstm-ae/*.ckpt")
