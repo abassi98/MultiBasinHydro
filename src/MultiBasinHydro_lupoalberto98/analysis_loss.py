@@ -29,7 +29,7 @@ if __name__ == '__main__':
 
     #####################################################################
     data = glob.glob("checkpoints/lstm-bdFalse-N0/*.ckpt")
-    data.remove("checkpoints/lstm-ae-bdFalse-E27/last.ckpt")
+    data.remove("checkpoints/lstm-bdFalse-N0/last.ckpt")
   
     for name in data:
         epoch = re.findall(r'\b\d+\b', name)
@@ -40,7 +40,7 @@ if __name__ == '__main__':
 
     #####################################################################
     data = glob.glob("checkpoints/lstm-bdFalse-N27/*.ckpt")
-    data.remove("checkpoints/lstm-ae-bdFalse-E27/last.ckpt")
+    data.remove("checkpoints/lstm-bdFalse-N27/last.ckpt")
   
     for name in data:
         epoch = re.findall(r'\b\d+\b', name)
