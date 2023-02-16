@@ -129,7 +129,7 @@ dmypy.json
 .pyre/
 
 # lightniing checkpoints
-.ckpt
+checkpoints/
 
 # dataset
 basin_dataset_public_v1p2/
