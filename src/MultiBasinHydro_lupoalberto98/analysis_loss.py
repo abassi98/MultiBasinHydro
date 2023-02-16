@@ -28,17 +28,26 @@ if __name__ == '__main__':
 
 
     #####################################################################
-    data = glob.glob("checkpoints/lstm-ae-bdFalse-E27/*.ckpt")
+    data = glob.glob("checkpoints/lstm-bdFalse-N0/*.ckpt")
     data.remove("checkpoints/lstm-ae-bdFalse-E27/last.ckpt")
   
     for name in data:
         epoch = re.findall(r'\b\d+\b', name)
         epoch = str(epoch[0])
-        new_name = "checkpoints/lstm-ae-bdFalse-E27/model-epoch="+epoch+".ckpt"
+        new_name = "checkpoints/lstm-bdFalse-N0/model-epoch="+epoch+".ckpt"
         os.rename(name, new_name)
         
 
-    
+    #####################################################################
+    data = glob.glob("checkpoints/lstm-bdFalse-N27/*.ckpt")
+    data.remove("checkpoints/lstm-ae-bdFalse-E27/last.ckpt")
+  
+    for name in data:
+        epoch = re.findall(r'\b\d+\b', name)
+        epoch = str(epoch[0])
+        new_name = "checkpoints/lstm-bdFalse-N27/model-epoch="+epoch+".ckpt"
+        os.rename(name, new_name)
+        
 
     # #####################################################################
     # # data = glob.glob("checkpoints/lstm-ae/*.ckpt")
