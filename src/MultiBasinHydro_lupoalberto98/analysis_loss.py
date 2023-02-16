@@ -28,8 +28,8 @@ if __name__ == '__main__':
 
 
     #####################################################################
-    data = glob.glob("checkpoints/lstm/*.ckpt")
-    data.remove("checkpoints/lstm/last.ckpt")
+    data = glob.glob("checkpoints/lstm-noise-dim27/*.ckpt")
+    data.remove("checkpoints/lstm-noise-dim27/last.ckpt")
     epochs = []
     nse = []
     for file in data:
