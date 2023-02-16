@@ -1,6 +1,6 @@
 #!/bin/bash -l
 
-#SBATCH --job-name=gpu_LSTM-noise27    
+#SBATCH --job-name=gpu_LSTM-bdTruenoise0    
 #SBATCH --time=24:00:00          
 #SBATCH --nodes=1
 #SBATCH --cpus-per-task=24
@@ -8,9 +8,9 @@
 #SBATCH --account=em09
 #SBATCH --mail-type=BEGIN
 #SBATCH --mail-type=END,FAIL     
-#SBATCH --output=gpu_LSTM-noise27.out
-#SBATCH --error=gpu_LSTM-noise27.err
+#SBATCH --output=gpu_LSTM-bdTruenoise0.out
+#SBATCH --error=gpu_LSTM-bdTruenoise0.err
 
 export OMP_NUM_THREADS=$SLURM_CPUS_PER_TASK
 module load daint-gpu PyTorch      
-python3 src/MultiBasinHydro_lupoalberto98/LSTM_main.py --noise_dim 27 --bidirectional 1 --debug 0 # bidirectional, training mode
+python3 src/MultiBasinHydro_lupoalberto98/LSTM_main.py --noise_dim 0 --bidirectional 1 --debug 0 # bidirectional, training mode
