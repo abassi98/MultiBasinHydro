@@ -37,7 +37,7 @@ if __name__ == '__main__':
         epoch = re.findall(r'\b\d+\b', file)
         epoch = int(epoch[0])
         epochs.append(epoch)
-        checkpoint = torch.load(file)
+        checkpoint = torch.load(file, map_location=torch.device('cpu'))
         val_loss = checkpoint["callbacks"]["ModelCheckpoint{'monitor': 'val_loss', 'mode': 'min', 'every_n_train_steps': 0, 'every_n_epochs': 1, 'train_time_interval': None}"]["current_score"].item()
         nse.append(-val_loss)
         
