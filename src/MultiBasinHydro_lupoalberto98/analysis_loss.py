@@ -26,17 +26,18 @@ from utils import Scale_Data, MetricsCallback, NSELoss
 
 if __name__ == '__main__':
 
-
     #####################################################################
-    # data = glob.glob("checkpoints/lstm-ae/*.ckpt")
     dir = "checkpoints"
     models = ["lstm-ae-bdFalse-E27", "lstm-ae-bdTrue-E27", "lstm-bdFalse-N0", "lstm-bdFalse-N27" ]
     epochs = []
     nse = []
-    for mod in models:
-        path = os.path.join(dir, mod, "metrics.pt")
-        data = torch.load(path)
-        dict = {}
+    fig, ax = plt.subplots(1,1,figsize=(5,5))
+    ax.set_xlabel("epoch")
+    ax.set_ylabel("NSE")
+    for i in range(len(models)):
+        name = models[i]
+        path = os.path.join(dir, name, "metrics.pt")
+        data = torch.load(path, map_location=torch.device('cpu'))
         epochs_mod = []
         nse_mod = []
         for key in data:
@@ -45,21 +46,14 @@ if __name__ == '__main__':
 
         # reorder
         epochs_mod, nse_mod = zip(*sorted(zip(epochs_mod, nse_mod)))
-        epochs.append(epochs_mod)
-        nse.append(nse_mod)
-
-    fig, ax = plt.subplots(1,1,figsize=(5,5))
-    for i in range(len(models)):
         # plot
-        name = models[i]
-        ax.plot(epochs[i],nse[i], label=name)
+        ax.plot(epochs_mod,nse_mod, label=name)
         # find best model
-        idx_ae = np.argmax(nse[i])
-        epoch_max_nse = epochs[i][idx_ae]
-        print("Best "+models[i]+" model obtained at epoch " +str(epoch_max_nse))
+        idx_ae = np.argmax(nse_mod)
+        epoch_max_nse = epochs_mod[idx_ae]
+        print("Best "+name+" model obtained at epoch " +str(epoch_max_nse))
     
-    ax.set_xlabel("epoch")
-    ax.set_ylabel("NSE")
+    
     ax.legend()
     fig.savefig("hydro-lstm-ae_NSE.png")
     
