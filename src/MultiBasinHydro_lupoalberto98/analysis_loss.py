@@ -28,87 +28,42 @@ if __name__ == '__main__':
 
 
     #####################################################################
-    data = glob.glob("checkpoints/lstm-bdFalse-N0/*.ckpt")
-    data.remove("checkpoints/lstm-bdFalse-N0/last.ckpt")
-  
-    for name in data:
-        epoch = re.findall(r'\b\d+\b', name)
-        epoch = str(epoch[0])
-        new_name = "checkpoints/lstm-bdFalse-N0/model-epoch="+epoch+".ckpt"
-        os.rename(name, new_name)
-        
+    # data = glob.glob("checkpoints/lstm-ae/*.ckpt")
+    dir = "checkpoints"
+    models = ["lstm-ae-bdFalse-E27", "lstm-ae-bdTrue-E27", "lstm-bdFalse-N0", "lstm-bdFalse-N27" ]
+    epochs = []
+    nse = []
+    for mod in models:
+        path = os.path.join(dir, mod, "metrics.pt")
+        data = torch.load(path)
+        dict = {}
+        epochs_mod = []
+        nse_mod = []
+        for key in data:
+            epochs_mod.append(data[key]["epoch_num"])
+            nse_mod.append(-data[key]["val_loss"])
 
-    #####################################################################
-    data = glob.glob("checkpoints/lstm-bdFalse-N27/*.ckpt")
-    data.remove("checkpoints/lstm-bdFalse-N27/last.ckpt")
-  
-    for name in data:
-        epoch = re.findall(r'\b\d+\b', name)
-        epoch = str(epoch[0])
-        new_name = "checkpoints/lstm-bdFalse-N27/model-epoch="+epoch+".ckpt"
-        os.rename(name, new_name)
-        
+        # reorder
+        epochs_mod, nse_mod = zip(*sorted(zip(epochs_mod, nse_mod)))
+        epochs.append(epochs_mod)
+        nse.append(nse_mod)
 
-    # #####################################################################
-    # # data = glob.glob("checkpoints/lstm-ae/*.ckpt")
-    # data = torch.load("checkpoints/lstm-ae/metrics.pt")
-    # dict = {}
-    # #for file in data:
-    # #epoch = re.findall(r'\b\d+\b', file)
-    # #epoch = int(epoch[0])
-    # epochs_ae = []
-    # ae_nse = []
-    # for key in data:
-    #     epochs_ae.append(data[key]["epoch_num"])
-    #     ae_nse.append(-data[key]["val_loss"])
+    fig, ax = plt.subplots(1,1,figsize=(5,5))
+    for i in range(len(models)):
+        # plot
+        name = models[i]
+        ax.plot(epochs[i],nse[i], label=name)
+        # find best model
+        idx_ae = np.argmax(nse[i])
+        epoch_max_nse = epochs[i][idx_ae]
+        print("Best "+models[i]+" model obtained at epoch " +str(epoch_max_nse))
     
-        
-    # #val_loss = checkpoint["callbacks"]["ModelCheckpoint{'monitor': 'val_loss', 'mode': 'min', 'every_n_train_steps': 0, 'every_n_epochs': 1, 'train_time_interval': None}"]["current_score"].item()
-    # #epoch = checkpoint_ae["callbacks"]["ModelCheckpoint{'monitor': 'val_loss', 'mode': 'min', 'every_n_train_steps': 0, 'every_n_epochs': 1, 'train_time_interval': None}"]["epoch"].item()
-    # #dict["Epoch: "+str(epoch)] = {"val_loss" : val_loss, "epoch_num" : epoch}
-
-
-    # #####################################################################
-    # data = torch.load("checkpoints/lstm/metrics.pt")
-    # epochs_lstm = []
-    # lstm_nse = []
-    # for key in data:
-    #     epochs_lstm.append(data[key]["epoch_num"])
-    #     lstm_nse.append(-data[key]["val_loss"])
-
-
-    # #####################################################################
-    # data = torch.load("checkpoints/lstm-noise-dim27/metrics.pt")
-    # epochs_lstm_noise = []
-    # lstm_noise_nse = []
-    # for key in data:
-    #     epochs_lstm_noise.append(data[key]["epoch_num"])
-    #     lstm_noise_nse.append(-data[key]["val_loss"])
-        
-    # fig2, ax2 = plt.subplots(1,1,figsize=(10,10))
-    # epochs_ae, ae_nse = zip(*sorted(zip(epochs_ae, ae_nse)))
-    # epochs_lstm, lstm_nse = zip(*sorted(zip(epochs_lstm, lstm_nse)))
-    # epochs_lstm_noise, lstm_noise_nse = zip(*sorted(zip(epochs_lstm_noise, lstm_noise_nse)))
+    ax.set_xlabel("epoch")
+    ax.set_ylabel("NSE")
+    ax.legend()
+    fig.savefig("hydro-lstm-ae_NSE.png")
     
 
-    # ax2.plot(epochs_ae,ae_nse, label="LSTM-AE 27 Features")
-    # ax2.plot(epochs_lstm,lstm_nse, label="LSTM")
-    # ax2.plot(epochs_lstm_noise,lstm_noise_nse, label="LSTM + 27 Noise")
- 
-    # ax2.set_xlabel("epoch")
-    # ax2.set_ylabel("NSE")
-    # ax2.legend()
-    # fig2.savefig("hydro-lstm-ae_NSE.png")
     
-    # ### find the best models
-    # idx_ae = np.argmax(ae_nse)
-    # epoch_max_nse = epochs_ae[idx_ae]
-    # print("Best LSTM-AE (27 features) model obtained at epoch %d"%epoch_max_nse)
-    # idx_lstm = np.argmax(lstm_nse)
-    # epoch_max_nse = epochs_lstm[idx_lstm]
-    # print("Best LSTM model obtained at epoch %d"%epoch_max_nse)
-    # idx_noise = np.argmax(lstm_noise_nse)
-    # epoch_max_nse = epochs_lstm_noise[idx_noise]
-    # print("Best LSTM + Noise (27 features) model obtained at epoch %d"%epoch_max_nse)
    
    
