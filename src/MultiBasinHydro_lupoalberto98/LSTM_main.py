@@ -120,10 +120,7 @@ if __name__ == '__main__':
     save_top_k = int(max_epochs/check_val_every_n_epoch)
 
     # select dirpath according to noise features added
-    if args.noise_dim==0:
-        dirpath="checkpoints/lstm/"
-    else:
-        dirpath="checkpoints/lstm-noise-dim"+str(args.noise_dim)+"-bd"+str(bool(args.bidirectional))+"/"
+    dirpath="checkpoints/lstm-noise-dim"+str(args.noise_dim)+"-bd"+str(bool(args.bidirectional))+"/"
         
     metrics_callback = MetricsCallback(
         dirpath=dirpath,
