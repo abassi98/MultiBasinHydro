@@ -56,7 +56,7 @@ if __name__ == '__main__':
 
 
     #####################################################################
-    data = torch.load("checkpoints/lstm/metrics.pt")
+    data = torch.load("checkpoints/lstm-noise-dim27/metrics.pt")
     epochs_lstm_noise = []
     lstm_noise_nse = []
     for key in data:
