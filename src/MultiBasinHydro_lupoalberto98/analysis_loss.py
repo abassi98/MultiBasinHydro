@@ -43,11 +43,11 @@ if __name__ == '__main__':
 
     best_model_idx = np.argpartition(nse, -10)[-10:]
     best_model_idx = np.sort(best_model_idx)
-    print(best_model_idx)
     best_data = [data[i] for i in best_model_idx]
-    print(best_data)
     data_to_delete = list(set(data) - set(best_data))
     print(data_to_delete)
+    for file in data_to_delete:
+        os.remove(file)
 
 
     # #####################################################################
