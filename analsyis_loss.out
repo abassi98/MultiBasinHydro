@@ -1,22 +1,20 @@
 Best LSTM-AE (27 features) model obtained at epoch 9519
 Best LSTM model obtained at epoch 9399
-Best LSTM-AE (5 features) model obtained at epoch 3179
-Best LSTM + Noise (27 features) model obtained at epoch 4459
-Best LSTM-AE-BIDIR (27 features) model obtained at epoch 459
+Best LSTM + Noise (27 features) model obtained at epoch 9399
 
 
-Batch Job Summary Report (version 21.01.1) for Job "analysis_loss" (44810837) on daint
+Batch Job Summary Report (version 21.01.1) for Job "analysis_loss" (44863472) on daint
 
 Job information (1/2)
 -----------------------------------------------------------------------------------------------------
              Submit            Eligible               Start                 End    Elapsed Time limit
 ------------------- ------------------- ------------------- ------------------- ---------- ----------
-2023-02-14T11:53:20 2023-02-14T11:53:20 2023-02-14T11:54:29 2023-02-14T12:05:02   00:10:33   01:00:00
+2023-02-16T13:57:53 2023-02-16T13:57:53 2023-02-16T13:57:57 2023-02-16T13:58:08   00:00:11   01:00:00
 -----------------------------------------------------------------------------------------------------
 
 Job information (2/2)
 -------------------------------------------------------------
     Username      Account    Partition   NNodes        Energy
 ------------ ------------ ------------ -------- -------------
-      abassi         em09       normal        1     39.749 kJ
+      abassi         em09       normal        1      0.999 kJ
 
