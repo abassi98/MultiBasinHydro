@@ -1,17 +1,21 @@
+Best lstm-ae-bdFalse-E27 model obtained at epoch 9519
+Best lstm-ae-bdTrue-E27 model obtained at epoch tensor(159.)
+Best lstm-bdFalse-N0 model obtained at epoch 9399
+Best lstm-bdFalse-N27 model obtained at epoch 4459
 
 
-Batch Job Summary Report (version 21.01.1) for Job "analysis_loss" (44865750) on daint
+Batch Job Summary Report (version 21.01.1) for Job "analysis_loss" (44866232) on daint
 
 Job information (1/2)
 -----------------------------------------------------------------------------------------------------
              Submit            Eligible               Start                 End    Elapsed Time limit
 ------------------- ------------------- ------------------- ------------------- ---------- ----------
-2023-02-16T15:51:39 2023-02-16T15:51:39 2023-02-16T15:52:48 2023-02-16T15:53:15   00:00:27   01:00:00
+2023-02-16T16:11:40 2023-02-16T16:11:40 2023-02-16T16:12:34 2023-02-16T16:12:54   00:00:20   01:00:00
 -----------------------------------------------------------------------------------------------------
 
 Job information (2/2)
 -------------------------------------------------------------
     Username      Account    Partition   NNodes        Energy
 ------------ ------------ ------------ -------- -------------
-      abassi         em09       normal        1      1.247 kJ
+      abassi         em09       normal        1      1.566 kJ
 
