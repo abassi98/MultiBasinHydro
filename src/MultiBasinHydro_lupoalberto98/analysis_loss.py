@@ -36,9 +36,9 @@ if __name__ == '__main__':
     #epoch = int(epoch[0])
     epochs_ae = []
     ae_nse = []
-    for d in data:
-        epochs_ae.append(d[data]["epoch_num"])
-        ae_nse.append(-d[data]["val_loss"])
+    for key in data:
+        epochs_ae.append(data[key]["epoch_num"])
+        ae_nse.append(-data[key]["val_loss"])
     
         
     #val_loss = checkpoint["callbacks"]["ModelCheckpoint{'monitor': 'val_loss', 'mode': 'min', 'every_n_train_steps': 0, 'every_n_epochs': 1, 'train_time_interval': None}"]["current_score"].item()
@@ -50,18 +50,18 @@ if __name__ == '__main__':
     data = torch.load("checkpoints/lstm/metrics.pt")
     epochs_lstm = []
     lstm_nse = []
-    for d in data:
-        epochs_lstm.append(d[data]["epoch_num"])
-        lstm_nse.append(-d[data]["val_loss"])
+    for key in data:
+        epochs_lstm.append(data[key]["epoch_num"])
+        lstm_nse.append(-data[key]["val_loss"])
 
 
     #####################################################################
     data = torch.load("checkpoints/lstm/metrics.pt")
     epochs_lstm_noise = []
     lstm_noise_nse = []
-    for d in data:
-        epochs_lstm_noise.append(d[data]["epoch_num"])
-        lstm_noise_nse.append(-d[data]["val_loss"])
+    for key in data:
+        epochs_lstm_noise.append(data[key]["epoch_num"])
+        lstm_noise_nse.append(-data[key]["val_loss"])
         
     fig2, ax2 = plt.subplots(1,1,figsize=(10,10))
     epochs_ae, ae_nse = zip(*sorted(zip(epochs_ae, ae_nse)))
