@@ -41,7 +41,7 @@ if __name__ == '__main__':
         nse.append(-val_loss)
         
 
-    best_model_idx = np.argpartition(a, -10)[-10:]
+    best_model_idx = np.argpartition(nse, -10)[-10:]
     best_model_idx = np.sort(best_model_idx)
     print(best_model_idx)
 
