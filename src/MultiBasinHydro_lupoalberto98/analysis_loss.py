@@ -28,27 +28,17 @@ if __name__ == '__main__':
 
 
     #####################################################################
-    data = glob.glob("checkpoints/lstm-noise-dim27/*.ckpt")
-    data.remove("checkpoints/lstm-noise-dim27/last.ckpt")
-    epochs = []
-    nse = []
-    for file in data:
-        epoch = re.findall(r'\b\d+\b', file)
-        epoch = int(epoch[0])
-        epochs.append(epoch)
-        checkpoint = torch.load(file, map_location=torch.device('cpu'))
-        val_loss = checkpoint["callbacks"]["ModelCheckpoint{'monitor': 'val_loss', 'mode': 'min', 'every_n_train_steps': 0, 'every_n_epochs': 1, 'train_time_interval': None}"]["current_score"].item()
-        nse.append(-val_loss)
+    data = glob.glob("checkpoints/lstm-ae-bdFalse-E27/*.ckpt")
+    data.remove("checkpoints/lstm-ae-bdFalse-E27/last.ckpt")
+  
+    for name in data:
+        epoch = re.findall(r'\b\d+\b', name)
+        epoch = str(epoch[0])
+        new_name = "checkpoints/lstm-ae-bdFalse-E27/model-epoch="+epoch+".ckpt"
+        os.rename(name, new_name)
         
 
-    best_model_idx = np.argpartition(nse, -10)[-10:]
-    best_model_idx = np.sort(best_model_idx)
-    best_data = [data[i] for i in best_model_idx]
-    data_to_delete = list(set(data) - set(best_data))
-    print(data_to_delete)
-    for file in data_to_delete:
-        os.remove(file)
-
+    
 
     # #####################################################################
     # # data = glob.glob("checkpoints/lstm-ae/*.ckpt")
