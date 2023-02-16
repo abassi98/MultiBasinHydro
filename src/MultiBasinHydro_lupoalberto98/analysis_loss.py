@@ -29,7 +29,6 @@ if __name__ == '__main__':
 
     #####################################################################
     data = glob.glob("checkpoints/lstm-ae/*.ckpt")
-    print(data)
     data.remove("checkpoints/lstm-ae/last.ckpt")
     epochs = []
     nse = []
