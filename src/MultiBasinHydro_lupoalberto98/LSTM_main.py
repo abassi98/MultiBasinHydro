@@ -28,6 +28,7 @@ def parse_args():
     parser.add_argument('--noise_dim', type=int, required=True, help="How many random noise components")
     parser.add_argument('--bidirectional', type=int, default=0, help="Bidirectionality of LSTM decoder. 0 False, else True")
     parser.add_argument('--debug', type=int, default=0, help="If debug mode is on load only 15 basins. 0 False, else True")
+    args=parser.parse_args()
     return args
 
 
