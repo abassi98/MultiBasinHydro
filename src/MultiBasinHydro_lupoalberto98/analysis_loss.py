@@ -41,8 +41,14 @@ if __name__ == '__main__':
         epochs_mod = []
         nse_mod = []
         for key in data:
-            epochs_mod.append(data[key]["epoch_num"])
-            nse_mod.append(-data[key]["val_loss"])
+            epoch_num = data[key]["epoch_num"]
+            nse = -data[key]["val_loss"]
+            if isinstance(epoch_num, int):
+                epochs_mod.append(epoch_num)
+                nse_mod.append(nse)
+            else:
+                epochs_mod.append(epoch_num.item())
+                nse_mod.append(nse.item())
 
         # reorder
         epochs_mod, nse_mod = zip(*sorted(zip(epochs_mod, nse_mod)))
