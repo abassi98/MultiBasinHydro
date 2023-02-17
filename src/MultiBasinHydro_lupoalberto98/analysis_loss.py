@@ -47,7 +47,7 @@ if __name__ == '__main__':
                 epochs_mod.append(epoch_num)
                 nse_mod.append(nse)
             else:
-                epochs_mod.append(epoch_num.item())
+                epochs_mod.append(int(epoch_num.item()))
                 nse_mod.append(nse.item())
 
         # reorder

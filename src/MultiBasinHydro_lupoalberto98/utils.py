@@ -3,6 +3,7 @@ import torch.nn as nn
 from torch import Tensor
 from pytorch_lightning import Callback
 import os
+import copy
 
 class Scale_Data:
     def __init__(self, min : Tensor, max : Tensor) -> None:
@@ -86,11 +87,11 @@ class MetricsCallback(Callback):
         else:
             os.makedirs(self.dirpath, exist_ok = True) 
             self.dict_metrics = {}
-    
+            
         
     def on_validation_epoch_end(self,trainer, pl_module):
-        epoch = trainer.logged_metrics["epoch_num"].cpu().item()
-        self.dict_metrics["Epoch: "+ str(epoch)] = trainer.logged_metrics
+        epoch_num = int(trainer.logged_metrics["epoch_num"].cpu().item())
+        self.dict_metrics["Epoch: "+str(epoch_num)] = copy.deepcopy(trainer.logged_metrics)
         torch.save(self.dict_metrics, self.path)
 
 
