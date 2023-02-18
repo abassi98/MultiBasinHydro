@@ -1,6 +1,6 @@
 #!/bin/bash -l
 
-#SBATCH --job-name=gpu_LSTM_AE_bdTrue4  
+#SBATCH --job-name=gpu_LSTM_AE_bdFalse4  
 #SBATCH --time=24:00:00 
 #SBATCH --nodes=1
 #SBATCH --cpus-per-task=24
@@ -8,8 +8,8 @@
 #SBATCH --account=em09      
 #SBATCH --mail-type=BEGIN
 #SBATCH --mail-type=END,FAIL     
-#SBATCH --output=gpu_LSTM_AE_bdTrue4.out
-#SBATCH --error=gpu_LSTM_AE_bdTrue4.err
+#SBATCH --output=gpu_LSTM_AE_bdFalse4.out
+#SBATCH --error=gpu_LSTM_AE_bdFalse4.err
 
 export OMP_NUM_THREADS=$SLURM_CPUS_PER_TASK
 module load daint-gpu PyTorch     
