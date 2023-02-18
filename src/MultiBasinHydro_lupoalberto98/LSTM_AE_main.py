@@ -138,7 +138,7 @@ if __name__ == '__main__':
     
 
     # retrieve checkpoints and continue training
-    ckpt_path = "checkpoints/lstm-ae-bdTrue-E4/last.ckpt"
+    ckpt_path = "checkpoints/lstm-ae-bdFalse-E4/last.ckpt"
 
     # define trainer 
     trainer = pl.Trainer(max_epochs=max_epochs, callbacks=[checkpoint_model,metrics_callback], accelerator=str(device),devices=1, check_val_every_n_epoch=check_val_every_n_epoch, logger=False)
