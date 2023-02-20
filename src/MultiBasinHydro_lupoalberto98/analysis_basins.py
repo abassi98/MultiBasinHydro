@@ -94,14 +94,9 @@ if __name__ == '__main__':
     print("Indices for test dataset: ", split_indices)
 
     # load best model
-    model_ids = ["lstm", "lstm-ae", "lstm-noise-dim27", "lstm-ae-bidirectional"]
+    model_ids = ["lstm-ae-bdFalse-E27","lstm-ae-bdTrue-E4", "lstm-ae-bdTrue-E27", "lstm-bdFalse-N0", "lstm-bdFalse-N27", "lstm-bdTrue-N0" ]
     best_epochs = ["9399","9519", "4459", "459"]
-    model_dict = {
-        "lstm-ae" : "LSTM-AE-27-Features",
-        "lstm" : "LSTM",
-        "lstm-noise-dim27" : "LSTM+NOISE-27",
-        "lstm-ae-bidirectional" : "LSTM-AE-BIDIR-27",
-    }
+   
     start_date = datetime.datetime.strptime(dates[0], '%Y/%m/%d').date()
     # get data 
     x, y = next(iter(test_dataloader))
@@ -146,29 +141,42 @@ if __name__ == '__main__':
 
     for count in range(len(model_ids)):
         model_id = model_ids[count]
-        best_epoch = best_epochs[count].rjust(2,"0")
         dirpath = os.path.join("checkpoints", model_id)
-        if model_id =="lstm" or model_id=="lstm-noise-dim27":
-            filename = "hydro-"+"lstm"+"-epoch="+best_epoch+".ckpt"
-        else:
-            filename = "hydro-"+model_id+"-epoch="+best_epoch+".ckpt"
-        path  = os.path.join(dirpath, filename)
+        path_metrics = os.path.join(dirpath, "metrics.pt")
+        data = torch.load(path_metrics, map_location=torch.device('cpu'))
+        epochs_mod = []
+        nse_mod = []
+        for key in data:
+            epoch_num = data[key]["epoch_num"]
+            nse = -data[key]["val_loss"]
+            if isinstance(epoch_num, int):
+                epochs_mod.append(epoch_num)
+                nse_mod.append(nse)
+            else:
+                epochs_mod.append(int(epoch_num.item()))
+                nse_mod.append(nse.item())
+        idx_ae = np.argmax(nse_mod)
+        best_epoch = epochs_mod[idx_ae]
+
+        # open best model
+        filename = "model-epoch="+best_epoch+".ckpt"
+        path_best  = os.path.join(dirpath, filename)
         
-        if model_id =="lstm-ae" or model_id =="lstm-ae-nf5" or model_id=="lstm-ae-bidirectional":
-            model = Hydro_LSTM_AE.load_from_checkpoint(path)
+        if model_id.find("lstm-ae") != -1:
+            model = Hydro_LSTM_AE.load_from_checkpoint(path_best)
             model.eval()
             # compute squeezed encoded representation and reconstruction
             with torch.no_grad():
                 enc, rec = model(x,y)
 
         else:
-            model = Hydro_LSTM.load_from_checkpoint(path)
+            model = Hydro_LSTM.load_from_checkpoint(path_best)
             with torch.no_grad():
                 rec = model(y)
 
         # compute NSE, mNSE and save in dataframe
-        nse_df[model_dict[model_id]] = - loss_NSE(x.squeeze(), rec.squeeze()).detach().numpy() # array of size (num_test_data)
-        mnse_df[model_dict[model_id]] = - loss_mNSE(x.squeeze(), rec.squeeze()).detach().numpy() # array of size (num_test_data)
+        nse_df[model_id] = - loss_NSE(x.squeeze(), rec.squeeze()).detach().numpy() # array of size (num_test_data)
+        mnse_df[model_id] = - loss_mNSE(x.squeeze(), rec.squeeze()).detach().numpy() # array of size (num_test_data)
         
         # unnormalize input and output
         rec = transform_input.reverse_transform(rec.detach()).squeeze().numpy()
@@ -186,9 +194,8 @@ if __name__ == '__main__':
                 ax1 = axs1[i,j]
                 val = i*basins_n + j
                 start_seq = start_sequences_list[val]
-                ax.plot(rec[val, start_seq:start_seq+length_to_plot], label=model_dict[model_id])
-                if model_id != "lstm-noise-dim27":
-                    ax1.semilogy(np.absolute(rec[val, start_seq:start_seq+length_to_plot]-x_unnorm[val, start_seq:start_seq+length_to_plot]), label=model_dict[model_id])
+                ax.plot(rec[val, start_seq:start_seq+length_to_plot], label=model_id)
+                ax1.semilogy(np.absolute(rec[val, start_seq:start_seq+length_to_plot]-x_unnorm[val, start_seq:start_seq+length_to_plot]), label=model_dict[model_id])
 
     # plot empirical kde nse distributions and comulatives
     stat_NSE = nse_df.describe()
