@@ -143,5 +143,5 @@ if __name__ == '__main__':
     # define trainer 
     trainer = pl.Trainer(max_epochs=max_epochs, callbacks=[checkpoint_model,metrics_callback], accelerator=str(device),devices=1, check_val_every_n_epoch=check_val_every_n_epoch, logger=False)
     
-    trainer.fit(model=model, train_dataloaders=train_dataloader, val_dataloaders = val_dataloader, ckpt_path=ckpt_path)
+    trainer.fit(model=model, train_dataloaders=train_dataloader, val_dataloaders = val_dataloader)
    
