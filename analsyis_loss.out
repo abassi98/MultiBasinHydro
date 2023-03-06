@@ -4,18 +4,18 @@ Best lstm-ae-bdTrue-E27 model obtained at epoch 7919
 Best lstm-bdTrue-N0 model obtained at epoch 7259
 
 
-Batch Job Summary Report (version 21.01.1) for Job "analysis_loss" (45153690) on daint
+Batch Job Summary Report (version 21.01.1) for Job "analysis_loss" (45161642) on daint
 
 Job information (1/2)
 -----------------------------------------------------------------------------------------------------
              Submit            Eligible               Start                 End    Elapsed Time limit
 ------------------- ------------------- ------------------- ------------------- ---------- ----------
-2023-03-06T14:54:16 2023-03-06T14:54:16 2023-03-06T14:54:18 2023-03-06T14:54:35   00:00:17   01:00:00
+2023-03-06T22:35:03 2023-03-06T22:35:03 2023-03-06T22:36:13 2023-03-06T22:36:40   00:00:27   01:00:00
 -----------------------------------------------------------------------------------------------------
 
 Job information (2/2)
 -------------------------------------------------------------
     Username      Account    Partition   NNodes        Energy
 ------------ ------------ ------------ -------- -------------
-      abassi         em09       normal        1      1.575 kJ
+      abassi         em09       normal        1      1.817 kJ
 
