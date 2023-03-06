@@ -61,6 +61,7 @@ if __name__ == '__main__':
     
     
     ax.legend(fontsize=100)
+    fig.suptitle("Validation NSE (alpha=2)")
     fig.savefig("hydro-lstm-ae_NSE.png")
     
 

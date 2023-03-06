@@ -208,7 +208,7 @@ if __name__ == '__main__':
     axs_nse[1].set_ylabel("CDF")
     handles, labels = axs_nse[0].get_legend_handles_labels()
     fig_nse.legend(handles, labels, loc='upper left', fontsize=100)
-    fig_nse.suptitle('Nash-Sutcliffe Efficiency (alpha=2) for best models', fontsize=16)
+    fig_nse.suptitle('Nash-Sutcliffe Efficiency (alpha=2) for best models', fontsize=50)
     fig_nse.savefig("nse_distribution.png")
     
     # mNSE plot
@@ -221,7 +221,7 @@ if __name__ == '__main__':
     axs_mnse[1].set_ylabel("CDF")
     handles, labels = axs_mnse[0].get_legend_handles_labels()
     fig_mnse.legend(handles, labels, loc='upper left', fontsize=100)
-    fig_mnse.suptitle('Modified Nash-Sutcliffe Efficiency (alpha=1) for best models', fontsize=16)
+    fig_mnse.suptitle('Modified Nash-Sutcliffe Efficiency (alpha=1) for best models', fontsize=50)
     fig_mnse.savefig("mnse_distribution.png")
 
     # return and save the figure of runoff
