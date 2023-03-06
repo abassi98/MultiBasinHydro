@@ -48,7 +48,7 @@ if __name__ == '__main__':
     #dates = ["1989/10/01", "2009/09/30"] 
     dates = ["1980/10/01", "2010/09/30"] # interval dates to pick
     force_attributes = ["prcp(mm/day)", "srad(W/m2)", "tmin(C)", "tmax(C)", "vp(Pa)"] # force attributes to use
-    camel_dataset = CamelDataset(dates, force_attributes)
+    camel_dataset = CamelDataset(dates, force_attributes, debug=True)
     #dataset.adjust_dates() # adjust dates if necessary
     camel_dataset.load_data() # load data
     num_basins = camel_dataset.__len__()
@@ -196,7 +196,7 @@ if __name__ == '__main__':
                 val = i*basins_n + j
                 start_seq = start_sequences_list[val]
                 ax.plot(rec[val, start_seq:start_seq+length_to_plot], label=model_id)
-                ax1.semilogy(np.absolute(rec[val, start_seq:start_seq+length_to_plot]-x_unnorm[val, start_seq:start_seq+length_to_plot]), label=model_dict[model_id])
+                ax1.semilogy(np.absolute(rec[val, start_seq:start_seq+length_to_plot]-x_unnorm[val, start_seq:start_seq+length_to_plot]), label=model_id)
 
     # NSE plot
     stat_NSE = nse_df.describe()
