@@ -60,7 +60,7 @@ if __name__ == '__main__':
         print("Best "+name+" model obtained at epoch " +str(epoch_max_nse))
     
     
-    ax.legend()
+    ax.legend(fontsize=100)
     fig.savefig("hydro-lstm-ae_NSE.png")
     
 
