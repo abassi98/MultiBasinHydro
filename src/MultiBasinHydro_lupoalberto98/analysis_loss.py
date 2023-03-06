@@ -60,7 +60,7 @@ if __name__ == '__main__':
         print("Best "+name+" model obtained at epoch " +str(epoch_max_nse))
     
     
-    ax.legend(fontsize=100)
+    ax.legend(fontsize=20)
     fig.suptitle("Validation NSE (alpha=2)")
     fig.savefig("hydro-lstm-ae_NSE.png")
     
