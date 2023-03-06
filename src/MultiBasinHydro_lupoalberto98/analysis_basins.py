@@ -94,8 +94,8 @@ if __name__ == '__main__':
     print("Indices for test dataset: ", split_indices)
 
     # load best model
-    model_ids = ["lstm-ae-bdFalse-E27","lstm-ae-bdTrue-E4", "lstm-ae-bdTrue-E27", "lstm-bdFalse-N0", "lstm-bdFalse-N27", "lstm-bdTrue-N0" ]
-    best_epochs = ["9399","9519", "4459", "459"]
+    model_ids = ["lstm-ae-bdTrue-E4", "lstm-ae-bdTrue-E3", "lstm-ae-bdTrue-E27","lstm-bdTrue-N0" ]
+    
    
     start_date = datetime.datetime.strptime(dates[0], '%Y/%m/%d').date()
     # get data 
@@ -112,6 +112,7 @@ if __name__ == '__main__':
 
     # define loss function
     fig_nse, axs_nse = plt.subplots(1,2, figsize=(20,10))
+    fig_mnse, axs_mnse = plt.subplots(1,2, figsize=(20,10))
     loss_NSE = NSELoss(reduction=None)
     loss_mNSE = NSELoss(alpha=1, reduction=None)
     nse_df = pd.DataFrame()
@@ -197,22 +198,32 @@ if __name__ == '__main__':
                 ax.plot(rec[val, start_seq:start_seq+length_to_plot], label=model_id)
                 ax1.semilogy(np.absolute(rec[val, start_seq:start_seq+length_to_plot]-x_unnorm[val, start_seq:start_seq+length_to_plot]), label=model_dict[model_id])
 
-    # plot empirical kde nse distributions and comulatives
+    # NSE plot
     stat_NSE = nse_df.describe()
     print("NSE statistics")
     print(stat_NSE)
-    stat_mNSE = mnse_df.describe()
-    print("mNSE statistics")
-    print(stat_mNSE)
     sns.kdeplot(nse_df, ax=axs_nse[0], legend=True)
     sns.ecdfplot(nse_df, ax=axs_nse[1], legend=True)
     axs_nse[0].set_ylabel("PDF")
     axs_nse[1].set_ylabel("CDF")
     handles, labels = axs_nse[0].get_legend_handles_labels()
     fig_nse.legend(handles, labels, loc='upper left', fontsize=50)
-    fig_nse.suptitle('Nash-Sutcliffe Efficiency for best models', fontsize=16)
+    fig_nse.suptitle('Nash-Sutcliffe Efficiency (alpha=2) for best models', fontsize=16)
     fig_nse.savefig("nse_distribution.png")
     
+    # mNSE plot
+    stat_mNSE = mnse_df.describe()
+    print("mNSE statistics")
+    print(stat_mNSE)
+    sns.kdeplot(mnse_df, ax=axs_mnse[0], legend=True)
+    sns.ecdfplot(mnse_df, ax=axs_mnse[1], legend=True)
+    axs_mnse[0].set_ylabel("PDF")
+    axs_mnse[1].set_ylabel("CDF")
+    handles, labels = axs_mnse[0].get_legend_handles_labels()
+    fig_mnse.legend(handles, labels, loc='upper left', fontsize=50)
+    fig_mnse.suptitle('Modified Nash-Sutcliffe Efficiency (alpha=1) for best models', fontsize=16)
+    fig_mnse.savefig("nse_distribution.png")
+
     # return and save the figure of runoff
     handles, labels = ax.get_legend_handles_labels()
     fig.legend(handles, labels, loc='upper left', fontsize=50)
