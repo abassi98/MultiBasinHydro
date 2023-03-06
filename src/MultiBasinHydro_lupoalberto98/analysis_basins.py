@@ -160,7 +160,7 @@ if __name__ == '__main__':
         best_epoch = epochs_mod[idx_ae]
 
         # open best model
-        filename = "model-epoch="+best_epoch+".ckpt"
+        filename = "model-epoch="+str(best_epoch)+".ckpt"
         path_best  = os.path.join(dirpath, filename)
         
         if model_id.find("lstm-ae") != -1:
@@ -222,7 +222,7 @@ if __name__ == '__main__':
     handles, labels = axs_mnse[0].get_legend_handles_labels()
     fig_mnse.legend(handles, labels, loc='upper left', fontsize=50)
     fig_mnse.suptitle('Modified Nash-Sutcliffe Efficiency (alpha=1) for best models', fontsize=16)
-    fig_mnse.savefig("nse_distribution.png")
+    fig_mnse.savefig("mnse_distribution.png")
 
     # return and save the figure of runoff
     handles, labels = ax.get_legend_handles_labels()
