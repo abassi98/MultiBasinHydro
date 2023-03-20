@@ -16,7 +16,7 @@ from utils import Scale_Data, Globally_Scale_Data
 
 
 class CamelDataset(Dataset):
-    def __init__(self, dates: list, force_attributes: list,  data_path: str = "basin_dataset_public_v1p2", source_data_set: str = "daymet", debug=False, transform_input=None, transform_output=None) -> None:
+    def __init__(self, dates: list, force_attributes: list,  data_path: str = "basin_dataset_public_v1p2", source_data_set: str = "daymet", debug=False, transform_input=None, transform_output=None, transform_statics=None) -> None:
         super().__init__()
      
         self.data_path = data_path
@@ -30,6 +30,7 @@ class CamelDataset(Dataset):
         self.debug = debug # debug mode default off
         self.transform_input = transform_input
         self.transform_output = transform_output
+        self.transform_statics = transform_statics
         
         
         # convert string dates to datetime format
@@ -87,6 +88,7 @@ class CamelDataset(Dataset):
         # containers for data
         self.input_data = torch.zeros(self.len_dataset, 1, self.seq_len, 1)
         self.output_data = torch.zeros(self.len_dataset, 1, self.seq_len, self.num_force_attributes)
+        self.statics_data = torch.zeros(self.len_dataset,1, self.seq_len, 1)
         
     def adjust_dates(self, ):
         """
@@ -231,6 +233,22 @@ class CamelDataset(Dataset):
 
         print("... done.")
 
+
+    def load_statics(self):
+        """
+        Load static catchment features
+        """
+        self.df_statics = pd.read_csv("statiscs.txt", sep=",")
+        self.statics_ids = self.df_statics.iloc[:,0]
+
+        for i in range(len(self.loaded_basin_ids)):
+            for j in range(len(self.statics_ids)):
+                if  self.loaded_basin_ids[i] == self.statics_ids[j]:
+                    self.statics_data[i] = torch.tensor(self.df_statics.iloc[j,:], dtype=torch.float32).unsqueeze(1).unsqueeze(0) # shape (1, seq_len, feature_dim=1)
+
+                  
+
+
     def __len__(self):
         assert len(self.input_data)==len(self.output_data)
         return len(self.input_data)
@@ -238,31 +256,15 @@ class CamelDataset(Dataset):
     def __getitem__(self, idx):
         x_data = self.input_data[idx]
         y_data = self.output_data[idx]
+        statics = self.statics_data[idx]
         if self.transform_input:
             x_data = self.transform_input(x_data)
         if self.transform_output:
             y_data = self.transform_output(y_data)
-        return x_data, y_data
+        if self.transform_statics:
+            statics = self.transform_statics(statics)
+        return x_data, y_data, statics
 
     
 
 
-class FeatureDataset(Dataset):
-    """
-    Load dataset of encoded features for Camel Dataset
-    """
-    def __init__(self, filename):
-        super.__init__()
-        self.filename = filename
-        self.df_data = pd.read_csv(filename, sep=" ")
-        self.data_ids = self.df_data["basin_id"]
-        self.data = torch.tensor(np.transpose(self.df_data.iloc[:, 2:-1]), dtype=torch.float32)
-        self.df_statics = pd.read_csv("statiscs_features.txt", sep=",")
-        self.statics_ids = self.df_statics.iloc[:,0]
-
-        
-    def __len__(self):
-        return self.data.shape[0]
-
-    def __getitem__(self, idx):
-        return self.data[idx]
