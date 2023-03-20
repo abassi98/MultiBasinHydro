@@ -52,6 +52,7 @@ if __name__ == '__main__':
 
     #dataset.adjust_dates() # adjust dates if necessary
     camel_dataset.load_data() # load data
+    camel_dataset.load_statics() # load statics attributes
     num_basins = camel_dataset.__len__()
     seq_len = camel_dataset.seq_len
     print("Number of basins: %d" %num_basins)
@@ -143,5 +144,5 @@ if __name__ == '__main__':
     # define trainer 
     trainer = pl.Trainer(max_epochs=max_epochs, callbacks=[checkpoint_model,metrics_callback], accelerator=str(device), devices=1, check_val_every_n_epoch=check_val_every_n_epoch, logger=False)
     
-    trainer.fit(model=model, train_dataloaders=train_dataloader, val_dataloaders = val_dataloader, ckpt_path=ckpt_path)
+    trainer.fit(model=model, train_dataloaders=train_dataloader, val_dataloaders = val_dataloader)
     

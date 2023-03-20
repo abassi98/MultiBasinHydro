@@ -31,8 +31,11 @@ class CamelDataset(Dataset):
         self.transform_input = transform_input
         self.transform_output = transform_output
         self.transform_statics = transform_statics
-        
-        
+
+        # static attributes
+        self.df_statics = pd.read_csv("statics.txt", sep=",")
+        self.static_attributes = self.df_statics.shape[1]-1
+
         # convert string dates to datetime format
         self.start_date = datetime.datetime.strptime(dates[0], '%Y/%m/%d').date()
         self.end_date = datetime.datetime.strptime(dates[1], '%Y/%m/%d').date()
@@ -49,7 +52,8 @@ class CamelDataset(Dataset):
         self.max_flow = -1000*torch.ones((1,), dtype=torch.float32)
         self.min_force = 1000*torch.ones((self.num_force_attributes,), dtype=torch.float32)
         self.max_force = -1000*torch.ones((self.num_force_attributes,), dtype=torch.float32)
-        
+        self.min_statics = 1000*torch.ones((self.num_force_attributes,), dtype=torch.float32)
+        self.max_statics = -1000*torch.ones((self.num_force_attributes,), dtype=torch.float32)
         
         
         # ==========================================================================
@@ -88,7 +92,7 @@ class CamelDataset(Dataset):
         # containers for data
         self.input_data = torch.zeros(self.len_dataset, 1, self.seq_len, 1)
         self.output_data = torch.zeros(self.len_dataset, 1, self.seq_len, self.num_force_attributes)
-        self.statics_data = torch.zeros(self.len_dataset,1, self.seq_len, 1)
+        self.statics_data = torch.zeros(self.len_dataset,1, 1, self.static_attributes)
         
     def adjust_dates(self, ):
         """
@@ -238,17 +242,25 @@ class CamelDataset(Dataset):
         """
         Load static catchment features
         """
-        self.df_statics = pd.read_csv("statiscs.txt", sep=",")
+        print("Loading statics attributes...")
         self.statics_ids = self.df_statics.iloc[:,0]
 
         for i in range(len(self.loaded_basin_ids)):
             for j in range(len(self.statics_ids)):
                 if  self.loaded_basin_ids[i] == self.statics_ids[j]:
-                    self.statics_data[i] = torch.tensor(self.df_statics.iloc[j,:], dtype=torch.float32).unsqueeze(1).unsqueeze(0) # shape (1, seq_len, feature_dim=1)
+                    statics_data = torch.tensor(self.df_statics.iloc[j,:], dtype=torch.float32).unsqueeze(0).unsqueeze(0) # shape (1, seq_len, feature_dim=1)
+                    self.statics_data[i] = statics_data
+                    current_min_statics = torch.amin(statics_data.squeeze(dim=0), dim=0)
+                    current_max_statics = torch.amax(statics_data.squeeze(dim=0), dim=0)
+                    self.min_statics = torch.minimum(self.min_statics, current_min_statics)
+                    self.max_statics = torch.maximum(self.max_statics, current_max_statics)
 
+
+        # redefine transformations
+        self.transform_statics = Globally_Scale_Data(self.min_statics, self.max_statics)
+
+        print("...done.")
                   
-
-
     def __len__(self):
         assert len(self.input_data)==len(self.output_data)
         return len(self.input_data)
