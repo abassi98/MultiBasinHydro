@@ -33,8 +33,21 @@ class CamelDataset(Dataset):
         self.transform_statics = transform_statics
 
         # static attributes
-        self.df_statics = pd.read_csv("statics.txt", sep=",")
-        self.static_attributes = self.df_statics.shape[1]-1
+        clim_attr = ["p_mean", "pet_mean", "p_seasonality", "frac_snow", "aridity", "high_prec_freq", "high_prec_dur","low_prec_freq", "low_prec_dur"] # 9 features
+        df_clim = pd.read_csv(data_path+"/camels_clim.txt", sep=";").loc[clim_attr]
+        geol_attr = ["carbonate_rocks_frac", "geol_permeability"] # 2 attributes
+        df_geol = pd.read_csv(data_path+"/camels_geol.txt", sep=";").loc[geol_attr]
+        topo_attr = ["elev_mean","slope_mean","area_gages2"] # 3 attributes
+        df_topo = pd.read_csv(data_path+"/camels_topo.txt", sep=";").loc[topo_attr] 
+        vege_attr = ["frac_forest","lai_max","lai_diff","gvf_max","gvf_diff"] # 5 attributes
+        df_vege = pd.read_csv(data_path+"/camels_vege.txt", sep=";").loc[vege_attr]
+        soil_attr = ["soil_depth_pelletier","soil_depth_statsgo","soil_porosity","soil_conductivity","max_water_content","sand_frac","silt_frac","clay_frac"] # 8 features
+        df_soil = pd.read_csv(data_path+"/camels_soil.txt", sep=";").loc[soil_attr] 
+
+        self.df_statics = pd.concat([df_clim, df_geol, df_topo, df_vege, df_soil])
+        self.static_attributes = self.df_statics.shape[1] # as many as Kratzert
+        print(self.static_attributes)
+        self.statics_ids = np.array(df_clim.loc["gauge_id"]).astype(int)
 
         # convert string dates to datetime format
         self.start_date = datetime.datetime.strptime(dates[0], '%Y/%m/%d').date()
@@ -52,8 +65,8 @@ class CamelDataset(Dataset):
         self.max_flow = -1000*torch.ones((1,), dtype=torch.float32)
         self.min_force = 1000*torch.ones((self.num_force_attributes,), dtype=torch.float32)
         self.max_force = -1000*torch.ones((self.num_force_attributes,), dtype=torch.float32)
-        self.min_statics = 1000*torch.ones((self.num_force_attributes,), dtype=torch.float32)
-        self.max_statics = -1000*torch.ones((self.num_force_attributes,), dtype=torch.float32)
+        self.min_statics = 1000*torch.ones((self.static_attributes,), dtype=torch.float32)
+        self.max_statics = -1000*torch.ones((self.static_attributes,), dtype=torch.float32)
         
         
         # ==========================================================================
@@ -243,11 +256,9 @@ class CamelDataset(Dataset):
         Load static catchment features
         """
         print("Loading statics attributes...")
-        self.statics_ids = self.df_statics.iloc[:,0]
-
         for i in range(len(self.loaded_basin_ids)):
             for j in range(len(self.statics_ids)):
-                if  self.loaded_basin_ids[i] == self.statics_ids[j]:
+                if  int(self.loaded_basin_ids[i]) == self.statics_ids[j]:
                     statics_data = torch.tensor(self.df_statics.iloc[j,:], dtype=torch.float32).unsqueeze(0).unsqueeze(0) # shape (1, seq_len, feature_dim=1)
                     self.statics_data[i] = statics_data
                     current_min_statics = torch.amin(statics_data.squeeze(dim=0), dim=0)
