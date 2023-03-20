@@ -156,7 +156,7 @@ class CamelDataset(Dataset):
             with open(path_forcing_data) as myfile:
                 first_force_lines = [next(myfile) for y in range(3)]
         
-            area = float(first_force_lines[-1]) * 10**6  # area in meter squared
+            area = float(first_force_lines[-1]) # area in meter squared
 
             # read flow data
             df_streamflow = pd.read_csv(path_flow_data,delim_whitespace=True, header=None)
@@ -193,7 +193,7 @@ class CamelDataset(Dataset):
                 assert all(bool_false_values) == True
 
                 # transfer from cubic feet (304.8 mm) per second to mm/day (normalized by basin area)
-                flow_data = flow_data * (304.8**3)/area * 86400
+                flow_data = flow_data * (304.8**3)/(area * 10**6) * 86400
 
                 # add tmean(C)
                 # df_forcing["tmean(C)"] = (df_forcing["tmin(C)"] + df_forcing["tmax(C)"])/2.0
