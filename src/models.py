@@ -246,6 +246,7 @@ class Hydro_LSTM(pl.LightningModule):
                  weight_decay = 0.0,
                  num_force_attributes = 5,
                  noise_dim = 0,
+                 statics = False,
                 ):
         
         """
@@ -270,9 +271,15 @@ class Hydro_LSTM(pl.LightningModule):
         self.loss_fn = loss_fn
         self.num_force_attributes = num_force_attributes 
         self.noise_dim = noise_dim
+        self.statics = statics
 
         ### LSTM decoder
-        self.lstm = nn.LSTM(input_size=num_force_attributes + noise_dim, 
+        if self.statics:
+            input_size = num_force_attributes + 27
+        else:
+            input_size = num_force_attributes + noise_dim
+            
+        self.lstm = nn.LSTM(input_size=input_size, 
                            hidden_size=lstm_hidden_units,
                            num_layers=layers_num,
                            dropout=drop_p,
@@ -290,17 +297,21 @@ class Hydro_LSTM(pl.LightningModule):
         print("LSTM initialized")
 
         
-    def forward(self, y): 
+    def forward(self, y, statics): 
         # Decode data
         if self.noise_dim == 0:
-            hidd_rec, _ = self.lstm(y.squeeze(1))
+            if self.statics:
+                input_lstm = torch.cat((statics.squeeze(1).repeat(1,self.seq_len,1), y.squeeze()),dim=-1)
+                hidd_rec, _ = self.lstm(input_lstm)
+            else:
+                hidd_rec, _ = self.lstm(y.squeeze(1))
         else:
             y_shape = y.squeeze().shape # size (batch_size, seq_len, force_attributes)
             noise = self.sigmoid(torch.randn(size=(y_shape[0], self.seq_len, self.noise_dim), device=self.device))
             # concat data
             input_lstm = torch.cat((noise, y.squeeze()),dim=-1)
             hidd_rec, _ = self.lstm(input_lstm)
-        
+
         #hidd_rec = self.dropout(hidd_rec)
         # Fully connected output layer, forced in [0,1]
         rec = self.out(hidd_rec)
@@ -311,9 +322,9 @@ class Hydro_LSTM(pl.LightningModule):
         
     def training_step(self, batch, batch_idx):        
         ### Unpack batch
-        x, y, _ = batch
+        x, y, statics = batch
         # forward pass
-        rec = self.forward(y)
+        rec = self.forward(y, statics)
         # Logging to TensorBoard by default
         train_loss = self.loss_fn(x.squeeze(), rec.squeeze())
         self.log("train_loss", train_loss, prog_bar=True)
@@ -321,10 +332,10 @@ class Hydro_LSTM(pl.LightningModule):
     
     def validation_step(self, batch, batch_idx):
         ### Unpack batch
-        x, y, _ = batch
+        x, y, statics = batch
             
         # forward pass
-        rec = self.forward(y)
+        rec = self.forward(y, statics)
         # Logging to TensorBoard by default
         val_loss = self.loss_fn(x.squeeze(), rec.squeeze())
         # Logging to TensorBoard by default

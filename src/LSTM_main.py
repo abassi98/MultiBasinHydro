@@ -26,6 +26,7 @@ from utils import Scale_Data, MetricsCallback, NSELoss
 def parse_args():
     parser=argparse.ArgumentParser(description="If add to LSTM some noise features")
     parser.add_argument('--noise_dim', type=int, required=True, help="How many random noise components")
+    parser.add_argument('--statics', type=int, required=True, help="How many random noise components")
     parser.add_argument('--bidirectional', type=int, default=0, help="Bidirectionality of LSTM decoder. 0 False, else True")
     parser.add_argument('--debug', type=int, default=0, help="If debug mode is on load only 15 basins. 0 False, else True")
     args=parser.parse_args()
@@ -49,6 +50,8 @@ if __name__ == '__main__':
     camel_dataset = CamelDataset(dates, force_attributes, debug=bool(args.debug))
     print("Debug mode: ", bool(camel_dataset.debug))
     print("Bidirectional LSTM: ", bool(args.bidirectional))
+    print("Use static features: ", bool(args.statics))
+    
 
     #dataset.adjust_dates() # adjust dates if necessary
     camel_dataset.load_data() # load data
@@ -106,6 +109,7 @@ if __name__ == '__main__':
                  weight_decay = 0.0,
                  num_force_attributes = len(force_attributes),
                  noise_dim = args.noise_dim,
+                 statics = bool(args.statics),
                 )
 
     ##########################################################
@@ -123,7 +127,7 @@ if __name__ == '__main__':
     save_top_k = int(max_epochs/check_val_every_n_epoch)
 
     # select dirpath according to noise features added
-    dirpath="checkpoints/lstm-bd"+str(bool(args.bidirectional))+"-N"+str(args.noise_dim)+"/"
+    dirpath="checkpoints/lstm-bd"+str(bool(args.bidirectional))+"-N"+str(args.noise_dim)+"-S"+str(bool(args.statics))+"/"
         
     metrics_callback = MetricsCallback(
         dirpath=dirpath,
@@ -141,7 +145,7 @@ if __name__ == '__main__':
     
 
     # # retrieve checkpoints and continue training
-    ckpt_path = "checkpoints/lstm-bdTrue-N0/last.ckpt"
+    # ckpt_path = "checkpoints/lstm-bdTrue-N0/last.ckpt"
 
     # define trainer 
     trainer = pl.Trainer(max_epochs=max_epochs, callbacks=[checkpoint_model,metrics_callback], accelerator=str(device), devices=1, check_val_every_n_epoch=check_val_every_n_epoch, logger=False)
