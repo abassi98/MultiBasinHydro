@@ -201,7 +201,7 @@ class Hydro_LSTM_AE(pl.LightningModule):
         
     def training_step(self, batch, batch_idx):        
         ### Unpack batch
-        x, y = batch
+        x, y, _ = batch
         # forward pass
         enc, rec = self.forward(x,y)
         # Logging to TensorBoard by default
@@ -212,8 +212,7 @@ class Hydro_LSTM_AE(pl.LightningModule):
     
     def validation_step(self, batch, batch_idx):
         ### Unpack batch
-        x, y = batch
-            
+        x, y, _ = batch
         # forward pass
         enc, rec = self.forward(x,y)
         # Logging to TensorBoard by default
@@ -312,7 +311,7 @@ class Hydro_LSTM(pl.LightningModule):
         
     def training_step(self, batch, batch_idx):        
         ### Unpack batch
-        x, y = batch
+        x, y, _ = batch
         # forward pass
         rec = self.forward(y)
         # Logging to TensorBoard by default
@@ -322,7 +321,7 @@ class Hydro_LSTM(pl.LightningModule):
     
     def validation_step(self, batch, batch_idx):
         ### Unpack batch
-        x, y = batch
+        x, y, _ = batch
             
         # forward pass
         rec = self.forward(y)
