@@ -34,21 +34,23 @@ class CamelDataset(Dataset):
 
         # static attributes
         clim_attr = ["p_mean", "pet_mean", "p_seasonality", "frac_snow", "aridity", "high_prec_freq", "high_prec_dur","low_prec_freq", "low_prec_dur"] # 9 features
-        df_clim = pd.read_csv(data_path+"/camels_clim.txt", sep=";").loc[clim_attr]
+        df_clim = pd.read_csv(data_path+"/camels_clim.txt", sep=";")[clim_attr]
         geol_attr = ["carbonate_rocks_frac", "geol_permeability"] # 2 attributes
-        df_geol = pd.read_csv(data_path+"/camels_geol.txt", sep=";").loc[geol_attr]
+        df_geol = pd.read_csv(data_path+"/camels_geol.txt", sep=";")[geol_attr]
         topo_attr = ["elev_mean","slope_mean","area_gages2"] # 3 attributes
-        df_topo = pd.read_csv(data_path+"/camels_topo.txt", sep=";").loc[topo_attr] 
+        df_topo = pd.read_csv(data_path+"/camels_topo.txt", sep=";")[topo_attr] 
         vege_attr = ["frac_forest","lai_max","lai_diff","gvf_max","gvf_diff"] # 5 attributes
-        df_vege = pd.read_csv(data_path+"/camels_vege.txt", sep=";").loc[vege_attr]
+        df_vege = pd.read_csv(data_path+"/camels_vege.txt", sep=";")[vege_attr]
         soil_attr = ["soil_depth_pelletier","soil_depth_statsgo","soil_porosity","soil_conductivity","max_water_content","sand_frac","silt_frac","clay_frac"] # 8 features
-        df_soil = pd.read_csv(data_path+"/camels_soil.txt", sep=";").loc[soil_attr] 
+        df_soil = pd.read_csv(data_path+"/camels_soil.txt", sep=";")[soil_attr] 
 
-        self.df_statics = pd.concat([df_clim, df_geol, df_topo, df_vege, df_soil])
+        self.df_statics = pd.concat([df_clim, df_geol, df_topo, df_vege, df_soil], axis=1)
         self.static_attributes = self.df_statics.shape[1] # as many as Kratzert
-        print(self.static_attributes)
-        self.statics_ids = np.array(df_clim.loc["gauge_id"]).astype(int)
-
+        self.statics_ids = np.array(pd.read_csv(data_path+"/camels_clim.txt", sep=";")["gauge_id"]).astype(int)
+        # print(self.df_statics)
+        # print(df_soil)
+        # import sys
+        # sys.exit()
         # convert string dates to datetime format
         self.start_date = datetime.datetime.strptime(dates[0], '%Y/%m/%d').date()
         self.end_date = datetime.datetime.strptime(dates[1], '%Y/%m/%d').date()
