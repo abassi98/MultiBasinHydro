@@ -5,7 +5,7 @@
 #SBATCH --nodes=1
 #SBATCH --cpus-per-task=24
 #SBATCH --constraint=gpu
-#SBATCH --account=em09
+#SBATCH --account=xbs4  
 #SBATCH --mail-type=BEGIN
 #SBATCH --mail-type=END,FAIL     
 #SBATCH --output=gpu_LSTM-bdTrueStat.out
