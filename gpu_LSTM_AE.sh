@@ -12,5 +12,5 @@
 #SBATCH --error=gpu_LSTM_AE_bdTrue3.err
 
 export OMP_NUM_THREADS=$SLURM_CPUS_PER_TASK
-module load daint-gpu PyTorch     
+module load python/3.9.12-pe5.34 #module load daint-gpu PyTorch     
 python3 src/LSTM_AE_main.py --num_features 3 --bidirectional 1 --debug 0 # no bidirectional, training mode
