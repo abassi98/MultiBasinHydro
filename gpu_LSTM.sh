@@ -5,6 +5,7 @@
 #SBATCH --nodes=1
 #SBATCH --cpus-per-task=24
 #SBATCH --constraint=gpu
+#SBATCH --partition=earth-4
 #SBATCH --account=xbs4  
 #SBATCH --mail-type=BEGIN
 #SBATCH --mail-type=END,FAIL     
