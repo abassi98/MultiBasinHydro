@@ -4,7 +4,7 @@
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=1
 #SBATCH --cpus-per-task=1
-#SBATCH --time=120:00:00
+#SBATCH --time=24:00:00
 #SBATCH --partition=earth-4
 #SBATCH --constraint=rhel8
 #SBATCH --gres=gpu:a100:1
