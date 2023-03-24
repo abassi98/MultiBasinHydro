@@ -8,7 +8,6 @@
 #SBATCH --partition=earth-4
 #SBATCH --constraint=rhel8
 #SBATCH --gres=gpu:a100:1
-#SBATCH --account=xbs4
 #SBATCH --mail-type=BEGIN
 #SBATCH --mail-type=END,FAIL     
 #SBATCH --output=gpu_LSTM-bdTrueStat.out
