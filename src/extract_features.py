@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 from matplotlib.offsetbox import AnchoredText
 import seaborn as sns
 import pandas as pd
+import os
 
 # pytorch
 import torch
@@ -41,6 +42,8 @@ if __name__ == '__main__':
     camel_dataset = CamelDataset(dates, force_attributes)
     #dataset.adjust_dates() # adjust dates if necessary
     camel_dataset.load_data() # load data
+    camel_dataset.load_statics() # load statics
+    camel_dataset.save_statics("statics.txt") #save statics attributes
     num_basins = camel_dataset.__len__()
     seq_len = camel_dataset.seq_len
     print("Number of basins: %d" %num_basins)
@@ -66,8 +69,27 @@ if __name__ == '__main__':
     print(x.shape)
     print(y.shape)
 
-    # load model
-    ckpt_path = "checkpoints/lstm-ae/hydro-lstm-ae-epoch=9519.ckpt"
+    # retrieve best epoch
+    model_id = "lstm-ae-bdTrue-E4"
+    dirpath = os.path.join("checkpoints", model_id)
+    path_metrics = os.path.join(dirpath, "metrics.pt")
+    data = torch.load(path_metrics, map_location=torch.device('cpu'))
+    epochs_mod = []
+    nse_mod = []
+    for key in data:
+        epoch_num = data[key]["epoch_num"]
+        nse = -data[key]["val_loss"]
+        if isinstance(epoch_num, int):
+            epochs_mod.append(epoch_num)
+            nse_mod.append(nse)
+        else:
+            epochs_mod.append(int(epoch_num.item()))
+            nse_mod.append(nse.item())
+    idx_ae = np.argmax(nse_mod)
+    best_epoch = epochs_mod[idx_ae]
+
+    ckpt_path = "checkpoints/"+model_id+"/model-epoch=+"+str(best_epoch)+".ckpt"
+
     model = Hydro_LSTM_AE.load_from_checkpoint(ckpt_path)
     model.eval()
     with torch.no_grad():
@@ -79,7 +101,7 @@ if __name__ == '__main__':
     # save encoded features
     enc = enc.detach().squeeze().numpy() # size (562,27)
     print(enc.shape)
-    filename = "encoded_features_lstm_ae.txt"
+    filename = "encoded_features_"+model_id+".txt"
     df = pd.DataFrame()
     df["basin_huc"] = camel_dataset.loaded_basin_hucs
     df["basin__id"] = camel_dataset.loaded_basin_ids

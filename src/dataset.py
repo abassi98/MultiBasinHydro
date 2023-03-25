@@ -274,6 +274,9 @@ class CamelDataset(Dataset):
 
         print("...done.")
                   
+    def save_statics(self, filename):
+        np.savetxt(filename, self.statics_data.squeeze().cpu().nump())
+
     def __len__(self):
         assert len(self.input_data)==len(self.output_data)
         return len(self.input_data)
