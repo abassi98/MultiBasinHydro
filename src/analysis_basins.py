@@ -173,7 +173,7 @@ if __name__ == '__main__':
         else:
             model = Hydro_LSTM.load_from_checkpoint(path_best)
             with torch.no_grad():
-                rec = model(y)
+                rec = model(y, statics)
 
         # compute NSE, mNSE and save in dataframe
         nse_df[model_id] = - loss_NSE(x.squeeze(), rec.squeeze()).detach().numpy() # array of size (num_test_data)
