@@ -16,20 +16,30 @@ Convolutional LSTM Autoencoder initialized
 Convolutional LSTM Autoencoder initialized
 Convolutional LSTM Autoencoder initialized
 LSTM initialized
+NSE statistics
+       lstm-ae-bdTrue-E4  lstm-ae-bdTrue-E3  lstm-ae-bdTrue-E27  lstm-bdTrue-N0
+count          85.000000          85.000000           85.000000       85.000000
+mean            0.660503           0.613910            0.688956        0.484775
+std             0.196617           0.210962            0.175364        0.245985
+min            -0.386154          -0.731967           -0.019650       -0.957837
+25%             0.594148           0.536266            0.638637        0.402323
+50%             0.719741           0.671111            0.726590        0.549557
+75%             0.776591           0.732087            0.794180        0.623984
+max             0.907416           0.882512            0.908582        0.851819
 
 
-Batch Job Summary Report (version 21.01.1) for Job "analysis_basins" (45623197) on daint
+Batch Job Summary Report (version 21.01.1) for Job "analysis_basins" (45623537) on daint
 
 Job information (1/2)
 -----------------------------------------------------------------------------------------------------
              Submit            Eligible               Start                 End    Elapsed Time limit
 ------------------- ------------------- ------------------- ------------------- ---------- ----------
-2023-03-25T18:01:40 2023-03-25T18:01:40 2023-03-25T18:03:42 2023-03-25T18:25:59   00:22:17   02:00:00
+2023-03-25T18:31:01 2023-03-25T18:31:01 2023-03-25T18:32:38 2023-03-25T18:55:37   00:22:59   02:00:00
 -----------------------------------------------------------------------------------------------------
 
 Job information (2/2)
 -------------------------------------------------------------
     Username      Account    Partition   NNodes        Energy
 ------------ ------------ ------------ -------- -------------
-      abassi         em09       normal        1    154.733 kJ
+      abassi         em09       normal        1    167.836 kJ
 
