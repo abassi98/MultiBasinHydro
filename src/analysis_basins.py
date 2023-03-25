@@ -99,7 +99,7 @@ if __name__ == '__main__':
    
     start_date = datetime.datetime.strptime(dates[0], '%Y/%m/%d').date()
     # get data 
-    x, y = next(iter(test_dataloader))
+    x, y, statics = next(iter(test_dataloader))
     x_unnorm = transform_input.reverse_transform(x.detach()).squeeze().numpy()
     # build figure
     length_to_plot = 730 # 2 years
@@ -205,11 +205,13 @@ if __name__ == '__main__':
     sns.kdeplot(nse_df, ax=axs_nse[0], legend=True)
     sns.ecdfplot(nse_df, ax=axs_nse[1], legend=True)
     axs_nse[0].set_ylabel("PDF")
+    axs_nse[0].set_fontsize(30)
     axs_nse[1].set_ylabel("CDF")
+    axs_nse[1].set_fontsize(30)
     axs_nse[0].grid()
     axs_nse[1].grid()
     handles, labels = axs_nse[0].get_legend_handles_labels()
-    fig_nse.legend(handles, labels, loc='upper left', fontsize=100)
+    fig_nse.legend(handles, labels, loc='upper left', fontsize=50)
     fig_nse.suptitle('Nash-Sutcliffe Efficiency (alpha=2) for best models', fontsize=50)
     fig_nse.savefig("nse_distribution.png")
     
@@ -220,29 +222,31 @@ if __name__ == '__main__':
     sns.kdeplot(mnse_df, ax=axs_mnse[0], legend=True)
     sns.ecdfplot(mnse_df, ax=axs_mnse[1], legend=True)
     axs_mnse[0].set_ylabel("PDF")
+    axs_mnse[0].set_fontsize(30)
     axs_mnse[1].set_ylabel("CDF")
+    axs_mnse[1].set_fontsize(30)
     axs_mnse[0].grid()
     axs_mnse[1].grid()
     handles, labels = axs_mnse[0].get_legend_handles_labels()
-    fig_mnse.legend(handles, labels, loc='upper left', fontsize=100)
+    fig_mnse.legend(handles, labels, loc='upper left', fontsize=50)
     fig_mnse.suptitle('Modified Nash-Sutcliffe Efficiency (alpha=1) for best models', fontsize=50)
     fig_mnse.savefig("mnse_distribution.png")
 
     # return and save the figure of runoff
     handles, labels = ax.get_legend_handles_labels()
-    fig.legend(handles, labels, loc='upper left', fontsize=100)
+    fig.legend(handles, labels, loc='upper left', fontsize=50)
     fig.text(0.5, 0.04, 'Time (days)', ha='center', fontsize=50)
-    fig.text(0.04, 0.5, 'Streamflow (mm/day)', va='center', rotation='vertical', fontsize=20)
-    fig.suptitle('Streamflow of best models compared to Camel data', fontsize=16)
+    fig.text(0.04, 0.5, 'Streamflow (mm/day)', va='center', rotation='vertical', fontsize=50)
+    fig.suptitle('Streamflow of best models compared to Camel data', fontsize=100)
     fig.tight_layout
     fig.savefig("reconstructed-best-epochs.png")
 
     # return and save the figure of runoff
     handles, labels = ax1.get_legend_handles_labels()
-    fig1.legend(handles, labels, loc='upper left', fontsize=100)
+    fig1.legend(handles, labels, loc='upper left', fontsize=50)
     fig1.text(0.5, 0.04, 'Time (days)', ha='center', fontsize=50)
-    fig1.text(0.04, 0.5, 'Delta Streamflow (mm/day)', va='center', rotation='vertical', fontsize=20)
-    fig1.suptitle('Absolute Streamflow difference betwen best models and Camel data', fontsize=16)
+    fig1.text(0.04, 0.5, 'Delta Streamflow (mm/day)', va='center', rotation='vertical', fontsize=50)
+    fig1.suptitle('Absolute Streamflow difference betwen best models and Camel data', fontsize=100)
     fig1.tight_layout
     fig1.savefig("abs-diff-best-epochs.png")
 
