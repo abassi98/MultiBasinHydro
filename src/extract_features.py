@@ -65,7 +65,7 @@ if __name__ == '__main__':
     dataloader = DataLoader(camel_dataset, batch_size=num_basins, num_workers=num_workers, shuffle=False)
 
     # extract forcing and streamflow
-    x, y = next(iter(dataloader))
+    x, y, statics = next(iter(dataloader))
     print(x.shape)
     print(y.shape)
 
