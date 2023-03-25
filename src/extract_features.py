@@ -43,7 +43,10 @@ if __name__ == '__main__':
     #dataset.adjust_dates() # adjust dates if necessary
     camel_dataset.load_data() # load data
     camel_dataset.load_statics() # load statics
+    transform_statics = Globally_Scale_Data(camel_dataset.min_statics, camel_dataset.max_statics)
+    camel_dataset.statics_data = transform_statics(camel_dataset.statics_data)
     camel_dataset.save_statics("statics.txt") #save statics attributes
+
     num_basins = camel_dataset.__len__()
     seq_len = camel_dataset.seq_len
     print("Number of basins: %d" %num_basins)
