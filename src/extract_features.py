@@ -88,7 +88,7 @@ if __name__ == '__main__':
     idx_ae = np.argmax(nse_mod)
     best_epoch = epochs_mod[idx_ae]
 
-    ckpt_path = "checkpoints/"+model_id+"/model-epoch=+"+str(best_epoch)+".ckpt"
+    ckpt_path = "checkpoints/"+model_id+"/model-epoch="+str(best_epoch)+".ckpt"
 
     model = Hydro_LSTM_AE.load_from_checkpoint(ckpt_path)
     model.eval()
