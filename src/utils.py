@@ -127,4 +127,27 @@ class NSELoss(nn.Module):
         return - NSE
 
 
-    
+def find_best_epoch(model_id):
+        """
+        Find the epoch at which the validation error is minimized, or quivalently
+        when thevalidation NSE is maximized
+        Returns
+        -------
+            best_epoch : (int)
+        """
+        dirpath = os.path.join("checkpoints", model_id)
+        path_metrics = os.path.join(dirpath, "metrics.pt")
+        data = torch.load(path_metrics, map_location=torch.device('cpu'))
+        epochs_mod = []
+        nse_mod = []
+        for key in data:
+            epoch_num = data[key]["epoch_num"]
+            nse = -data[key]["val_loss"]
+            if isinstance(epoch_num, int):
+                epochs_mod.append(epoch_num)
+                nse_mod.append(nse)
+            else:
+                epochs_mod.append(int(epoch_num.item()))
+                nse_mod.append(nse.item())
+        idx_ae = np.argmax(nse_mod)
+        return int(epochs_mod[idx_ae])

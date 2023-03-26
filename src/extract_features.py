@@ -23,7 +23,7 @@ import multiprocessing
 # user functions
 from dataset import CamelDataset
 from models import Hydro_LSTM_AE, Hydro_LSTM
-from utils import Scale_Data, MetricsCallback, NSELoss, Globally_Scale_Data
+from utils import Globally_Scale_Data, find_best_epoch
 
 
 if __name__ == '__main__':
@@ -74,23 +74,7 @@ if __name__ == '__main__':
 
     # retrieve best epoch
     model_id = "lstm-ae-bdTrue-E4"
-    dirpath = os.path.join("checkpoints", model_id)
-    path_metrics = os.path.join(dirpath, "metrics.pt")
-    data = torch.load(path_metrics, map_location=torch.device('cpu'))
-    epochs_mod = []
-    nse_mod = []
-    for key in data:
-        epoch_num = data[key]["epoch_num"]
-        nse = -data[key]["val_loss"]
-        if isinstance(epoch_num, int):
-            epochs_mod.append(epoch_num)
-            nse_mod.append(nse)
-        else:
-            epochs_mod.append(int(epoch_num.item()))
-            nse_mod.append(nse.item())
-    idx_ae = np.argmax(nse_mod)
-    best_epoch = epochs_mod[idx_ae]
-
+    best_epoch = find_best_epoch(model_id)
     ckpt_path = "checkpoints/"+model_id+"/model-epoch="+str(best_epoch)+".ckpt"
 
     model = Hydro_LSTM_AE.load_from_checkpoint(ckpt_path)
