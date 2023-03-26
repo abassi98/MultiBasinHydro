@@ -90,11 +90,9 @@ if __name__ == '__main__':
     print(enc.shape)
     filename = "encoded_features_"+model_id+".txt"
     df = pd.DataFrame()
-    df["basin_huc"] = camel_dataset.loaded_basin_hucs
     df["basin__id"] = camel_dataset.loaded_basin_ids
-    df["basin_name"] = camel_dataset.loaded_basin_names
 
     for i in range(enc.shape[1]):
-        df["encoded_feature-"+str(i)] = enc[:,i]
+        df["E"+str(i)] = enc[:,i]
 
     df.to_csv(filename, sep=" ")
