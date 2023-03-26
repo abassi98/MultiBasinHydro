@@ -1,28 +1,16 @@
 import numpy as np
-from sklearn.manifold import TSNE
-import matplotlib.pyplot as plt
-from matplotlib.offsetbox import AnchoredText
-import seaborn as sns
 import pandas as pd
-import os
 
 # pytorch
 import torch
 import torch.nn as nn
-from torch.utils.data import Dataset, DataLoader, random_split, ConcatDataset, Subset
-import pytorch_lightning as pl
-from pytorch_lightning import Trainer, seed_everything
-from pytorch_lightning.callbacks import ModelCheckpoint
-
-import torch.optim as optim
-from pytorch_lightning.callbacks.early_stopping import EarlyStopping 
-from torchvision import transforms, datasets
+from torch.utils.data import DataLoader
 import multiprocessing
 
 
 # user functions
 from dataset import CamelDataset
-from models import Hydro_LSTM_AE, Hydro_LSTM
+from models import Hydro_LSTM_AE
 from utils import Globally_Scale_Data, find_best_epoch
 
 
