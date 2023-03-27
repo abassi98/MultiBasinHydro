@@ -47,8 +47,6 @@ if __name__ == '__main__':
     num_gpus = torch.cuda.device_count()
     print("Num of gpus: %d"%num_gpus)
     
-    device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
-    print(f"Training device: {device}")
 
     # define dataloader for all dataset
     num_workers = 0
