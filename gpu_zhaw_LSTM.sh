@@ -13,7 +13,7 @@
 #SBATCH --output=gpu_LSTM-bdTrueStat.out
 #SBATCH --error=gpu_LSTM-bdTrueStat.err
 
-module load USS/2020
-module load gcc/7.3.0 miniconda3/4.8.2 lsfm-init-miniconda/1.0.0
+ USS/2020
+module load USS/2020 gcc/7.3.0 miniconda3/4.8.2 lsfm-init-miniconda/1.0.0
 
 python3 src/LSTM_main.py --noise_dim 0 --statics 1 --bidirectional 1 --debug 0 
