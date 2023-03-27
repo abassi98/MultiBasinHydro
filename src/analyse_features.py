@@ -1,78 +1,58 @@
 import numpy as np
 import pandas as pd
-import multiprocessing
-
-# pytorch
-import torch
-import torch.nn as nn
-from torch.utils.data import Dataset, DataLoader, random_split, ConcatDataset, Subset
-import pytorch_lightning as pl
-from pytorch_lightning import Trainer, seed_everything
-from pytorch_lightning.callbacks import ModelCheckpoint
-
-from pytorch_lightning.callbacks.early_stopping import EarlyStopping 
-
-# user functions
-from dataset import FeatureDataset
-from models import Hydro_FFNet
+import geopandas as gpd
+import matplotlib.pyplot as plt
 
 
 
 
 if __name__ == '__main__':
     ##########################################################
-    # set seed
+    # Load encoded features of chosen LSTM-AE model
     ##########################################################
-    torch.manual_seed(35)
+    # Load encoded features
+    model_id = "lstm-ae-bdTrue-E4"
+    filename = "encoded_features_"+model_id+".txt"
+    df = pd.read_csv(filename, sep=" ")
+    features = df.iloc[:,2::]
+    features_basin_ids = df.iloc[:,1]
+    # Load latitude and longitude
+    file_topo = "basin_dataset_public_v1p2/camels_topo.txt"
+    df_topo = pd.read_csv(file_topo, sep=";")
+    topo_basin_ids = df_topo.iloc[:,0]
+   
+    lat_topo = df_topo["gauge_lat"]
+    lon_topo = df_topo["gauge_lon"]
+
+    lat = []
+    lon = []
+    for i in range(len(features_basin_ids)):
+        for j in range(len(topo_basin_ids)):
+            if topo_basin_ids[j] == features_basin_ids[i]:
+                lat.append(lat_topo[j])
+                lon.append(lon_topo[j])
+
+    df["lat"] = lat
+    df["lon"] = lon
+   
+    # initialize an axis
+    fig = plt.figure(1, figsize = (6,6))
+    plt.subplots_adjust(wspace=0.5, right=0.8, top=0.9, bottom=0.1)
+
+    # plot map on axis
+    countries = gpd.read_file(  
+        gpd.datasets.get_path("naturalearth_lowres"))
     
-
-    ##########################################################
-    # dataset and dataloaders
-    ##########################################################
-    # Dataset
-    #dates = ["1989/10/01", "2009/09/30"] 
-    filename = "encoded_features_lstm_ae.txt"
-    dataset = FeatureDataset(filename)
-    num_basins = dataset.__len__()
-    print("Number of basins: %d" %num_basins)
-
-    ### Set proper device and train
-    # check cpus and gpus available
-    num_cpus = multiprocessing.cpu_count()
-    print("Num of cpus: %d"%num_cpus)
-    num_gpus = torch.cuda.device_count()
-    print("Num of gpus: %d"%num_gpus)
+    num_features = 4
+    for i in range(num_features):
+        plt.subplot(2,2,i+1)
+        ax = plt.gca()
+        ax.set_xlim(-128, -65)
+        ax.set_ylim(24, 50)
+        countries[countries["name"] == "United States of America"].plot(color="lightgrey", ax=ax)
+        df.plot.scatter(x="lon", y="lat",c="E"+str(i), colormap="YlOrRd", title="E"+str(i), ax=ax, s=1, colorbar=False)
     
-    device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
-    print(f"Training device: {device}")
-
-
-    ### Dataloader
-    batch_size = 32
-    # split 80/10/10
-    num_workers = 4 # 4 times the number of gpus
-    print("Number of workers: %d"%num_workers)
-
-    num_train_data = int(num_basins * 0.7) 
-    num_val_data = int(num_basins * 0.15) 
-    num_test_data = num_basins - num_train_data - num_val_data
-    print("Train basins: %d" %num_train_data)
-    print("Validation basins: %d" %num_val_data)
-    print("Test basins: %d" %num_test_data)
-    train_dataset, val_dataset, test_dataset = random_split(dataset, (num_train_data, num_val_data, num_test_data))
-    train_dataloader = DataLoader(train_dataset, batch_size=batch_size, num_workers=num_workers, shuffle=True,  drop_last=False)
-    val_dataloader = DataLoader(val_dataset, batch_size=batch_size, num_workers=num_workers, shuffle=False)
-    test_dataloader = DataLoader(test_dataset, batch_size=batch_size, num_workers=num_workers, shuffle=False)
-
-    loss_fn = nn.MSELoss()
-
-    model = Hydro_FFNet(n_inputs = 27, 
-                    n_outputs = 27, 
-                    hidden_layers = [64,64,64,64,64,64], 
-                    drop_p = 0.5, 
-                    lr = 1e-4, 
-                    activation = nn.LeakyReLU,
-                    weight_decay = 0.0 )
-        
-    
-    
+  
+    fig.tight_layout()
+    save_file = "plot_encoded_"+model_id+".png"
+    fig.savefig(save_file)

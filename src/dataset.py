@@ -272,7 +272,11 @@ class CamelDataset(Dataset):
         print("...done.")
                   
     def save_statics(self, filename):
-        np.savetxt(filename, self.statics_data.squeeze().cpu().numpy())
+        np_data =  self.statics_data.squeeze().cpu().numpy()
+        columns = ["E"+str(i) for i in range(27)] # 27 features
+        df = pd.DataFrame(np_data, columns=columns)
+        df.insert(0, "basin_id", self.loaded_basin_ids)
+        df.to_csv(filename, sep=" ")
 
     def __len__(self):
         assert len(self.input_data)==len(self.output_data)

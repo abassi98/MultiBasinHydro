@@ -65,8 +65,12 @@ if __name__ == '__main__':
 
     model = Hydro_LSTM_AE.load_from_checkpoint(ckpt_path)
     model.eval()
+    enc = torch.zeros((x.shape[0],model.encoded_space_dim))
     with torch.no_grad():
-        enc, rec = model(x,y)
+        for i in range(x.shape[0]):
+            print(i)
+            enc_temp, _ = model(x[i].unsqueeze(0),y[i].unsqueeze(0))
+            enc[i] = enc_temp.squeeze()
 
     # pass thorugh sigmoid
     enc = nn.Sigmoid()(enc)
@@ -76,7 +80,7 @@ if __name__ == '__main__':
     print(enc.shape)
     filename = "encoded_features_"+model_id+".txt"
     df = pd.DataFrame()
-    df["basin__id"] = camel_dataset.loaded_basin_ids
+    df["basin_id"] = camel_dataset.loaded_basin_ids
 
     for i in range(enc.shape[1]):
         df["E"+str(i)] = enc[:,i]
