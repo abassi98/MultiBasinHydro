@@ -47,10 +47,7 @@ class CamelDataset(Dataset):
         self.df_statics = pd.concat([df_clim, df_geol, df_topo, df_vege, df_soil], axis=1)
         self.static_attributes = self.df_statics.shape[1] # as many as Kratzert
         self.statics_ids = np.array(pd.read_csv(data_path+"/camels_clim.txt", sep=";")["gauge_id"]).astype(int)
-        # print(self.df_statics)
-        # print(df_soil)
-        # import sys
-        # sys.exit()
+     
         # convert string dates to datetime format
         self.start_date = datetime.datetime.strptime(dates[0], '%Y/%m/%d').date()
         self.end_date = datetime.datetime.strptime(dates[1], '%Y/%m/%d').date()
