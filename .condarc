@@ -1,0 +1,18 @@
+# # use conda config --describe <keyword> to get infos
+# # e.g. conda config --describe channels
+
+channels:
+      - conda-forge
+      - defaults
+
+channel_priority: strict
+
+envs_dirs:
+    - /cfs/earth/scratch/$USER/.conda/envs
+
+pkgs_dirs:
+    - /cfs/earth/scratch/$USER/.conda/pkgs
+
+env_prompt: '({default_env}) '
+
+auto_activate_base: false
