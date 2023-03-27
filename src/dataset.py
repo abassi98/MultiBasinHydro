@@ -273,7 +273,7 @@ class CamelDataset(Dataset):
                   
     def save_statics(self, filename):
         np_data =  self.statics_data.squeeze().cpu().numpy()
-        columns = ["E"+str(i) for i in range(27)] # 27 features
+        columns =  ["p_mean", "pet_mean", "p_seasonality", "frac_snow", "aridity", "high_prec_freq", "high_prec_dur","low_prec_freq", "low_prec_dur", "carbonate_rocks_frac", "geol_permeability", "elev_mean","slope_mean","area_gages2", "frac_forest","lai_max","lai_diff","gvf_max","gvf_diff", "soil_depth_pelletier","soil_depth_statsgo","soil_porosity","soil_conductivity","max_water_content","sand_frac","silt_frac","clay_frac"] 
         df = pd.DataFrame(np_data, columns=columns)
         df.insert(0, "basin_id", self.loaded_basin_ids)
         df.to_csv(filename, sep=" ")

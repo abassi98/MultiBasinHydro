@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pd
 import geopandas as gpd
 import matplotlib.pyplot as plt
-
+from mpl_toolkits.axes_grid1.inset_locator import InsetPosition
 
 
 
@@ -32,27 +32,29 @@ if __name__ == '__main__':
                 lat.append(lat_topo[j])
                 lon.append(lon_topo[j])
 
-    df["lat"] = lat
-    df["lon"] = lon
+    
    
     # initialize an axis
-    fig = plt.figure(1, figsize = (6,6))
-    plt.subplots_adjust(wspace=0.5, right=0.8, top=0.9, bottom=0.1)
+    fig, axes= plt.subplots(2,2, figsize=(8,8), sharex=True, sharey=True)
 
     # plot map on axis
     countries = gpd.read_file(  
         gpd.datasets.get_path("naturalearth_lowres"))
     
     num_features = 4
-    for i in range(num_features):
-        plt.subplot(2,2,i+1)
-        ax = plt.gca()
-        ax.set_xlim(-128, -65)
-        ax.set_ylim(24, 50)
-        countries[countries["name"] == "United States of America"].plot(color="lightgrey", ax=ax)
-        df.plot.scatter(x="lon", y="lat",c="E"+str(i), colormap="YlOrRd", title="E"+str(i), ax=ax, s=1, colorbar=False)
-    
-  
-    fig.tight_layout()
+    for i in range(2):
+        for j in range(2):
+            f = 2*i +j 
+            ax = axes[i,j]
+            ax.set_xlim(-128, -65)
+            ax.set_ylim(24, 50)
+            ax.set_title("E"+str(f))
+            ax.set_axis_off()
+            countries[countries["name"] == "United States of America"].plot(color="lightgrey", ax=ax)
+            im = ax.scatter(x=lon, y=lat,c=df["E"+str(f)], cmap="YlOrRd", s=1)
+            fig.colorbar(im, ax=ax, fraction=0.028, pad=0.02, location="bottom")
+        
+    # Colorbar
+
     save_file = "plot_encoded_"+model_id+".png"
     fig.savefig(save_file)
