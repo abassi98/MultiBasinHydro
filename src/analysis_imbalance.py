@@ -49,11 +49,11 @@ columns = df_ES.iloc[:,1::].columns
 corr = np.abs(df_ES.iloc[:,1::].corr())
 fig, axs = plt.subplots(1,1,figsize=(10,10))
 g = sns.heatmap(corr, xticklabels=corr.columns, yticklabels=corr.columns, cmap="YlOrRd", ax=axs)
-g.set_xticklabels(g.get_xticklabels(), rotation = 70, fontsize = 8)
-g.set_yticklabels(g.get_yticklabels(), rotation = 30, fontsize = 8)
+g.set_xticklabels(g.get_xticklabels(), rotation = 70, fontsize = 10)
+g.set_yticklabels(g.get_yticklabels(), rotation = 30, fontsize = 10)
 #sns.heatmap(corr_noise, xticklabels=corr.columns, yticklabels=corr.columns, cmap="bwr", ax=axs[1])
 file_corr = "plot_corrES_"+model_id+".png"
-axs.set_title("Correlation matrix Encoded Features/Statics attributes(Kratzert)")
+axs.set_title("Correlation matrix Encoded Features/Statics attributes(Kratzert)", fontsize=15)
 fig.savefig(file_corr)
 
 # plot correaltion matrix EH
@@ -61,11 +61,11 @@ columns = df_EH.iloc[:,1::].columns
 corr = np.abs(df_EH.iloc[:,1::].corr())
 fig, axs = plt.subplots(1,1,figsize=(10,10))
 g = sns.heatmap(corr, xticklabels=corr.columns, yticklabels=corr.columns, cmap="YlOrRd", ax=axs)
-g.set_xticklabels(g.get_xticklabels(), rotation = 70, fontsize = 8)
-g.set_yticklabels(g.get_yticklabels(), rotation = 30, fontsize = 8)
+g.set_xticklabels(g.get_xticklabels(), rotation = 70, fontsize = 10)
+g.set_yticklabels(g.get_yticklabels(), rotation = 30, fontsize = 10)
 #sns.heatmap(corr_noise, xticklabels=corr.columns, yticklabels=corr.columns, cmap="bwr", ax=axs[1])
 file_corr = "plot_corrEH_"+model_id+".png"
-axs.set_title("Correlation matrix Encoded Features/Hydrological Signatures")
+axs.set_title("Correlation matrix Encoded Features/Hydrological Signatures", fontsize=15)
 fig.savefig(file_corr)
 
 # plot correaltion matrix SH
@@ -73,11 +73,11 @@ columns = df_SH.iloc[:,1::].columns
 corr = np.abs(df_SH.iloc[:,1::].corr())
 fig, axs = plt.subplots(1,1,figsize=(10,10))
 g = sns.heatmap(corr, xticklabels=corr.columns, yticklabels=corr.columns, cmap="YlOrRd", ax=axs)
-g.set_xticklabels(g.get_xticklabels(), rotation = 70, fontsize = 8)
-g.set_yticklabels(g.get_yticklabels(), rotation = 30, fontsize = 8)
+g.set_xticklabels(g.get_xticklabels(), rotation = 70, fontsize = 10)
+g.set_yticklabels(g.get_yticklabels(), rotation = 30, fontsize = 10)
 #sns.heatmap(corr_noise, xticklabels=corr.columns, yticklabels=corr.columns, cmap="bwr", ax=axs[1])
 file_corr = "plot_corrSH_"+model_id+".png"
-axs.set_title("Correlation matrix Static attributes(Kratzert)/Hydrological Signatures")
+axs.set_title("Correlation matrix Static attributes(Kratzert)/Hydrological Signatures", fontsize=15)
 fig.savefig(file_corr)
 
 
