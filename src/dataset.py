@@ -16,7 +16,7 @@ from utils import Scale_Data, Globally_Scale_Data
 
 
 class CamelDataset(Dataset):
-    def __init__(self, dates: list, force_attributes: list,  data_path: str = "basin_dataset_public_v1p2", source_data_set: str = "daymet", debug=False, transform_input=None, transform_output=None, transform_statics=None) -> None:
+    def __init__(self, dates: list, force_attributes: list,  data_path: str = "basin_dataset_public_v1p2", source_data_set: str = "daymet", debug=False, transform_input=None, transform_output=None) -> None:
         super().__init__()
      
         self.data_path = data_path
@@ -30,7 +30,7 @@ class CamelDataset(Dataset):
         self.debug = debug # debug mode default off
         self.transform_input = transform_input
         self.transform_output = transform_output
-        self.transform_statics = transform_statics
+       
 
         # static attributes
         clim_attr = ["p_mean", "pet_mean", "p_seasonality", "frac_snow", "aridity", "high_prec_freq", "high_prec_dur","low_prec_freq", "low_prec_dur"] # 9 features
@@ -44,6 +44,12 @@ class CamelDataset(Dataset):
         soil_attr = ["soil_depth_pelletier","soil_depth_statsgo","soil_porosity","soil_conductivity","max_water_content","sand_frac","silt_frac","clay_frac"] # 8 features
         df_soil = pd.read_csv(data_path+"/camels_soil.txt", sep=";")[soil_attr] 
 
+        # hydrological signaures(normalized)
+        self.df_hydro = pd.read_csv(data_path+"/camels_hydro.txt", sep=";").iloc[:,1:]
+        self.hydro_attributes = self.df_hydro.shape[1] # as many as Kratzert
+        self.hydro_ids = np.array(pd.read_csv(data_path+"/camels_hydro.txt", sep=";")["gauge_id"]).astype(int)
+
+        # statics attributes(normalized)
         self.df_statics = pd.concat([df_clim, df_geol, df_topo, df_vege, df_soil], axis=1)
         self.static_attributes = self.df_statics.shape[1] # as many as Kratzert
         self.statics_ids = np.array(pd.read_csv(data_path+"/camels_clim.txt", sep=";")["gauge_id"]).astype(int)
@@ -64,8 +70,7 @@ class CamelDataset(Dataset):
         self.max_flow = -1000*torch.ones((1,), dtype=torch.float32)
         self.min_force = 1000*torch.ones((self.num_force_attributes,), dtype=torch.float32)
         self.max_force = -1000*torch.ones((self.num_force_attributes,), dtype=torch.float32)
-        self.min_statics = 1000*torch.ones((self.static_attributes,), dtype=torch.float32)
-        self.max_statics = -1000*torch.ones((self.static_attributes,), dtype=torch.float32)
+        
         
         
         # ==========================================================================
@@ -105,6 +110,7 @@ class CamelDataset(Dataset):
         self.input_data = torch.zeros(self.len_dataset, 1, self.seq_len, 1)
         self.output_data = torch.zeros(self.len_dataset, 1, self.seq_len, self.num_force_attributes)
         self.statics_data = torch.zeros(self.len_dataset,1, 1, self.static_attributes)
+        self.hydro_data = torch.zeros(self.len_dataset,1, 1, self.hydro_attributes)
         
     def adjust_dates(self, ):
         """
@@ -260,21 +266,35 @@ class CamelDataset(Dataset):
                 if  int(self.loaded_basin_ids[i]) == self.statics_ids[j]:
                     statics_data = torch.tensor(self.df_statics.iloc[j,:], dtype=torch.float32).unsqueeze(0).unsqueeze(0) # shape (1, seq_len, feature_dim=1)
                     self.statics_data[i] = statics_data
-                    current_min_statics = torch.amin(statics_data.squeeze(dim=0), dim=0)
-                    current_max_statics = torch.amax(statics_data.squeeze(dim=0), dim=0)
-                    self.min_statics = torch.minimum(self.min_statics, current_min_statics)
-                    self.max_statics = torch.maximum(self.max_statics, current_max_statics)
+                  
+        # renormalize
+        self.statics_data = (self.statics_data- torch.amin(self.statics_data, dim=0, keepdim=True))/(torch.amax(self.statics_data, dim=0, keepdim=True)-torch.amin(self.statics_data, dim=0, keepdim=True))
+        print("...done.")
 
 
-        # redefine transformations
-        self.transform_statics = Globally_Scale_Data(self.min_statics, self.max_statics)
-
+    def load_hydro(self):
+        """
+        Load static catchment features
+        """
+        print("Loading statics attributes...")
+        for i in range(len(self.loaded_basin_ids)):
+            for j in range(len(self.hydro_ids)):
+                if  int(self.loaded_basin_ids[i]) == self.hydro_ids[j]:
+                    hydro_data = torch.tensor(self.df_hydro.iloc[j,:], dtype=torch.float32).unsqueeze(0).unsqueeze(0) # shape (1, seq_len, feature_dim=1)
+                    self.hydro_data[i] = hydro_data
+                  
+        self.hydro_data = (self.hydro_data- torch.amin(self.hydro_data, dim=0, keepdim=True))/(torch.amax(self.hydro_data, dim=0, keepdim=True)-torch.amin(self.hydro_data, dim=0, keepdim=True))
         print("...done.")
                   
+    def save_hydro(self, filename):
+        np_data =  self.hydro_data.squeeze().cpu().numpy()
+        df = pd.DataFrame(np_data, columns=self.df_hydro.columns)
+        df.insert(0, "basin_id", self.loaded_basin_ids)
+        df.to_csv(filename, sep=" ")
+    
     def save_statics(self, filename):
         np_data =  self.statics_data.squeeze().cpu().numpy()
-        columns =  ["p_mean", "pet_mean", "p_seasonality", "frac_snow", "aridity", "high_prec_freq", "high_prec_dur","low_prec_freq", "low_prec_dur", "carbonate_rocks_frac", "geol_permeability", "elev_mean","slope_mean","area_gages2", "frac_forest","lai_max","lai_diff","gvf_max","gvf_diff", "soil_depth_pelletier","soil_depth_statsgo","soil_porosity","soil_conductivity","max_water_content","sand_frac","silt_frac","clay_frac"] 
-        df = pd.DataFrame(np_data, columns=columns)
+        df = pd.DataFrame(np_data, columns=self.df_statics.columns)
         df.insert(0, "basin_id", self.loaded_basin_ids)
         df.to_csv(filename, sep=" ")
 
@@ -290,8 +310,6 @@ class CamelDataset(Dataset):
             x_data = self.transform_input(x_data)
         if self.transform_output:
             y_data = self.transform_output(y_data)
-        if self.transform_statics:
-            statics = self.transform_statics(statics)
         return x_data, y_data, statics
 
     
