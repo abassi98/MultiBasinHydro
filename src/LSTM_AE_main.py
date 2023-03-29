@@ -1,6 +1,6 @@
 import numpy as np
 import pandas as pd
-import os
+import sys
 import argparse 
 
 # pytorch
@@ -86,6 +86,8 @@ if __name__ == '__main__':
     test_dataloader = DataLoader(test_dataset, batch_size=batch_size, num_workers=num_workers, shuffle=False)
 
     
+    print(sys.getsizeof(camel_dataset.input_data))
+    print(sys.getsizeof(camel_dataset.output_data))
     
 
     ##########################################################
