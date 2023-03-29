@@ -1,5 +1,7 @@
 import numpy as np
 import pandas as pd
+import geopandas as gpd
+import matplotlib.pyplot as plt
 
 # pytorch
 import torch
@@ -11,7 +13,7 @@ import multiprocessing
 # user functions
 from dataset import CamelDataset
 from models import Hydro_LSTM_AE
-from utils import Globally_Scale_Data, find_best_epoch
+from utils import find_best_epoch, NSELoss
 
 
 if __name__ == '__main__':
@@ -47,11 +49,26 @@ if __name__ == '__main__':
     num_gpus = torch.cuda.device_count()
     print("Num of gpus: %d"%num_gpus)
     
+    # Load latitude and longitude
+    file_topo = "basin_dataset_public_v1p2/camels_topo.txt"
+    df_topo = pd.read_csv(file_topo, sep=";")
+    topo_basin_ids = df_topo.iloc[:,0]
+   
+    lat_topo = df_topo["gauge_lat"]
+    lon_topo = df_topo["gauge_lon"]
+
+    lat = []
+    lon = []
+    for i in range(len(camel_dataset.loaded_basin_ids)):
+        for j in range(len(topo_basin_ids)):
+            if topo_basin_ids[j] == camel_dataset.loaded_basin_ids[i]:
+                lat.append(lat_topo[j])
+                lon.append(lon_topo[j])
 
     # define dataloader for all dataset
     num_workers = 0
     print("Number of workers: %d"%num_workers)
-    dataloader = DataLoader(camel_dataset, batch_size=num_basins, num_workers=num_workers, shuffle=False)
+    dataloader = DataLoader(camel_dataset, batch_size=num_basins, num_workers=num_workers, shuffle=False) # all dataset
 
     # extract forcing and streamflow
     x, y, statics = next(iter(dataloader))
@@ -66,11 +83,14 @@ if __name__ == '__main__':
     model = Hydro_LSTM_AE.load_from_checkpoint(ckpt_path)
     model.eval()
     enc = torch.zeros((x.shape[0],model.encoded_space_dim))
+    nse = []
+    loss_fn = NSELoss()
     with torch.no_grad():
         for i in range(x.shape[0]):
             print(i)
-            enc_temp, _ = model(x[i].unsqueeze(0),y[i].unsqueeze(0))
+            enc_temp, rec = model(x[i].unsqueeze(0),y[i].unsqueeze(0))
             enc[i] = enc_temp.squeeze()
+            nse.append(loss_fn(rec.squeeze().unsqueeze(0), x[i].squeeze().unsqueeze(0)))
 
     # pass thorugh sigmoid
     enc = nn.Sigmoid()(enc)
@@ -86,3 +106,21 @@ if __name__ == '__main__':
         df["E"+str(i)] = enc[:,i]
 
     df.to_csv(filename, sep=" ")
+
+    ### plot nse over us map
+    # initialize an axis
+    fig, ax= plt.subplots(1,1, figsize=(8,8), sharex=True, sharey=True)
+
+    # plot map on axis
+    countries = gpd.read_file(gpd.datasets.get_path("naturalearth_lowres"))
+
+    ax.set_xlim(-128, -65)
+    ax.set_ylim(24, 50)
+    ax.set_title("NSE", fontsize=20)
+    ax.set_axis_off()
+    countries[countries["name"] == "United States of America"].plot(color="lightgrey", ax=ax)
+    im = ax.scatter(x=lon, y=lat,c=nse, cmap="YlOrRd", s=1)
+    fig.colorbar(im, ax=ax, fraction=0.028, pad=0.02, location="bottom")
+    
+    save_file = "plot_NSEmap_"+model_id+".png"
+    fig.savefig(save_file)

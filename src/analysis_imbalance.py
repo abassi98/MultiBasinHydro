@@ -46,9 +46,10 @@ df_SH.insert(0, "basin_id", H_ids)
 
 # plot correaltion matrix ES
 columns = df_ES.iloc[:,1::].columns
-corr = np.abs(df_ES.iloc[:,1::].corr())
+corr = np.array(np.abs(df_ES.iloc[:,1::].corr()))[:4,4:]
+
 fig, axs = plt.subplots(1,1,figsize=(10,10))
-g = sns.heatmap(corr, xticklabels=corr.columns, yticklabels=corr.columns, cmap="YlOrRd", ax=axs)
+g = sns.heatmap(corr, xticklabels=columns[4:], yticklabels=columns[:4], cmap="YlOrRd", ax=axs)
 g.set_xticklabels(g.get_xticklabels(), rotation = 70, fontsize = 10)
 g.set_yticklabels(g.get_yticklabels(), rotation = 30, fontsize = 10)
 #sns.heatmap(corr_noise, xticklabels=corr.columns, yticklabels=corr.columns, cmap="bwr", ax=axs[1])
@@ -58,9 +59,10 @@ fig.savefig(file_corr)
 
 # plot correaltion matrix EH
 columns = df_EH.iloc[:,1::].columns
-corr = np.abs(df_EH.iloc[:,1::].corr())
+corr = np.array(np.abs(df_EH.iloc[:,1::].corr()))[:4,4:]
+
 fig, axs = plt.subplots(1,1,figsize=(10,10))
-g = sns.heatmap(corr, xticklabels=corr.columns, yticklabels=corr.columns, cmap="YlOrRd", ax=axs)
+g = sns.heatmap(corr, xticklabels=columns[4:], yticklabels=columns[:4], cmap="YlOrRd", ax=axs)
 g.set_xticklabels(g.get_xticklabels(), rotation = 70, fontsize = 10)
 g.set_yticklabels(g.get_yticklabels(), rotation = 30, fontsize = 10)
 #sns.heatmap(corr_noise, xticklabels=corr.columns, yticklabels=corr.columns, cmap="bwr", ax=axs[1])
@@ -70,9 +72,9 @@ fig.savefig(file_corr)
 
 # plot correaltion matrix SH
 columns = df_SH.iloc[:,1::].columns
-corr = np.abs(df_SH.iloc[:,1::].corr())
+corr = np.array(np.abs(df_SH.iloc[:,1::].corr()))[:13,13:]
 fig, axs = plt.subplots(1,1,figsize=(10,10))
-g = sns.heatmap(corr, xticklabels=corr.columns, yticklabels=corr.columns, cmap="YlOrRd", ax=axs)
+g = sns.heatmap(corr, xticklabels=columns[13:], yticklabels=columns[:13], cmap="YlOrRd", ax=axs)
 g.set_xticklabels(g.get_xticklabels(), rotation = 70, fontsize = 10)
 g.set_yticklabels(g.get_yticklabels(), rotation = 30, fontsize = 10)
 #sns.heatmap(corr_noise, xticklabels=corr.columns, yticklabels=corr.columns, cmap="bwr", ax=axs[1])
