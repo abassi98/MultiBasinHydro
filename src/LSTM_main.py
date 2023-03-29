@@ -87,7 +87,7 @@ if __name__ == '__main__':
     test_dataloader = DataLoader(test_dataset, batch_size=batch_size, num_workers=num_workers, shuffle=False)
 
     x,y, stat = next(iter(test_dataloader))
-    print(stat)
+    
     ##########################################################
     # initialize the Hydro LSTM Auto Encoder
     ##########################################################
