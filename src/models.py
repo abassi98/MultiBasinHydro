@@ -203,7 +203,7 @@ class Hydro_LSTM_AE(pl.LightningModule):
         
     def training_step(self, batch, batch_idx):        
         ### Unpack batch
-        x, y, _ = batch
+        x, y = batch
         # select past period
         x_past = x[:,:,:self.seq_len,:]
         y_past = y[:,:,:self.seq_len,:]
@@ -226,7 +226,7 @@ class Hydro_LSTM_AE(pl.LightningModule):
     
     def validation_step(self, batch, batch_idx):
         ### Unpack batch
-        x, y, _ = batch
+        x, y = batch
         # select past period
         x_past = x[:,:,:self.seq_len,:]
         y_past = y[:,:,:self.seq_len,:]
