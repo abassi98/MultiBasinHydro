@@ -1,7 +1,4 @@
-#import numpy as np
-#import pandas as pd
-import os
-#import multiprocessing
+import multiprocessing
 import argparse
 
 # pytorch
@@ -14,7 +11,7 @@ from pytorch_lightning.callbacks import ModelCheckpoint
 
 import torch.optim as optim
 from pytorch_lightning.callbacks.early_stopping import EarlyStopping 
-from torchvision import transforms, datasets
+
 
 # user functions
 from dataset import CamelDataset
