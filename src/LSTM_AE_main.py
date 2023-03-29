@@ -96,10 +96,10 @@ if __name__ == '__main__':
     # possibly adjust kernel sizes according to seq_len
     model = Hydro_LSTM_AE(in_channels=(1,8,16), 
                     out_channels=(8,16,32), 
-                    kernel_sizes=(6,3,5), 
+                    kernel_sizes=(7,5,6), 
                     encoded_space_dim=args.num_features,
                     drop_p=0.5,
-                    seq_len=seq_len,
+                    seq_len=int(seq_len/2),
                     lr = 1e-4,
                     act=nn.LeakyReLU,
                     loss_fn=loss_fn,
@@ -107,8 +107,11 @@ if __name__ == '__main__':
                     layers_num=2,
                     bidirectional = bool(args.bidirectional),
                     linear=512,
-                    num_force_attributes = len(force_attributes))
+                    num_force_attributes = len(force_attributes),
+                    warmup = 730)
     
+    print("Training and Validation lengths (days): %d"%model.seq_len)
+    print("Warmup days: %d"%model.warmup)
     ##########################################################
     # training 
     ##########################################################
@@ -138,10 +141,10 @@ if __name__ == '__main__':
     
 
     # retrieve checkpoints and continue training
-    ckpt_path = "checkpoints/lstm-ae-bdTrue-E3/last.ckpt"
+    #ckpt_path = "checkpoints/lstm-ae-bdTrue-E3/last.ckpt"
 
     # define trainer 
     trainer = pl.Trainer(max_epochs=max_epochs, callbacks=[checkpoint_model,metrics_callback], accelerator=str(device),devices=1, check_val_every_n_epoch=check_val_every_n_epoch, logger=False)
     
-    trainer.fit(model=model, train_dataloaders=train_dataloader, val_dataloaders = val_dataloader, ckpt_path=ckpt_path)
+    trainer.fit(model=model, train_dataloaders=train_dataloader, val_dataloaders = val_dataloader)
    

@@ -85,7 +85,7 @@ class MetricsCallback(Callback):
         exists = os.path.exists(self.path)
         # if already exists a saving, load it and update
         if exists:
-            self.dict_metrics = torch.load(self.path)
+            self.dict_metrics = torch.load(self.path, map_location=torch.device('cpu'))
         else:
             os.makedirs(self.dirpath, exist_ok = True) 
             self.dict_metrics = {}

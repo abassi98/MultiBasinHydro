@@ -59,9 +59,10 @@ if __name__ == '__main__':
 
     lat = []
     lon = []
+ 
     for i in range(len(camel_dataset.loaded_basin_ids)):
         for j in range(len(topo_basin_ids)):
-            if topo_basin_ids[j] == camel_dataset.loaded_basin_ids[i]:
+            if topo_basin_ids[j] == int(camel_dataset.loaded_basin_ids[i]):
                 lat.append(lat_topo[j])
                 lon.append(lon_topo[j])
 
@@ -90,8 +91,9 @@ if __name__ == '__main__':
             print(i)
             enc_temp, rec = model(x[i].unsqueeze(0),y[i].unsqueeze(0))
             enc[i] = enc_temp.squeeze()
-            nse.append(loss_fn(rec.squeeze().unsqueeze(0), x[i].squeeze().unsqueeze(0)))
+            nse.append(-loss_fn(rec.squeeze().unsqueeze(0), x[i].squeeze().unsqueeze(0)).item())
 
+    
     # pass thorugh sigmoid
     enc = nn.Sigmoid()(enc)
     

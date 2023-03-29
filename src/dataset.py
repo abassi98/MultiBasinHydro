@@ -165,11 +165,11 @@ class CamelDataset(Dataset):
         print("Loading Camel ...")
         # len(self.trimmed_basin_ids)
         count = 0
-        num_iter = len(self.trimmed_basin_ids)
+        self.num_iter = len(self.trimmed_basin_ids)
         if self.debug:
-            num_iter = 15
+            self.num_iter = 15
     
-        for i in range(num_iter):
+        for i in range(self.num_iter):
             # retrieve data
             basin_id = self.trimmed_basin_ids[i]
             basin_huc = self.trimmed_basin_hucs[i]

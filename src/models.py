@@ -128,6 +128,7 @@ class Hydro_LSTM_AE(pl.LightningModule):
                  linear = 512,
                  weight_decay = 0.0,
                  num_force_attributes = 5,
+                 warmup = 730, # 2 years
                 ):
         
         """
@@ -158,6 +159,7 @@ class Hydro_LSTM_AE(pl.LightningModule):
         self.sigmoid = nn.Sigmoid()
         self.loss_fn = loss_fn
         self.num_force_attributes = num_force_attributes 
+        self.warmup = warmup # warmup days
 
         # Encoder
         self.encoder = ConvEncoder(in_channels, out_channels, kernel_sizes,padding, encoded_space_dim, 
@@ -202,10 +204,14 @@ class Hydro_LSTM_AE(pl.LightningModule):
     def training_step(self, batch, batch_idx):        
         ### Unpack batch
         x, y, _ = batch
+        # select training period
+        x = x[:,:,:self.seq_len,:]
+        y = y[:,:,:self.seq_len,:]
+        print(x.shape, y.shape)
         # forward pass
         enc, rec = self.forward(x,y)
         # Logging to TensorBoard by default
-        train_loss = self.loss_fn(x.squeeze(), rec.squeeze())
+        train_loss = self.loss_fn(x.squeeze()[:,self.warmup:], rec.squeeze()[:,self.warmup:])
         self.log("train_loss", train_loss, prog_bar=True)
         #print(self.lr_scheduler.get_last_lr())
         return train_loss
@@ -213,10 +219,14 @@ class Hydro_LSTM_AE(pl.LightningModule):
     def validation_step(self, batch, batch_idx):
         ### Unpack batch
         x, y, _ = batch
+        # select validation period
+        x = x[:,:,1+self.seq_len:,:]
+        y = y[:,:,1+self.seq_len:,:]
+        print(x.shape, y.shape)
         # forward pass
         enc, rec = self.forward(x,y)
         # Logging to TensorBoard by default
-        val_loss = self.loss_fn(x.squeeze(), rec.squeeze())
+        val_loss = self.loss_fn(x.squeeze()[:,self.warmup:], rec.squeeze()[:,self.warmup:])
         # Logging to TensorBoard by default
         self.log("val_loss", val_loss, prog_bar=True)
         self.log("epoch_num", int(self.current_epoch),prog_bar=True)
