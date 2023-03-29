@@ -1,20 +1,20 @@
 #!/bin/bash
 
-#SBATCH --job-name=gpu_LSTM_AE_bdTrue3
+#SBATCH --job-name=gpu_LSTM_AE_bdTrue30
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=1
 #SBATCH --cpus-per-task=1
-#SBATCH --time=120:00:00
+#SBATCH --time=24:00:00
 #SBATCH --partition=earth-4
 #SBATCH --constraint=rhel8
 #SBATCH --gres=gpu:a100:1
 #SBATCH --account=xbs4
 #SBATCH --mail-type=BEGIN
 #SBATCH --mail-type=END,FAIL     
-#SBATCH --output=gpu_LSTM_AE-bdTrueStat.out
-#SBATCH --error=gpu_LSTM_AE-bdTrueStat.err
+#SBATCH --output=gpu_LSTM_AE-bdTrue30.out
+#SBATCH --error=gpu_LSTM_AE-bdTrue30.err
 
-module load gcc/7.3.0
-module load cuda/11.6.2
+module load gcc/9.4.0-pe5.34 miniconda3/4.12.0 lsfm-init-miniconda/1.0.0	
+conda activate my_env
 
-python3 src/LSTM_AE_main.py --num_features 3 --bidirectional 1 --debug 0 # no bidirectional, training mode
+python3 src/LSTM_AE_main.py --num_features 30 --bidirectional 1 --debug 0 # bidirectional, training mode
