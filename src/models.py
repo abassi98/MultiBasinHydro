@@ -204,32 +204,50 @@ class Hydro_LSTM_AE(pl.LightningModule):
     def training_step(self, batch, batch_idx):        
         ### Unpack batch
         x, y, _ = batch
-        # select training period
-        x = x[:,:,:self.seq_len,:]
-        y = y[:,:,:self.seq_len,:]
-        print(x.shape, y.shape)
+        # select past period
+        x_past = x[:,:,:self.seq_len,:]
+        y_past = y[:,:,:self.seq_len,:]
+        # select future (validation) period
+        x_fut = x[:,:,1+self.seq_len:,:]
+        y_fut = y[:,:,1+self.seq_len:,:]
         # forward pass
-        enc, rec = self.forward(x,y)
+        _, rec_past = self.forward(x_past,y_past)
         # Logging to TensorBoard by default
-        train_loss = self.loss_fn(x.squeeze()[:,self.warmup:], rec.squeeze()[:,self.warmup:])
+        train_loss = self.loss_fn(x_past.squeeze()[:,self.warmup:], rec_past.squeeze()[:,self.warmup:])
         self.log("train_loss", train_loss, prog_bar=True)
+        # compute future (training) loss and log
+        with torch.no_grad():
+            _, rec_fut = self.forward(x_fut,y_fut)
+        train_fut_loss = self.loss_fn(x_fut.squeeze()[:,self.warmup:], rec_fut.squeeze()[:,self.warmup:])
+        self.log("train_fut_loss", train_fut_loss)
+
         #print(self.lr_scheduler.get_last_lr())
         return train_loss
     
     def validation_step(self, batch, batch_idx):
         ### Unpack batch
         x, y, _ = batch
-        # select validation period
-        x = x[:,:,1+self.seq_len:,:]
-        y = y[:,:,1+self.seq_len:,:]
-        print(x.shape, y.shape)
+        # select past period
+        x_past = x[:,:,:self.seq_len,:]
+        y_past = y[:,:,:self.seq_len,:]
+        # select future (validation) period
+        x_fut = x[:,:,1+self.seq_len:,:]
+        y_fut = y[:,:,1+self.seq_len:,:]
+        
+ 
         # forward pass
-        enc, rec = self.forward(x,y)
+        _, rec_fut = self.forward(x_fut,y_fut)
         # Logging to TensorBoard by default
-        val_loss = self.loss_fn(x.squeeze()[:,self.warmup:], rec.squeeze()[:,self.warmup:])
+        val_loss = self.loss_fn(x_fut.squeeze()[:,self.warmup:], rec_fut.squeeze()[:,self.warmup:])
         # Logging to TensorBoard by default
         self.log("val_loss", val_loss, prog_bar=True)
-        self.log("epoch_num", int(self.current_epoch),prog_bar=True)
+        self.log("epoch_num", float(self.current_epoch),prog_bar=True)
+        
+        # compute past (validation) loss
+        with torch.no_grad():
+            _, rec_past = self.forward(x_past,y_past)
+        val_past_loss = self.loss_fn(x_past.squeeze()[:,self.warmup:], rec_past.squeeze()[:,self.warmup:])
+        self.log("val_past_loss", val_past_loss)
         
         return val_loss
     
@@ -350,7 +368,7 @@ class Hydro_LSTM(pl.LightningModule):
         val_loss = self.loss_fn(x.squeeze(), rec.squeeze())
         # Logging to TensorBoard by default
         self.log("val_loss", val_loss, prog_bar=True)
-        self.log("epoch_num", int(self.current_epoch),prog_bar=True)
+        self.log("epoch_num", float(self.current_epoch),prog_bar=True)
         
         return val_loss
     
