@@ -89,7 +89,7 @@ if __name__ == '__main__':
     print(sys.getsizeof(camel_dataset.input_data))
     print(sys.getsizeof(camel_dataset.output_data))
     
-
+    torch.cuda.empty_cache()
     ##########################################################
     # initialize the Hydro LSTM Auto Encoder
     ##########################################################
