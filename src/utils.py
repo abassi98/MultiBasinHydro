@@ -114,6 +114,7 @@ class NSELoss(nn.Module):
             - NSE : minus the Nash-Sutcliffe efficiency, tensor of size ()
         """
         # compute NSE as batch
+        assert(tar.shape==obs.shape)
         NSE_num = torch.sum((torch.abs(tar - obs))**self.alpha, dim=-1) # tensor of size (batch_size,)
         NSE_den = torch.sum((torch.abs(tar - torch.mean(obs, dim=-1, keepdims=True)))**self.alpha, dim=-1) # tensor of size (batch_size,)
         NSE_tensor = 1.0 - NSE_num / NSE_den
@@ -127,6 +128,41 @@ class NSELoss(nn.Module):
             raise Exception("Invalid reduction provided. Allowed 'mean', 'sum', None")
             
         return - NSE
+ 
+ 
+class PFAB():
+    """
+    Compute absolute FHV, percent bias in flow duration curve high-segment volume
+    """
+    def __init__(self, ex_prob=0.01, reduction=None):
+        self.ex_prob = ex_prob # exceedance probability
+        self.reduction = reduction # reduction over batch dimension
+
+    def __call__(self, tar : Tensor, obs : Tensor) -> Tensor:
+        assert(tar.shape==obs.shape)
+        seq_len = tar.shape[-1] # take sequence lenght
+        
+        high_peak_length = int(seq_len * self.ex_prob)
+        
+        sorted_tar, _ = torch.sort(tar, dim=-1)
+        sorted_tar = sorted_tar[:,:high_peak_length]
+        sorted_obs, _= torch.sort(obs, dim=-1)
+        sorted_obs = sorted_obs[:,:high_peak_length]
+        num = torch.sum(sorted_obs - sorted_tar, dim=-1, keepdim=False)
+        den = torch.sum(sorted_obs, dim=-1, keepdim=False)
+        out = num/den
+        if self.reduction == "mean":
+            out = torch.mean(out)
+        elif self.reduction == "sum":
+            NSE = torch.sum(out)
+        elif self.reduction==None:
+            pass
+        else:
+            raise Exception("Invalid reduction provided. Allowed 'mean', 'sum', None")
+        
+        return torch.abs(out)
+            
+
 
 
 def find_best_epoch(model_id):

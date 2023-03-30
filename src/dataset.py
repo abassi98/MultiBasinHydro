@@ -310,7 +310,7 @@ class CamelDataset(Dataset):
             x_data = self.transform_input(x_data)
         if self.transform_output:
             y_data = self.transform_output(y_data)
-        return x_data, y_data
+        return x_data, y_data, statics
 
     
 

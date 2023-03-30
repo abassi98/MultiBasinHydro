@@ -25,7 +25,7 @@ import multiprocessing
 # user functions
 from dataset import CamelDataset
 from models import Hydro_LSTM_AE, Hydro_LSTM
-from utils import Scale_Data, MetricsCallback, NSELoss, Globally_Scale_Data
+from utils import NSELoss, PFAB, Globally_Scale_Data
 
 # def parse_args():
 #     parser=argparse.ArgumentParser(description="Take model id and best model epoch to analysis on test dataset")
@@ -48,7 +48,7 @@ if __name__ == '__main__':
     #dates = ["1989/10/01", "2009/09/30"] 
     dates = ["1980/10/01", "2010/09/30"] # interval dates to pick
     force_attributes = ["prcp(mm/day)", "srad(W/m2)", "tmin(C)", "tmax(C)", "vp(Pa)"] # force attributes to use
-    camel_dataset = CamelDataset(dates, force_attributes, debug=False)
+    camel_dataset = CamelDataset(dates, force_attributes, debug=True)
     #dataset.adjust_dates() # adjust dates if necessary
     camel_dataset.load_data() # load data
     num_basins = camel_dataset.__len__()
@@ -95,7 +95,7 @@ if __name__ == '__main__':
 
     # load best model
     model_ids = ["lstm-ae-bdTrue-E4", "lstm-ae-bdTrue-E3", "lstm-ae-bdTrue-E27","lstm-bdTrue-N0" ]
-    
+    num_models = len(model_ids)
    
     start_date = datetime.datetime.strptime(dates[0], '%Y/%m/%d').date()
     # get data 
@@ -110,37 +110,40 @@ if __name__ == '__main__':
     # basin idxs and start sequences
     start_sequences_list = np.random.randint(0, seq_len-length_to_plot, size=basins_n**2)
 
-    # define loss function
-    fig_nse, axs_nse = plt.subplots(1,2, figsize=(20,10))
-    fig_mnse, axs_mnse = plt.subplots(1,2, figsize=(20,10))
+    # define figure
+    fig_stat, axs_stat = plt.subplots(num_models,3, figsize=(20,10), sharey=True)
+   
+    # define metric functions
     loss_NSE = NSELoss(reduction=None)
     loss_mNSE = NSELoss(alpha=1, reduction=None)
+    loss_PFAB = PFAB(ex_prob=0.01, reduction=None)
     nse_df = pd.DataFrame()
     mnse_df = pd.DataFrame()
+    pfab_df = pd.DataFrame()
 
     ###################################################################################
     # PLOT
     ###################################################################################
     # plot true one
     # plot some sequences
-    for i in range(basins_n):
-        for j in range(basins_n):
-            ax = axs[i,j]
-            ax1 = axs1[i,j]
-            val = i*basins_n + j
-            basin_name = basin_names[val]
-            start_seq = start_sequences_list[val]
-            date = start_date + datetime.timedelta(days=int(start_seq))
-            time = date.strftime("%Y/%m/%d")
-            ax.plot(x_unnorm[val, start_seq:start_seq+length_to_plot], label="Camel")
-            ax.set_title("Start date: "+time, style='italic')
-            at = AnchoredText(basin_name,loc='upper left', prop=dict(size=8), frameon=True)
-            ax.add_artist(at)
-            ax1.set_title("Start date: "+time, style='italic')
-            at1 = AnchoredText(basin_name,loc='upper left', prop=dict(size=8), frameon=True)
-            ax1.add_artist(at1)
+    # for i in range(basins_n):
+    #     for j in range(basins_n):
+    #         ax = axs[i,j]
+    #         ax1 = axs1[i,j]
+    #         val = i*basins_n + j
+    #         basin_name = basin_names[val]
+    #         start_seq = start_sequences_list[val]
+    #         date = start_date + datetime.timedelta(days=int(start_seq))
+    #         time = date.strftime("%Y/%m/%d")
+    #         ax.plot(x_unnorm[val, start_seq:start_seq+length_to_plot], label="Camel")
+    #         ax.set_title("Start date: "+time, style='italic')
+    #         at = AnchoredText(basin_name,loc='upper left', prop=dict(size=8), frameon=True)
+    #         ax.add_artist(at)
+    #         ax1.set_title("Start date: "+time, style='italic')
+    #         at1 = AnchoredText(basin_name,loc='upper left', prop=dict(size=8), frameon=True)
+    #         ax1.add_artist(at1)
 
-    for count in range(len(model_ids)):
+    for count in range(num_models):
         model_id = model_ids[count]
         dirpath = os.path.join("checkpoints", model_id)
         path_metrics = os.path.join(dirpath, "metrics.pt")
@@ -178,6 +181,7 @@ if __name__ == '__main__':
         # compute NSE, mNSE and save in dataframe
         nse_df[model_id] = - loss_NSE(x.squeeze(), rec.squeeze()).detach().numpy() # array of size (num_test_data)
         mnse_df[model_id] = - loss_mNSE(x.squeeze(), rec.squeeze()).detach().numpy() # array of size (num_test_data)
+        pfab_df[model_id] = loss_PFAB(x.squeeze(), rec.squeeze()).detach().numpy() # array of size (num_test_data)
         
         # unnormalize input and output
         rec = transform_input.reverse_transform(rec.detach()).squeeze().numpy()
@@ -188,63 +192,83 @@ if __name__ == '__main__':
         # ax1.scatter(enc_embedded[:,0], enc_embedded[:,1])
         # fig1.savefig("encoded_space-"+args.model_id+"-epoch="+str(args.best_epoch)+".png")
 
-        # plot some sequences
-        for i in range(basins_n):
-            for j in range(basins_n):
-                ax = axs[i,j]
-                ax1 = axs1[i,j]
-                val = i*basins_n + j
-                start_seq = start_sequences_list[val]
-                ax.plot(rec[val, start_seq:start_seq+length_to_plot], label=model_id)
-                ax1.semilogy(np.absolute(rec[val, start_seq:start_seq+length_to_plot]-x_unnorm[val, start_seq:start_seq+length_to_plot]), label=model_id)
+        # # plot some sequences
+        # for i in range(basins_n):
+        #     for j in range(basins_n):
+        #         ax = axs[i,j]
+        #         ax1 = axs1[i,j]
+        #         val = i*basins_n + j
+        #         start_seq = start_sequences_list[val]
+        #         ax.plot(rec[val, start_seq:start_seq+length_to_plot], label=model_id)
+        #         ax1.semilogy(np.absolute(rec[val, start_seq:start_seq+length_to_plot]-x_unnorm[val, start_seq:start_seq+length_to_plot]), label=model_id)
 
-    # NSE plot
+    # compute and plot statistics
+    # NSE 
     stat_NSE = nse_df.describe()
     print("NSE statistics")
     print(stat_NSE)
-    sns.kdeplot(nse_df, ax=axs_nse[0], legend=True)
-    sns.ecdfplot(nse_df, ax=axs_nse[1], legend=True)
-    axs_nse[0].set_ylabel("PDF")
-    axs_nse[1].set_ylabel("CDF")
-    axs_nse[0].grid()
-    axs_nse[1].grid()
-    handles, labels = axs_nse[0].get_legend_handles_labels()
-    fig_nse.legend(handles, labels, loc='upper left', fontsize=50)
-    fig_nse.suptitle('Nash-Sutcliffe Efficiency (alpha=2) for best models', fontsize=50)
-    fig_nse.savefig("nse_distribution.png")
-    
-    # mNSE plot
+    # mNSE 
     stat_mNSE = mnse_df.describe()
     print("mNSE statistics")
     print(stat_mNSE)
-    sns.kdeplot(mnse_df, ax=axs_mnse[0], legend=True)
-    sns.ecdfplot(mnse_df, ax=axs_mnse[1], legend=True)
-    axs_mnse[0].set_ylabel("PDF")
-    axs_mnse[1].set_ylabel("CDF")
-    axs_mnse[0].grid()
-    axs_mnse[1].grid()
-    handles, labels = axs_mnse[0].get_legend_handles_labels()
-    fig_mnse.legend(handles, labels, loc='upper left', fontsize=50)
-    fig_mnse.suptitle('Modified Nash-Sutcliffe Efficiency (alpha=1) for best models', fontsize=50)
-    fig_mnse.savefig("mnse_distribution.png")
+    # PFAB
+    stat_pfab = pfab_df.describe()
+    print("PFAB statistics")
+    print(stat_pfab)
+    axs_stat[0,0].set_title("NSE", fontsize=30)
+    axs_stat[0,1].set_title("mNSE", fontsize=30)
+    axs_stat[0,2].set_title("PFAB", fontsize=30)
 
-    # return and save the figure of runoff
-    handles, labels = ax.get_legend_handles_labels()
-    fig.legend(handles, labels, loc='upper left', fontsize=50)
-    fig.text(0.5, 0.04, 'Time (days)', ha='center', fontsize=50)
-    fig.text(0.04, 0.5, 'Streamflow (mm/day)', va='center', rotation='vertical', fontsize=50)
-    fig.suptitle('Streamflow of best models compared to Camel data', fontsize=100)
-    fig.tight_layout
-    fig.savefig("reconstructed-best-epochs.png")
+    # plot distributions
+    for count in range(num_models):
+        #NSE
+        nse_df[model_id].plot(kind="kde", ax=axs_stat[count,0])
+        axs_stat[count,0].grid()
+        axs_stat[count,0].axvline(stat_NSE.loc["25%",model_id], ls="--", lw=1, c="black")
+        axs_stat[count,0].axvline(stat_NSE.loc["50%", model_id], ls="-", lw=2, c="black")
+        axs_stat[count,0].axvline(stat_NSE.loc["75%", model_id], ls="--", lw=1, c="black")
+        axs_stat[count,0].set_ylabel(model_id, fontsize=15)
+        axs_stat[count,0].set_xlim(-0.5,1.0)
+        
+        # mNSE
+        mnse_df[model_id].plot(kind="kde", ax=axs_stat[count,1])
+        axs_stat[count,1].grid()
+        axs_stat[count,1].axvline(stat_mNSE.loc["25%",model_id], ls="--", lw=1, c="black")
+        axs_stat[count,1].axvline(stat_mNSE.loc["50%", model_id], ls="-", lw=2, c="black")
+        axs_stat[count,1].axvline(stat_mNSE.loc["75%", model_id], ls="--", lw=1, c="black")
+        axs_stat[count,1].set_xlim(-0.5,1.0)
 
-    # return and save the figure of runoff
-    handles, labels = ax1.get_legend_handles_labels()
-    fig1.legend(handles, labels, loc='upper left', fontsize=50)
-    fig1.text(0.5, 0.04, 'Time (days)', ha='center', fontsize=50)
-    fig1.text(0.04, 0.5, 'Delta Streamflow (mm/day)', va='center', rotation='vertical', fontsize=50)
-    fig1.suptitle('Absolute Streamflow difference betwen best models and Camel data', fontsize=100)
-    fig1.tight_layout
-    fig1.savefig("abs-diff-best-epochs.png")
+        # PFAB
+        pfab_df[model_id].plot(kind="kde", ax=axs_stat[count,2])
+        axs_stat[count,2].grid()
+        axs_stat[count,2].axvline(stat_pfab.loc["25%",model_id], ls="--", lw=1, c="black")
+        axs_stat[count,2].axvline(stat_pfab.loc["50%", model_id], ls="-", lw=2, c="black")
+        axs_stat[count,2].axvline(stat_pfab.loc["75%", model_id], ls="--", lw=1, c="black")
+        axs_stat[count,2].set_xlim(0.0,3.0)
+
+        
+   
+    file = "stat_distr.png"
+    fig_stat.savefig(file)
+
+    # # return and save the figure of runoff
+    # handles, labels = ax.get_legend_handles_labels()
+    # fig.legend(handles, labels, loc='upper left', fontsize=50)
+    # fig.text(0.5, 0.04, 'Time (days)', ha='center', fontsize=50)
+    # fig.text(0.04, 0.5, 'Streamflow (mm/day)', va='center', rotation='vertical', fontsize=50)
+    # fig.suptitle('Streamflow of best models compared to Camel data', fontsize=100)
+    # fig.tight_layout
+    # fig.savefig("reconstructed-best-epochs.png")
+
+    # # return and save the figure of runoff
+    # handles, labels = ax1.get_legend_handles_labels()
+    # fig1.legend(handles, labels, loc='upper left', fontsize=50)
+    # fig1.text(0.5, 0.04, 'Time (days)', ha='center', fontsize=50)
+    # fig1.text(0.04, 0.5, 'Delta Streamflow (mm/day)', va='center', rotation='vertical', fontsize=50)
+    # fig1.suptitle('Absolute Streamflow difference betwen best models and Camel data', fontsize=100)
+    # fig1.tight_layout
+    # fig1.savefig("abs-diff-best-epochs.png")
+
 
    
     
