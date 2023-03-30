@@ -48,7 +48,7 @@ if __name__ == '__main__':
     #dates = ["1989/10/01", "2009/09/30"] 
     dates = ["1980/10/01", "2010/09/30"] # interval dates to pick
     force_attributes = ["prcp(mm/day)", "srad(W/m2)", "tmin(C)", "tmax(C)", "vp(Pa)"] # force attributes to use
-    camel_dataset = CamelDataset(dates, force_attributes, debug=True)
+    camel_dataset = CamelDataset(dates, force_attributes, debug=False)
     #dataset.adjust_dates() # adjust dates if necessary
     camel_dataset.load_data() # load data
     num_basins = camel_dataset.__len__()
@@ -94,7 +94,7 @@ if __name__ == '__main__':
     print("Indices for test dataset: ", split_indices)
 
     # load best model
-    model_ids = ["lstm-ae-bdTrue-E4", "lstm-ae-bdTrue-E3", "lstm-ae-bdTrue-E27","lstm-bdTrue-N0" ]
+    model_ids = ["lstm-ae-bdTrue-E27","lstm-ae-bdTrue-E4", "lstm-ae-bdTrue-E3", "lstm-bdTrue-N0" ]
     num_models = len(model_ids)
    
     start_date = datetime.datetime.strptime(dates[0], '%Y/%m/%d').date()
@@ -111,7 +111,7 @@ if __name__ == '__main__':
     start_sequences_list = np.random.randint(0, seq_len-length_to_plot, size=basins_n**2)
 
     # define figure
-    fig_stat, axs_stat = plt.subplots(num_models,3, figsize=(20,10), sharey=True)
+    fig_stat, axs_stat = plt.subplots(num_models,3, figsize=(20,10))
    
     # define metric functions
     loss_NSE = NSELoss(reduction=None)
@@ -221,6 +221,7 @@ if __name__ == '__main__':
 
     # plot distributions
     for count in range(num_models):
+        model_id = model_ids[count]
         #NSE
         nse_df[model_id].plot(kind="kde", ax=axs_stat[count,0])
         axs_stat[count,0].grid()
