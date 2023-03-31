@@ -274,6 +274,7 @@ class Hydro_LSTM(pl.LightningModule):
                  num_force_attributes = 5,
                  noise_dim = 0,
                  statics = False,
+                 warmup = 730,
                 ):
         
         """
@@ -299,6 +300,7 @@ class Hydro_LSTM(pl.LightningModule):
         self.num_force_attributes = num_force_attributes 
         self.noise_dim = noise_dim
         self.statics = statics
+        self.warmup = warmup
 
         ### LSTM decoder
         if self.statics:
@@ -350,24 +352,51 @@ class Hydro_LSTM(pl.LightningModule):
     def training_step(self, batch, batch_idx):        
         ### Unpack batch
         x, y, statics = batch
+        # select past period
+        x_past = x[:,:,:self.seq_len,:]
+        y_past = y[:,:,:self.seq_len,:]
+      
+        # select future (validation) period
+        x_fut = x[:,:,1+self.seq_len:,:]
+        y_fut = y[:,:,1+self.seq_len:,:]
+    
         # forward pass
-        rec = self.forward(y, statics)
+        rec_past = self.forward(y_past, statics)
         # Logging to TensorBoard by default
-        train_loss = self.loss_fn(x.squeeze(), rec.squeeze())
+        train_loss = self.loss_fn(x_past.squeeze()[:,self.warmup:], rec_past.squeeze()[:,self.warmup:])
         self.log("train_loss", train_loss, prog_bar=True)
+        # compute future (training) loss and log
+        with torch.no_grad():
+            rec_fut = self.forward(y_fut, statics)
+        train_fut_loss = self.loss_fn(x_fut.squeeze()[:,self.warmup:], rec_fut.squeeze()[:,self.warmup:])
+        self.log("train_fut_loss", train_fut_loss)
+
         return train_loss
     
     def validation_step(self, batch, batch_idx):
         ### Unpack batch
         x, y, statics = batch
-            
+        # select past period
+        x_past = x[:,:,:self.seq_len,:]
+        y_past = y[:,:,:self.seq_len,:]
+        
+        # select future (validation) period
+        x_fut = x[:,:,1+self.seq_len:,:]
+        y_fut = y[:,:,1+self.seq_len:,:]
+        
         # forward pass
-        rec = self.forward(y, statics)
+        rec_fut = self.forward(y_fut, statics)
         # Logging to TensorBoard by default
-        val_loss = self.loss_fn(x.squeeze(), rec.squeeze())
+        val_loss = self.loss_fn(x_fut.squeeze(), rec_fut.squeeze())
         # Logging to TensorBoard by default
         self.log("val_loss", val_loss, prog_bar=True)
         self.log("epoch_num", float(self.current_epoch),prog_bar=True)
+        
+         # compute past (validation) loss
+        with torch.no_grad():
+            rec_past = self.forward(y_past,statics)
+        val_past_loss = self.loss_fn(x_past.squeeze()[:,self.warmup:], rec_past.squeeze()[:,self.warmup:])
+        self.log("val_past_loss", val_past_loss)
         
         return val_loss
     

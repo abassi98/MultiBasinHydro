@@ -97,13 +97,14 @@ if __name__ == '__main__':
                  act = nn.LeakyReLU, 
                  loss_fn = loss_fn,
                  drop_p = 0.5, 
-                 seq_len = seq_len,
-                 lr = 1e-5,
-                 weight_decay = 0.0,
+                 seq_len = int(seq_len/2),
+                 lr = 1e-6,
+                 weight_decay = 0.01,
                  num_force_attributes = len(force_attributes),
                  noise_dim = args.noise_dim,
                  statics = bool(args.statics),
-                )
+                 warmup = 730)
+                
 
     ##########################################################
     # training 
