@@ -122,7 +122,7 @@ if __name__ == '__main__':
     ax.set_axis_off()
     countries[countries["name"] == "United States of America"].plot(color="lightgrey", ax=ax)
     im = ax.scatter(x=lon, y=lat,c=nse, cmap="YlOrRd", s=1)
-    fig.colorbar(im, ax=ax, fraction=0.028, pad=0.02, location="bottom")
+    fig.colorbar(im, ax=ax, fraction=0.028, pad=0.02, location="bottom", vmin=-0.5, vmax=1.0)
     
     save_file = "plot_NSEmap_"+model_id+".png"
     fig.savefig(save_file)

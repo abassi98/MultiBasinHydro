@@ -1,34 +1,14 @@
 import numpy as np
 import matplotlib.pyplot as plt
-import pandas as pd
 import os
-import glob
-import re
-
-# pytorch
 import torch
-import torch.nn as nn
-from torch.utils.data import Dataset, DataLoader, random_split, ConcatDataset, Subset
-import pytorch_lightning as pl
-from pytorch_lightning import Trainer, seed_everything
-from pytorch_lightning.callbacks import ModelCheckpoint
-
-import torch.optim as optim
-from pytorch_lightning.callbacks.early_stopping import EarlyStopping 
-from torchvision import transforms, datasets
-
-# user functions
-from dataset import CamelDataset
-from models import Hydro_LSTM_AE
-from utils import Scale_Data, MetricsCallback, NSELoss
-
 
 
 if __name__ == '__main__':
 
     #####################################################################
     dir = "checkpoints"
-    models = ["lstm-ae-bdTrue-E4", "lstm-ae-bdTrue-E3", "lstm-ae-bdTrue-E27","lstm-bdTrue-N0" ]
+    models = ["lstm-ae-bdTrue-E27","lstm-ae-bdTrue-E4", "lstm-ae-bdTrue-E3", "lstm-bdTrue-N0-STrue", "lstm-bdTrue-N0"]
     epochs = []
     nse = []
     fig, ax = plt.subplots(1,1,figsize=(5,5))

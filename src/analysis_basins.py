@@ -1,31 +1,17 @@
 import numpy as np
 import pandas as pd
 import os
-import argparse
-from sklearn.manifold import TSNE
 import matplotlib.pyplot as plt
-from matplotlib.offsetbox import AnchoredText
 import datetime
-import seaborn as sns
-
-# pytorch
 import torch
-import torch.nn as nn
-from torch.utils.data import Dataset, DataLoader, random_split, ConcatDataset, Subset
-import pytorch_lightning as pl
-from pytorch_lightning import Trainer, seed_everything
-from pytorch_lightning.callbacks import ModelCheckpoint
-
-import torch.optim as optim
-from pytorch_lightning.callbacks.early_stopping import EarlyStopping 
-from torchvision import transforms, datasets
+from torch.utils.data import DataLoader, random_split
 import multiprocessing
 
 
 # user functions
 from dataset import CamelDataset
 from models import Hydro_LSTM_AE, Hydro_LSTM
-from utils import NSELoss, PFAB, Globally_Scale_Data
+from utils import NSELoss, PFAB, Globally_Scale_Data, find_best_epoch
 
 # def parse_args():
 #     parser=argparse.ArgumentParser(description="Take model id and best model epoch to analysis on test dataset")
@@ -94,12 +80,13 @@ if __name__ == '__main__':
     print("Indices for test dataset: ", split_indices)
 
     # load best model
-    model_ids = ["lstm-ae-bdTrue-E27","lstm-ae-bdTrue-E4", "lstm-ae-bdTrue-E3", "lstm-bdTrue-N0" ]
+    model_ids =["lstm-ae-bdTrue-E27","lstm-ae-bdTrue-E4", "lstm-ae-bdTrue-E3", "lstm-bdTrue-N0-STrue", "lstm-bdTrue-N0"]
     num_models = len(model_ids)
    
     start_date = datetime.datetime.strptime(dates[0], '%Y/%m/%d').date()
     # get data 
     x, y, statics = next(iter(test_dataloader))
+    
     x_unnorm = transform_input.reverse_transform(x.detach()).squeeze().numpy()
     # build figure
     length_to_plot = 730 # 2 years
@@ -145,24 +132,9 @@ if __name__ == '__main__':
 
     for count in range(num_models):
         model_id = model_ids[count]
-        dirpath = os.path.join("checkpoints", model_id)
-        path_metrics = os.path.join(dirpath, "metrics.pt")
-        data = torch.load(path_metrics, map_location=torch.device('cpu'))
-        epochs_mod = []
-        nse_mod = []
-        for key in data:
-            epoch_num = data[key]["epoch_num"]
-            nse = -data[key]["val_loss"]
-            if isinstance(epoch_num, int):
-                epochs_mod.append(epoch_num)
-                nse_mod.append(nse)
-            else:
-                epochs_mod.append(int(epoch_num.item()))
-                nse_mod.append(nse.item())
-        idx_ae = np.argmax(nse_mod)
-        best_epoch = epochs_mod[idx_ae]
-
+        best_epoch = find_best_epoch(model_id)
         # open best model
+        dirpath = os.path.join("checkpoints", model_id)
         filename = "model-epoch="+str(best_epoch)+".ckpt"
         path_best  = os.path.join(dirpath, filename)
         
@@ -175,6 +147,7 @@ if __name__ == '__main__':
 
         else:
             model = Hydro_LSTM.load_from_checkpoint(path_best)
+            print(model.statics)
             with torch.no_grad():
                 rec = model(y, statics)
 

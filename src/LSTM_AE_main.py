@@ -6,21 +6,17 @@ import argparse
 # pytorch
 import torch
 import torch.nn as nn
-from torch.utils.data import Dataset, DataLoader, random_split, ConcatDataset, Subset
+from torch.utils.data import DataLoader, random_split
 import pytorch_lightning as pl
-from pytorch_lightning import Trainer, seed_everything
 from pytorch_lightning.callbacks import ModelCheckpoint
-
-import torch.optim as optim
 from pytorch_lightning.callbacks.early_stopping import EarlyStopping 
-from torchvision import transforms, datasets
 import multiprocessing
 
 
 # user functions
 from dataset import CamelDataset
 from models import Hydro_LSTM_AE
-from utils import Scale_Data, MetricsCallback, NSELoss
+from utils import MetricsCallback, NSELoss
 
 
 def parse_args():

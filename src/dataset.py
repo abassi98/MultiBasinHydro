@@ -9,9 +9,8 @@ import os
 import datetime
 
 import torch
-import torch.nn as nn
 from torch.utils.data import Dataset
-from utils import Scale_Data, Globally_Scale_Data
+from utils import Globally_Scale_Data
 
 
 

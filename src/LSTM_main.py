@@ -4,19 +4,17 @@ import argparse
 # pytorch
 import torch
 import torch.nn as nn
-from torch.utils.data import Dataset, DataLoader, random_split, ConcatDataset, Subset
+from torch.utils.data import DataLoader, random_split
 import pytorch_lightning as pl
-from pytorch_lightning import Trainer, seed_everything
 from pytorch_lightning.callbacks import ModelCheckpoint
 
-import torch.optim as optim
 from pytorch_lightning.callbacks.early_stopping import EarlyStopping 
 
 
 # user functions
 from dataset import CamelDataset
 from models import Hydro_LSTM
-from utils import Scale_Data, MetricsCallback, NSELoss
+from utils import MetricsCallback, NSELoss
 
 
 
@@ -86,8 +84,6 @@ if __name__ == '__main__':
     val_dataloader = DataLoader(val_dataset, batch_size=batch_size, num_workers=num_workers, shuffle=False)
     test_dataloader = DataLoader(test_dataset, batch_size=batch_size, num_workers=num_workers, shuffle=False)
 
-    x,y, stat = next(iter(test_dataloader))
-    
     ##########################################################
     # initialize the Hydro LSTM Auto Encoder
     ##########################################################
