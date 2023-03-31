@@ -102,7 +102,7 @@ if __name__ == '__main__':
                     encoded_space_dim=args.num_features,
                     drop_p=0.5,
                     seq_len=int(seq_len/2),
-                    lr = 1e-4,
+                    lr = 1e-5,
                     act=nn.LeakyReLU,
                     loss_fn=loss_fn,
                     lstm_hidden_units=256,
