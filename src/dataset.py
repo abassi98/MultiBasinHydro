@@ -249,9 +249,12 @@ class CamelDataset(Dataset):
                 count += 1
             
         # redefine transformations
-        self.transform_input = Globally_Scale_Data(self.min_flow, self.max_flow)
-        self.transform_output = Globally_Scale_Data(self.min_force, self.max_force)
+        #self.transform_input = Globally_Scale_Data(self.min_flow, self.max_flow)
+        #self.transform_output = Globally_Scale_Data(self.min_force, self.max_force)
 
+        # normalize
+        self.input_data = (self.input_data - torch.amin(self.input_data, dim=(0,2), keepdim=True))/(torch.amax(self.input_data, dim=(0,2), keepdim=True)-torch.amin(self.input_data, dim=(0,2), keepdim=True))
+        self.output_data = (self.output_data - torch.amin(self.output_data, dim=(0,2), keepdim=True))/(torch.amax(self.output_data, dim=(0,2), keepdim=True)-torch.amin(self.output_data, dim=(0,2), keepdim=True))
         print("... done.")
 
 
@@ -306,10 +309,7 @@ class CamelDataset(Dataset):
         y_data = self.output_data[idx]
         statics = self.statics_data[idx]
         hydro = self.hydro_data[idx]
-        if self.transform_input:
-            x_data = self.transform_input(x_data)
-        if self.transform_output:
-            y_data = self.transform_output(y_data)
+        
         return x_data, y_data, statics, hydro
 
     
@@ -319,15 +319,72 @@ class YearlyCamelsDataset(Dataset):
     """
     Take a full range Camels Dataset (between 1980 and 2010) and split in sequences of 1 year
     """
-    def __init__(self, dataset : Dataset):
+    def __init__(self, indeces, start_date, end_date, dataset):
         super().__init__()
         
         # retrieve data
-        self.dates = dataset.dates
-        self.loaded_basin_ids = dataset.loaded_basin_ids
-        self.input_data = dataset.input_data
-        self.output_data = dataset.output_data
-        self.statics_data = dataset.statics_data
-        self.hydro_data = dataset.hydro_data
+        self.start_date = datetime.datetime.strptime(start_date, '%Y/%m/%d').date()
+        self.end_date = datetime.datetime.strptime(end_date, '%Y/%m/%d').date()
+        
+        indeces.sort()
+        self.basin_ids = [dataset.loaded_basin_ids[i] for i in indeces]
+
+        # check if dates contains start and end date
+        
+        assert(dataset.dates.count(self.start_date)>0)
+        assert(dataset.dates.count(self.end_date)>0)
+        self.dates = np.array(dataset.dates)
+        # trim dates
+        bool_dates = np.logical_and(self.start_date <= self.dates, self.dates <= self.end_date)
+        self.dates = self.dates[bool_dates]
+
+        # select elements only on those dates for meterological data and flows
+        flow_data = torch.index_select(dataset.input_data[:,:,bool_dates,:], 0, torch.tensor(indeces))
+        force_data = torch.index_select(dataset.output_data[:,:,bool_dates,:], 0, torch.tensor(indeces))
+
+        # take sequence length
+        self.raw_seq_len = flow_data.shape[2]
+
+        # load static data
+        statics_features = torch.index_select(dataset.statics_data, 0, torch.tensor(indeces))
+        hydro_features = torch.index_select(dataset.hydro_data, 0, torch.tensor(indeces))
+
+        # take number of basins
+        assert(flow_data.shape[0] == len(self.basin_ids))
+        assert(flow_data.shape[0] == force_data.shape[0])
+        assert(flow_data.shape[0] == statics_features.shape[0])
+        assert(flow_data.shape[0] == hydro_features.shape[0])
+        self.num_basins = len(self.basin_ids)
+       
+
+        # divide dataset
+        self.input_data = []
+        self.output_data = []
+        self.hydro_data = []
+        self.statics_data = []
+        self.loaded_basin_ids = []
+
+        for i in range(self.num_basins):
+            for y in range(15): # 15 years of data for basins
+                self.input_data.append(flow_data[i,:,y*365:(y+1)*365,:])
+                self.output_data.append(force_data[i,:,y*365:(y+1)*365,:])
+                self.hydro_data.append(hydro_features[i,:,:,:])
+                self.statics_data.append(statics_features[i,:,:,:])
+                self.loaded_basin_ids.append(self.basin_ids[i])
+
+
+    def __len__(self):
+        assert len(self.input_data)==len(self.output_data)
+        return len(self.input_data)
+
+    def __getitem__(self, idx):
+        x_data = self.input_data[idx]
+        y_data = self.output_data[idx]
+        statics = self.statics_data[idx]
+        hydro = self.hydro_data[idx]
+        basin_id = self.loaded_basin_ids[idx]
+
+        return x_data, y_data, statics, hydro, basin_id
+
 
     

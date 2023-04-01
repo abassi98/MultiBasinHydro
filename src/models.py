@@ -52,7 +52,7 @@ class ConvEncoder(nn.Module):
             nn.BatchNorm1d(self.out_channels[0]),
             self.act(inplace = True),
             nn.Dropout(self.drop_p, inplace = False),
-            nn.AvgPool1d(4)
+            nn.AvgPool1d(2)
         )
         
         # Second convolution layer
@@ -61,7 +61,7 @@ class ConvEncoder(nn.Module):
             nn.BatchNorm1d(self.out_channels[1]),
             self.act(inplace = True),
             nn.Dropout(self.drop_p, inplace = False),
-            nn.AvgPool1d(4)
+            nn.AvgPool1d(2)
         )
         
         # Third convolutional layer
@@ -70,7 +70,7 @@ class ConvEncoder(nn.Module):
             nn.BatchNorm1d(self.out_channels[2]),
             self.act(inplace = True),
             nn.Dropout(self.drop_p, inplace = False),
-            nn.AvgPool1d(4)
+            nn.AvgPool1d(2)
         )
 
 
@@ -78,7 +78,7 @@ class ConvEncoder(nn.Module):
         self.flatten = nn.Flatten(start_dim=1)
         
         # Liner dimension after 2 convolutional layers
-        self.lin_dim = int((((self.seq_len-self.kernel_sizes[0]+1)/4.+1-self.kernel_sizes[1])/4.+1-self.kernel_sizes[2])/4.)
+        self.lin_dim = int((((self.seq_len-self.kernel_sizes[0]+1)/2.+1-self.kernel_sizes[1])/2.+1-self.kernel_sizes[2])/2.)
         
         # Linear encoder
         self.encoder_lin = nn.Sequential(
@@ -202,51 +202,51 @@ class Hydro_LSTM_AE(pl.LightningModule):
         
     def training_step(self, batch, batch_idx):        
         ### Unpack batch
-        x, y, _ = batch
-        # select past period
-        x_past = x[:,:,:self.seq_len,:]
-        y_past = y[:,:,:self.seq_len,:]
-        # select future (validation) period
-        x_fut = x[:,:,1+self.seq_len:,:]
-        y_fut = y[:,:,1+self.seq_len:,:]
+        x, y, _, _, _ = batch
+        # # select past period
+        # x_past = x[:,:,:self.seq_len,:]
+        # y_past = y[:,:,:self.seq_len,:]
+        # # select future (validation) period
+        # x_fut = x[:,:,1+self.seq_len:,:]
+        # y_fut = y[:,:,1+self.seq_len:,:]
         # forward pass
-        _, rec_past = self.forward(x_past,y_past)
+        _, rec = self.forward(x,y)
         # Logging to TensorBoard by default
-        train_loss = self.loss_fn(x_past.squeeze()[:,self.warmup:], rec_past.squeeze()[:,self.warmup:])
+        train_loss = self.loss_fn(x.squeeze()[:,self.warmup:], rec.squeeze()[:,self.warmup:])
         self.log("train_loss", train_loss, prog_bar=True)
-        # compute future (training) loss and log
-        with torch.no_grad():
-            _, rec_fut = self.forward(x_fut,y_fut)
-        train_fut_loss = self.loss_fn(x_fut.squeeze()[:,self.warmup:], rec_fut.squeeze()[:,self.warmup:])
-        self.log("train_fut_loss", train_fut_loss)
+        # # compute future (training) loss and log
+        # with torch.no_grad():
+        #     _, rec_fut = self.forward(x_fut,y_fut)
+        # train_fut_loss = self.loss_fn(x_fut.squeeze()[:,self.warmup:], rec_fut.squeeze()[:,self.warmup:])
+        # self.log("train_fut_loss", train_fut_loss)
 
         #print(self.lr_scheduler.get_last_lr())
         return train_loss
     
     def validation_step(self, batch, batch_idx):
         ### Unpack batch
-        x, y, _ = batch
-        # select past period
-        x_past = x[:,:,:self.seq_len,:]
-        y_past = y[:,:,:self.seq_len,:]
-        # select future (validation) period
-        x_fut = x[:,:,1+self.seq_len:,:]
-        y_fut = y[:,:,1+self.seq_len:,:]
+        x, y, _, _, _ = batch
+        # # select past period
+        # x_past = x[:,:,:self.seq_len,:]
+        # y_past = y[:,:,:self.seq_len,:]
+        # # select future (validation) period
+        # x_fut = x[:,:,1+self.seq_len:,:]
+        # y_fut = y[:,:,1+self.seq_len:,:]
         
  
         # forward pass
-        _, rec_fut = self.forward(x_fut,y_fut)
+        _, rec = self.forward(x,y)
         # Logging to TensorBoard by default
-        val_loss = self.loss_fn(x_fut.squeeze()[:,self.warmup:], rec_fut.squeeze()[:,self.warmup:])
+        val_loss = self.loss_fn(x.squeeze()[:,self.warmup:], rec.squeeze()[:,self.warmup:])
         # Logging to TensorBoard by default
         self.log("val_loss", val_loss, prog_bar=True)
         self.log("epoch_num", float(self.current_epoch),prog_bar=True)
         
-        # compute past (validation) loss
-        with torch.no_grad():
-            _, rec_past = self.forward(x_past,y_past)
-        val_past_loss = self.loss_fn(x_past.squeeze()[:,self.warmup:], rec_past.squeeze()[:,self.warmup:])
-        self.log("val_past_loss", val_past_loss)
+        # # compute past (validation) loss
+        # with torch.no_grad():
+        #     _, rec_past = self.forward(x_past,y_past)
+        # val_past_loss = self.loss_fn(x_past.squeeze()[:,self.warmup:], rec_past.squeeze()[:,self.warmup:])
+        # self.log("val_past_loss", val_past_loss)
         
         return val_loss
     
@@ -385,18 +385,18 @@ class Hydro_LSTM(pl.LightningModule):
         y_fut = y[:,:,1+self.seq_len:,:]
         
         # forward pass
-        rec_fut = self.forward(y_fut, statics)
+        rec = self.forward(y, statics)
         # Logging to TensorBoard by default
-        val_loss = self.loss_fn(x_fut.squeeze(), rec_fut.squeeze())
+        val_loss = self.loss_fn(x.squeeze(), rec.squeeze())
         # Logging to TensorBoard by default
         self.log("val_loss", val_loss, prog_bar=True)
         self.log("epoch_num", float(self.current_epoch),prog_bar=True)
         
-         # compute past (validation) loss
-        with torch.no_grad():
-            rec_past = self.forward(y_past,statics)
-        val_past_loss = self.loss_fn(x_past.squeeze()[:,self.warmup:], rec_past.squeeze()[:,self.warmup:])
-        self.log("val_past_loss", val_past_loss)
+        #  # compute past (validation) loss
+        # with torch.no_grad():
+        #     rec_past = self.forward(y_past,statics)
+        # val_past_loss = self.loss_fn(x_past.squeeze()[:,self.warmup:], rec_past.squeeze()[:,self.warmup:])
+        # self.log("val_past_loss", val_past_loss)
         
         return val_loss
     
