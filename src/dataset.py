@@ -305,12 +305,29 @@ class CamelDataset(Dataset):
         x_data = self.input_data[idx]
         y_data = self.output_data[idx]
         statics = self.statics_data[idx]
+        hydro = self.hydro_data[idx]
         if self.transform_input:
             x_data = self.transform_input(x_data)
         if self.transform_output:
             y_data = self.transform_output(y_data)
-        return x_data, y_data, statics
+        return x_data, y_data, statics, hydro
 
     
 
 
+class YearlyCamelsDataset(Dataset):
+    """
+    Take a full range Camels Dataset (between 1980 and 2010) and split in sequences of 1 year
+    """
+    def __init__(self, dataset : Dataset):
+        super().__init__()
+        
+        # retrieve data
+        self.dates = dataset.dates
+        self.loaded_basin_ids = dataset.loaded_basin_ids
+        self.input_data = dataset.input_data
+        self.output_data = dataset.output_data
+        self.statics_data = dataset.statics_data
+        self.hydro_data = dataset.hydro_data
+
+    

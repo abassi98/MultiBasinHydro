@@ -8,7 +8,7 @@ if __name__ == '__main__':
 
     #####################################################################
     dir = "checkpoints"
-    models = ["lstm-ae-bdTrue-E27","lstm-ae-bdTrue-E4", "lstm-ae-bdTrue-E3", "lstm-bdTrue-N0-STrue", "lstm-bdTrue-N0"]
+    models = ["lstm-ae-bdTrue-E27","lstm-ae-bdTrue-E4", "lstm-ae-bdTrue-E30-Unseen","lstm-ae-bdTrue-E4-Unseen", "lstm-ae-bdTrue-E3", "lstm-bdTrue-N0-STrue", "lstm-bdTrue-N0", "lstm-bdTrue-N0-STrue-L2"]
     epochs = []
     nse = []
     fig, ax = plt.subplots(1,1,figsize=(5,5))
