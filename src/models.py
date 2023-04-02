@@ -274,6 +274,7 @@ class Hydro_LSTM(pl.LightningModule):
                  num_force_attributes = 5,
                  noise_dim = 0,
                  statics = False,
+                 hydro = False,
                  warmup = 730,
                 ):
         
@@ -300,13 +301,15 @@ class Hydro_LSTM(pl.LightningModule):
         self.num_force_attributes = num_force_attributes 
         self.noise_dim = noise_dim
         self.statics = statics
+        self.hydro = hydro
         self.warmup = warmup
 
         ### LSTM decoder
+        input_size = num_force_attributes + noise_dim
         if self.statics:
-            input_size = num_force_attributes + 27
-        else:
-            input_size = num_force_attributes + noise_dim
+            input_size += 27
+        if self.hydro:
+            input_size += 13
             
         self.lstm = nn.LSTM(input_size=input_size, 
                            hidden_size=lstm_hidden_units,
@@ -326,20 +329,22 @@ class Hydro_LSTM(pl.LightningModule):
         print("LSTM initialized")
 
         
-    def forward(self, y, statics): 
-        # Decode data
-        if self.noise_dim == 0:
-            if self.statics:
-                input_lstm = torch.cat((statics.squeeze(1).repeat(1,self.seq_len,1), y.squeeze()),dim=-1)
-                hidd_rec, _ = self.lstm(input_lstm)
-            else:
-                hidd_rec, _ = self.lstm(y.squeeze(1))
-        else:
-            y_shape = y.squeeze().shape # size (batch_size, seq_len, force_attributes)
-            noise = self.sigmoid(torch.randn(size=(y_shape[0], self.seq_len, self.noise_dim), device=self.device))
-            # concat data
-            input_lstm = torch.cat((noise, y.squeeze()),dim=-1)
-            hidd_rec, _ = self.lstm(input_lstm)
+    def forward(self, y, statics, hydro): 
+        input_lstm = y.squeeze()
+    
+        # Append statics/hydro
+        if self.statics:
+            input_lstm = torch.cat((input_lstm, statics.squeeze(1).repeat(1,self.seq_len,1)),dim=-1)
+        if self.hydro:
+            input_lstm = torch.cat((input_lstm, hydro.squeeze(1).repeat(1,self.seq_len,1)),dim=-1)
+        
+        # append noise
+        batch_size = input_lstm.shape[0] # size (batch_size, seq_len, force_attributes)
+        noise = self.sigmoid(torch.randn(size=(batch_size, self.seq_len, self.noise_dim), device=self.device))
+        input_lstm = torch.cat((input_lstm, noise),dim=-1)
+       
+        print("input_lstm shape: ", input_lstm.shape)
+        hidd_rec, _ = self.lstm(input_lstm)
 
         #hidd_rec = self.dropout(hidd_rec)
         # Fully connected output layer, forced in [0,1]
@@ -351,41 +356,42 @@ class Hydro_LSTM(pl.LightningModule):
         
     def training_step(self, batch, batch_idx):        
         ### Unpack batch
-        x, y, statics = batch
-        # select past period
-        x_past = x[:,:,:self.seq_len,:]
-        y_past = y[:,:,:self.seq_len,:]
+        x, y, statics, hydro, _ = batch
+        # # select past period
+        # x_past = x[:,:,:self.seq_len,:]
+        # y_past = y[:,:,:self.seq_len,:]
       
-        # select future (validation) period
-        x_fut = x[:,:,1+self.seq_len:,:]
-        y_fut = y[:,:,1+self.seq_len:,:]
+        # # select future (validation) period
+        # x_fut = x[:,:,1+self.seq_len:,:]
+        # y_fut = y[:,:,1+self.seq_len:,:]
     
         # forward pass
-        rec_past = self.forward(y_past, statics)
+        rec = self.forward(y, statics, hydro)
         # Logging to TensorBoard by default
-        train_loss = self.loss_fn(x_past.squeeze()[:,self.warmup:], rec_past.squeeze()[:,self.warmup:])
+        train_loss = self.loss_fn(x.squeeze()[:,self.warmup:], rec.squeeze()[:,self.warmup:])
         self.log("train_loss", train_loss, prog_bar=True)
-        # compute future (training) loss and log
-        with torch.no_grad():
-            rec_fut = self.forward(y_fut, statics)
-        train_fut_loss = self.loss_fn(x_fut.squeeze()[:,self.warmup:], rec_fut.squeeze()[:,self.warmup:])
-        self.log("train_fut_loss", train_fut_loss)
+
+        # # compute future (training) loss and log
+        # with torch.no_grad():
+        #     rec_fut = self.forward(y_fut, statics)
+        # train_fut_loss = self.loss_fn(x_fut.squeeze()[:,self.warmup:], rec_fut.squeeze()[:,self.warmup:])
+        # self.log("train_fut_loss", train_fut_loss)
 
         return train_loss
     
     def validation_step(self, batch, batch_idx):
         ### Unpack batch
-        x, y, statics = batch
-        # select past period
-        x_past = x[:,:,:self.seq_len,:]
-        y_past = y[:,:,:self.seq_len,:]
+        x, y, statics, hydro, _ = batch
+        # # select past period
+        # x_past = x[:,:,:self.seq_len,:]
+        # y_past = y[:,:,:self.seq_len,:]
         
-        # select future (validation) period
-        x_fut = x[:,:,1+self.seq_len:,:]
-        y_fut = y[:,:,1+self.seq_len:,:]
+        # # select future (validation) period
+        # x_fut = x[:,:,1+self.seq_len:,:]
+        # y_fut = y[:,:,1+self.seq_len:,:]
         
         # forward pass
-        rec = self.forward(y, statics)
+        rec = self.forward(y, statics, hydro)
         # Logging to TensorBoard by default
         val_loss = self.loss_fn(x.squeeze(), rec.squeeze())
         # Logging to TensorBoard by default

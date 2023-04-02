@@ -15,4 +15,4 @@
 
 module load gcc/9.4.0-pe5.34 miniconda3/4.12.0 lsfm-init-miniconda/1.0.0	
 conda activate my_env
-python3 src/LSTM_main.py --noise_dim 0 --statics 1 --bidirectional 1 --debug 0 
+python3 src/LSTM_main.py --noise_dim 0 --statics 1 --hydro 1 --debug 0 

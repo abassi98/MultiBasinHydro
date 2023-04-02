@@ -270,7 +270,9 @@ class CamelDataset(Dataset):
                     self.statics_data[i] = statics_data
                   
         # renormalize
-        self.statics_data = (self.statics_data- torch.amin(self.statics_data, dim=0, keepdim=True))/(torch.amax(self.statics_data, dim=0, keepdim=True)-torch.amin(self.statics_data, dim=0, keepdim=True))
+        delta = torch.amax(self.statics_data, dim=0, keepdim=True)-torch.amin(self.statics_data, dim=0, keepdim=True)
+        delta[delta<10e-8] = 10e-8 # stabilize numerically
+        self.statics_data = (self.statics_data- torch.amin(self.statics_data, dim=0, keepdim=True))/delta
         print("...done.")
 
 
@@ -284,22 +286,26 @@ class CamelDataset(Dataset):
                 if  int(self.loaded_basin_ids[i]) == self.hydro_ids[j]:
                     hydro_data = torch.tensor(self.df_hydro.iloc[j,:], dtype=torch.float32).unsqueeze(0).unsqueeze(0) # shape (1, seq_len, feature_dim=1)
                     self.hydro_data[i] = hydro_data
-                  
-        self.hydro_data = (self.hydro_data- torch.amin(self.hydro_data, dim=0, keepdim=True))/(torch.amax(self.hydro_data, dim=0, keepdim=True)-torch.amin(self.hydro_data, dim=0, keepdim=True))
+        # renormalize
+        delta = torch.amax(self.hydro_data, dim=0, keepdim=True)-torch.amin(self.hydro_data, dim=0, keepdim=True)
+        delta[delta<10e-8] = 10e-8 # stabilize numerically
+        self.hydro_data = (self.hydro_data- torch.amin(self.hydro_data, dim=0, keepdim=True))/delta
         print("...done.")
                   
-    def save_hydro(self, filename):
-        np_data =  self.hydro_data.squeeze().cpu().numpy()
-        df = pd.DataFrame(np_data, columns=self.df_hydro.columns)
-        df.insert(0, "basin_id", self.loaded_basin_ids)
-        df.to_csv(filename, sep=" ")
-    
     def save_statics(self, filename):
         np_data =  self.statics_data.squeeze().cpu().numpy()
         df = pd.DataFrame(np_data, columns=self.df_statics.columns)
         df.insert(0, "basin_id", self.loaded_basin_ids)
         df.to_csv(filename, sep=" ")
 
+
+    def save_hydro(self, filename):
+        np_data =  self.hydro_data.squeeze().cpu().numpy()
+        df = pd.DataFrame(np_data, columns=self.df_hydro.columns)
+        df.insert(0, "basin_id", self.loaded_basin_ids)
+        df.to_csv(filename, sep=" ")
+    
+    
     def __len__(self):
         assert len(self.input_data)==len(self.output_data)
         return len(self.input_data)

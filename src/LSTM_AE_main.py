@@ -123,7 +123,7 @@ if __name__ == '__main__':
 
 
     
-    x,y, _, _, ids = next(iter(train_dataloader))
+    #x,y, _, _, ids = next(iter(train_dataloader))
    
    
     # print(sys.getsizeof(camel_dataset.input_data))
