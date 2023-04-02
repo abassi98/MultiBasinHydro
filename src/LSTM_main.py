@@ -167,7 +167,7 @@ if __name__ == '__main__':
 
     # define callbacks
     early_stopping = EarlyStopping(monitor="val_loss", patience = 10, mode="min")
-    max_epochs = 10000
+    max_epochs = 20000
     check_val_every_n_epoch = 10
     save_top_k = int(max_epochs/check_val_every_n_epoch)
 
