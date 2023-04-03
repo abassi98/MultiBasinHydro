@@ -343,7 +343,7 @@ class Hydro_LSTM(pl.LightningModule):
         noise = self.sigmoid(torch.randn(size=(batch_size, self.seq_len, self.noise_dim), device=self.device))
         input_lstm = torch.cat((input_lstm, noise),dim=-1)
        
-        print("input_lstm shape: ", input_lstm.shape)
+        #print("input_lstm shape: ", input_lstm.shape)
         hidd_rec, _ = self.lstm(input_lstm)
 
         #hidd_rec = self.dropout(hidd_rec)
