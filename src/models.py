@@ -127,7 +127,7 @@ class Hydro_LSTM_AE(pl.LightningModule):
                  linear = 512,
                  weight_decay = 0.0,
                  num_force_attributes = 5,
-                 warmup = 730, # 2 years
+                 warmup = 45, # 2 years
                 ):
         
         """
@@ -275,7 +275,7 @@ class Hydro_LSTM(pl.LightningModule):
                  noise_dim = 0,
                  statics = False,
                  hydro = False,
-                 warmup = 730,
+                 warmup = 45,
                 ):
         
         """
@@ -393,7 +393,7 @@ class Hydro_LSTM(pl.LightningModule):
         # forward pass
         rec = self.forward(y, statics, hydro)
         # Logging to TensorBoard by default
-        val_loss = self.loss_fn(x.squeeze(), rec.squeeze())
+        val_loss = self.loss_fn(x.squeeze()[:,self.warmup:], rec.squeeze()[:,self.warmup:])
         # Logging to TensorBoard by default
         self.log("val_loss", val_loss, prog_bar=True)
         self.log("epoch_num", float(self.current_epoch),prog_bar=True)
