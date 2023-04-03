@@ -56,15 +56,7 @@ if __name__ == '__main__':
     print("Number of basins: %d" %num_basins)
     print("Total number of days in Camels data: %d" %seq_len)
 
-    # tar = camel_dataset.input_data.squeeze()
-    # delta =  torch.sum((torch.abs( - torch.mean(tar, dim=-1, keepdims=True)))**2, dim=-1)
-    # print(delta.shape)
-    # condition = torch.logical_or(delta == 0.0, delta == 0)
-    # condition_np = np.array(condition)
-    # indeces = condition.nonzero().squeeze()
-    # indeces = [indeces[i].item() for i in range(len(indeces))]
-    # print(np.array(loaded_basin_ids)[condition_np])
-    # print(indeces)
+  
 
     ### Set proper device and train
     # check cpus and gpus available
@@ -83,6 +75,8 @@ if __name__ == '__main__':
     num_test_data = num_basins - num_train_data - num_val_data
 
     index_basins = np.arange(num_basins)
+ 
+   
     np.random.shuffle(index_basins)
     shuffled_basin_ids = [loaded_basin_ids[i] for i in index_basins]
 
@@ -120,6 +114,7 @@ if __name__ == '__main__':
     val_dataset = YearlyCamelsDataset(val_indeces, val_start, val_end, camel_dataset)
     test_dataset = YearlyCamelsDataset(test_indeces, val_start, val_end, camel_dataset)
     
+  
     print(train_dataset.__len__())
     ### Dataloader
     batch_size = 1024
@@ -131,6 +126,17 @@ if __name__ == '__main__':
     val_dataloader = DataLoader(val_dataset, batch_size=batch_size, num_workers=num_workers, shuffle=False)
     test_dataloader = DataLoader(test_dataset, batch_size=batch_size, num_workers=num_workers, shuffle=False)
 
+    # tar,_,_,_,_ = next(iter(train_dataloader)) 
+    # tar = tar.squeeze()
+    # print(tar.shape)
+    # delta =  torch.sum((torch.abs( tar - torch.mean(tar, dim=-1, keepdims=True)))**2, dim=-1)
+    # print(delta.shape)
+    # condition = torch.logical_or(delta == 0.0, delta == 0)
+    # condition_np = np.array(condition)
+    # indeces = condition.nonzero().squeeze()
+    # indeces = [indeces[i].item() for i in range(len(indeces))]
+    # print(np.array(train_dataset.loaded_basin_ids)[condition_np])
+    # print(indeces)
 
     
     # x,y, _, _, ids = next(iter(train_dataloader))
@@ -145,7 +151,7 @@ if __name__ == '__main__':
     # initialize the Hydro LSTM Auto Encoder
     ##########################################################
     # define the model
-    loss_fn = nn.MSELoss()
+    loss_fn = NSELoss()
     # possibly adjust kernel sizes according to seq_len
     model = Hydro_LSTM_AE(in_channels=(1,8,16), 
                     out_channels=(8,16,32), 

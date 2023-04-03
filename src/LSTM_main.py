@@ -138,7 +138,7 @@ if __name__ == '__main__':
     # initialize the Hydro LSTM Auto Encoder
     ##########################################################
     # define the model
-    loss_fn = nn.MSELoss()
+    loss_fn = NSELoss()
     assert args.noise_dim >= 0
     # possibly adjust kernel sizes according to seq_len
     model = Hydro_LSTM(lstm_hidden_units = 256, 
