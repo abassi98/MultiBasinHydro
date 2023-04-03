@@ -189,7 +189,7 @@ class Hydro_LSTM_AE(pl.LightningModule):
         enc = self.encoder(x.squeeze(dim=-1))
         enc_expanded = self.sigmoid(enc.unsqueeze(1).expand(-1, self.seq_len, -1))
         # concat data
-        input_lstm = torch.cat((enc_expanded, y.squeeze()),dim=-1)
+        input_lstm = torch.cat((enc_expanded, y.squeeze(1)),dim=-1) # squeeze channel dimension for input to lstm
         # Decode data
         hidd_rec, _ = self.lstm(input_lstm)
         #hidd_rec = self.dropout(hidd_rec)

@@ -278,7 +278,7 @@ class CamelDataset(Dataset):
 
     def load_hydro(self):
         """
-        Load static catchment features
+        Load hydrological fingerprints features
         """
         print("Loading statics attributes...")
         for i in range(len(self.loaded_basin_ids)):
@@ -325,13 +325,13 @@ class YearlyCamelsDataset(Dataset):
     """
     Take a full range Camels Dataset (between 1980 and 2010) and split in sequences of 1 year
     """
-    def __init__(self, indeces, start_date, end_date, dataset):
+    def __init__(self, indeces, start_date, end_date, dataset, num_years=15):
         super().__init__()
         
         # retrieve data
         self.start_date = datetime.datetime.strptime(start_date, '%Y/%m/%d').date()
         self.end_date = datetime.datetime.strptime(end_date, '%Y/%m/%d').date()
-        
+        self.num_years = num_years
         indeces.sort()
         self.basin_ids = [dataset.loaded_basin_ids[i] for i in indeces]
 
@@ -371,7 +371,7 @@ class YearlyCamelsDataset(Dataset):
         self.loaded_basin_ids = []
 
         for i in range(self.num_basins):
-            for y in range(15): # 15 years of data for basins
+            for y in range(self.num_years): # number years of data for basins
                 self.input_data.append(flow_data[i,:,y*365:(y+1)*365,:])
                 self.output_data.append(force_data[i,:,y*365:(y+1)*365,:])
                 self.hydro_data.append(hydro_features[i,:,:,:])

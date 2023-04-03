@@ -4,9 +4,14 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 from dadapy import data
 
-S = np.loadtxt("statics.txt")
-E = pd.read_csv("encoded_features_lstm_ae.txt", sep=" ", skiprows=1).iloc[:,4::]
+S = pd.read_csv("statics.txt", sep=" ", skiprows=1)[2::]
+S = np.array(S)
+E = pd.read_csv("encoded_features_lstm-ae-bdTrue-E30-1Y.txt", sep=" ", skiprows=1).iloc[:,2::]
+E4 = pd.read_csv("encoded_features_lstm-ae-bdTrue-E4-1Y.txt", sep=" ", skiprows=1).iloc[:,2::]
+E4old = pd.read_csv("encoded_features_lstm-ae-bdTrue-E4.txt", sep=" ", skiprows=1).iloc[:,2::]
 E = np.array(E)
+E4 = np.array(E4)
+E4old = np.array(E4old)
 
 def compute_ids_scaling(X, range_max = 2048, N_min = 20):
     "instantiate data class"
@@ -20,10 +25,12 @@ def compute_ids_scaling(X, range_max = 2048, N_min = 20):
 
 #*************************************************************
 
-ids_S_gride, ids_S_twoNN, rs_S_gride, rs_S_twoNN = compute_ids_scaling(S,range_max = S.shape[0]-1,N_min = 1)
-ids_E_gride, ids_E_twoNN, rs_E_gride, rs_E_twoNN = compute_ids_scaling(E,range_max = S.shape[0]-1,N_min = 1)
+ids_S_gride, ids_S_twoNN, rs_S_gride, rs_S_twoNN = compute_ids_scaling(S,range_max = S.shape[0]-1,N_min = 20)
+ids_E_gride, ids_E_twoNN, rs_E_gride, rs_E_twoNN = compute_ids_scaling(E,range_max = S.shape[0]-1,N_min = 20)
+ids_E4_gride, ids_E4_twoNN, rs_E4_gride, rs_E4_twoNN = compute_ids_scaling(E4,range_max = S.shape[0]-1,N_min = 20)
+ids_E4old_gride, ids_E4old_twoNN, rs_E4old_gride, rs_E4old_twoNN = compute_ids_scaling(E4old,range_max = S.shape[0]-1,N_min = 20)
 
-fig, ax = plt.subplots(1,2,figsize = (16, 8), sharey=True)
+fig, ax = plt.subplots(1,4,figsize = (24, 8), sharey=True)
 
 
 xrange = min(len(ids_S_gride), len(ids_S_twoNN))
@@ -40,10 +47,29 @@ xrange = min(len(ids_E_gride), len(ids_E_twoNN))
 sns.lineplot(ax = ax[1], x=rs_E_gride, y = ids_E_gride, label = 'Gride', marker = 'o')
 sns.lineplot(ax = ax[1], x=rs_E_twoNN, y = ids_E_twoNN, label = 'twoNN', marker = 'o')
 ax[1].set_xscale('log')
-ax[1].set_title('Encoded attributes', fontsize = 20)
+ax[1].set_title('Encoded attributes (30)', fontsize = 20)
 ax[1].set_ylabel('ID', fontsize = 20)
 #ax.axvline(noise_plane, color = 'black', alpha = 1, label = 'noise scale', linewidth = 0.8, linestyle= 'dotted')
 ax[1].legend(fontsize = 20)
+
+xrange = min(len(ids_E4_gride), len(ids_E4_twoNN))
+sns.lineplot(ax = ax[2], x=rs_E4_gride, y = ids_E4_gride, label = 'Gride', marker = 'o')
+sns.lineplot(ax = ax[2], x=rs_E4_twoNN, y = ids_E4_twoNN, label = 'twoNN', marker = 'o')
+ax[2].set_xscale('log')
+ax[2].set_title('Encoded attributes (4)', fontsize = 20)
+ax[2].set_ylabel('ID', fontsize = 20)
+#ax.axvline(noise_plane, color = 'black', alpha = 1, label = 'noise scale', linewidth = 0.8, linestyle= 'dotted')
+ax[2].legend(fontsize = 20)
+
+xrange = min(len(ids_E4old_gride), len(ids_E4old_twoNN))
+sns.lineplot(ax = ax[3], x=rs_E4old_gride, y = ids_E4old_gride, label = 'Gride', marker = 'o')
+sns.lineplot(ax = ax[3], x=rs_E4_twoNN, y = ids_E4old_twoNN, label = 'twoNN', marker = 'o')
+ax[3].set_xscale('log')
+ax[3].set_title('Encoded attributes (4) old', fontsize = 20)
+ax[3].set_ylabel('ID', fontsize = 20)
+#ax.axvline(noise_plane, color = 'black', alpha = 1, label = 'noise scale', linewidth = 0.8, linestyle= 'dotted')
+ax[3].legend(fontsize = 20)
+
 
 fig.text(0.5, 0.05, 'distance range', ha='center', fontsize=20)
 
