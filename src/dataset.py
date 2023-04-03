@@ -25,6 +25,7 @@ class CamelDataset(Dataset):
         5062500,5087500,6037500,6043500,6188000,6441500,7290650,7295000,7373000,
         7376000,7377000,8025500,8155200,9423350,9484000,9497800,9505200,10173450,
         10258000,12025000,12043000,12095000,12141300,12374250,13310700]
+        
         self.basins_with_missing_data = [str(x).rjust(8, "0") for x in self.basins_with_missing_data] # convert to string and pad
         self.debug = debug # debug mode default off
         self.transform_input = transform_input
@@ -62,14 +63,7 @@ class CamelDataset(Dataset):
         self.dates = [self.start_date +datetime.timedelta(days=x) for x in range((self.end_date-self.start_date).days+1)]
         self.seq_len = len(self.dates)
         self.force_attributes = force_attributes
-        self.num_force_attributes = len(self.force_attributes)
-        
-        # define max/min forcing and flow tensors
-        self.min_flow = 1000*torch.ones((1,), dtype=torch.float32)
-        self.max_flow = -1000*torch.ones((1,), dtype=torch.float32)
-        self.min_force = 1000*torch.ones((self.num_force_attributes,), dtype=torch.float32)
-        self.max_force = -1000*torch.ones((self.num_force_attributes,), dtype=torch.float32)
-        
+        self.num_force_attributes = len(self.force_attributes) 
         
         
         # ==========================================================================
@@ -227,18 +221,6 @@ class CamelDataset(Dataset):
                 # take data
                 force_data = torch.tensor(df_forcing.loc[:,self.force_attributes].to_numpy(), dtype=torch.float32).unsqueeze(0) # shape (1, seq_len, feature_dim=4)
                 flow_data = torch.tensor(flow_data, dtype=torch.float32).unsqueeze(1).unsqueeze(0) # shape (1, seq_len, feature_dim=1)
-
-                # take current max/min, tensor of size (feature_dim)
-                current_min_flow = torch.amin(flow_data.squeeze(dim=0), dim=0)
-                current_max_flow = torch.amax(flow_data.squeeze(dim=0), dim=0)
-                current_min_force = torch.amin(force_data.squeeze(dim=0), dim=0)
-                current_max_force = torch.amax(force_data.squeeze(dim=0), dim=0)
-                
-                # reset max/min force/flow
-                self.min_flow = torch.minimum(self.min_flow, current_min_flow)
-                self.max_flow = torch.maximum(self.max_flow, current_max_flow)
-                self.min_force = torch.minimum(self.min_force, current_min_force)
-                self.max_force = torch.maximum(self.max_force, current_max_force)
                 
                 # append
                 self.input_data[count] = flow_data

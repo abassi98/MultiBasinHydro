@@ -138,7 +138,7 @@ if __name__ == '__main__':
     # initialize the Hydro LSTM Auto Encoder
     ##########################################################
     # define the model
-    loss_fn = NSELoss()
+    loss_fn = nn.MSELoss()
     assert args.noise_dim >= 0
     # possibly adjust kernel sizes according to seq_len
     model = Hydro_LSTM(lstm_hidden_units = 256, 
@@ -194,7 +194,7 @@ if __name__ == '__main__':
 
     # define trainer 
     # , gradient_clip_val=1.0, gradient_clip_algorithm="value"
-    trainer = pl.Trainer(max_epochs=max_epochs, callbacks=[checkpoint_model,metrics_callback], accelerator=str(device), devices=1, check_val_every_n_epoch=check_val_every_n_epoch, logger=False)
+    trainer = pl.Trainer(max_epochs=max_epochs, callbacks=[checkpoint_model,metrics_callback], accelerator=str(device), devices=1, check_val_every_n_epoch=check_val_every_n_epoch, logger=False, gradient_clip_val=1.0, gradient_clip_algorithm="value")
     
     trainer.fit(model=model, train_dataloaders=train_dataloader, val_dataloaders = val_dataloader)
     

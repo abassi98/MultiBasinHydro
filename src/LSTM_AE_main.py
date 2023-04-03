@@ -56,6 +56,16 @@ if __name__ == '__main__':
     print("Number of basins: %d" %num_basins)
     print("Total number of days in Camels data: %d" %seq_len)
 
+    # tar = camel_dataset.input_data.squeeze()
+    # delta =  torch.sum((torch.abs( - torch.mean(tar, dim=-1, keepdims=True)))**2, dim=-1)
+    # print(delta.shape)
+    # condition = torch.logical_or(delta == 0.0, delta == 0)
+    # condition_np = np.array(condition)
+    # indeces = condition.nonzero().squeeze()
+    # indeces = [indeces[i].item() for i in range(len(indeces))]
+    # print(np.array(loaded_basin_ids)[condition_np])
+    # print(indeces)
+
     ### Set proper device and train
     # check cpus and gpus available
     num_cpus = multiprocessing.cpu_count()
@@ -123,8 +133,8 @@ if __name__ == '__main__':
 
 
     
-    x,y, _, _, ids = next(iter(train_dataloader))
-    print(torch.amax(x), torch.amin(x))
+    # x,y, _, _, ids = next(iter(train_dataloader))
+    # print(torch.amax(x), torch.amin(x))
    
     # print(sys.getsizeof(camel_dataset.input_data))
     # print(sys.getsizeof(camel_dataset.output_data))
@@ -135,7 +145,7 @@ if __name__ == '__main__':
     # initialize the Hydro LSTM Auto Encoder
     ##########################################################
     # define the model
-    loss_fn = NSELoss()
+    loss_fn = nn.MSELoss()
     # possibly adjust kernel sizes according to seq_len
     model = Hydro_LSTM_AE(in_channels=(1,8,16), 
                     out_channels=(8,16,32), 
@@ -187,7 +197,7 @@ if __name__ == '__main__':
     #ckpt_path = "checkpoints/lstm-ae-bdTrue-E3/last.ckpt"
 
     # define trainer 
-    trainer = pl.Trainer(max_epochs=max_epochs, callbacks=[checkpoint_model,metrics_callback], accelerator=str(device),devices=1, check_val_every_n_epoch=check_val_every_n_epoch, logger=False)
+    trainer = pl.Trainer(max_epochs=max_epochs, callbacks=[checkpoint_model,metrics_callback], accelerator=str(device),devices=1, check_val_every_n_epoch=check_val_every_n_epoch, logger=False, gradient_clip_val=1.0, gradient_clip_algorithm="value")
     
     trainer.fit(model=model, train_dataloaders=train_dataloader, val_dataloaders = val_dataloader)
    
