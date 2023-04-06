@@ -15,7 +15,7 @@ from utils import Globally_Scale_Data
 
 
 class CamelDataset(Dataset):
-    def __init__(self, dates: list, force_attributes: list,  data_path: str = "basin_dataset_public_v1p2", source_data_set: str = "daymet", debug=False, transform_input=None, transform_output=None) -> None:
+    def __init__(self, dates: list, force_attributes: list,  data_path: str = "basin_dataset_public_v1p2", source_data_set: str = "daymet", debug=False) -> None:
         super().__init__()
      
         self.data_path = data_path
@@ -28,10 +28,9 @@ class CamelDataset(Dataset):
         
         self.basins_with_missing_data = [str(x).rjust(8, "0") for x in self.basins_with_missing_data] # convert to string and pad
         self.debug = debug # debug mode default off
-        self.transform_input = transform_input
-        self.transform_output = transform_output
+        self.basin_list = np.loadtxt("basin_list.txt", dtype=int) # kratzert's 531 catchments
+        self.basin_list =  [str(x).rjust(8, "0") for x in self.basin_list] # convert to string and pad
        
-
         # static attributes
         clim_attr = ["p_mean", "pet_mean", "p_seasonality", "frac_snow", "aridity", "high_prec_freq", "high_prec_dur","low_prec_freq", "low_prec_dur"] # 9 features
         df_clim = pd.read_csv(data_path+"/camels_clim.txt", sep=";")[clim_attr]
@@ -90,22 +89,24 @@ class CamelDataset(Dataset):
         self.trimmed_basin_hucs = [all_basin_hucs[i] for i in missing_data_indexes]
         self.trimmed_basin_names = [all_basin_names[i] for i in missing_data_indexes]
 
-        # set container for hucs, ids and names effectively loaded
-        self.len_dataset = 562 #len(self.trimmed_basin_ids)
-        if self.debug:
-            self.len_dataset = 15
+       
       
         self.loaded_basin_hucs = []
         self.loaded_basin_ids = []
         self.loaded_basin_names = []
 
         # containers for data
+        self.len_dataset = len(self.trimmed_basin_ids) # 531 catchmetns (previously 562)
+        if self.debug:
+            self.len_dataset = 15
+
         self.input_data = torch.zeros(self.len_dataset, 1, self.seq_len, 1)
         self.output_data = torch.zeros(self.len_dataset, 1, self.seq_len, self.num_force_attributes)
         self.statics_data = torch.zeros(self.len_dataset,1, 1, self.static_attributes)
         self.hydro_data = torch.zeros(self.len_dataset,1, 1, self.hydro_attributes)
+
         
-    def adjust_dates(self, ):
+    def adjust_dates(self, ):   
         """
         Redefine the start and end date as the the maximum of 
         the start dates and the minimum of the end dates respectively.
@@ -185,13 +186,16 @@ class CamelDataset(Dataset):
             force_dates = np.array([datetime.date(df_forcing.iloc[i,0], df_forcing.iloc[i,1], df_forcing.iloc[i,2]) for i in range(len(df_forcing))])
             
             # control length and assert they are equal
-            #assert len(flow_data) == len(df_forcing)
+            #assert len(flow_data) == len(force_dates)
             
-            # get rid of cathcments with false values and whose dates range is not the
+            # get rid of cathcments whose dates range is not the input one
             interval_force_dates_bool = force_dates[0] <= self.start_date and force_dates[-1] >= self.end_date
             interval_flow_dates_bool = flow_dates[0] <= self.start_date and flow_dates[-1] >= self.end_date
 
-            if interval_force_dates_bool and interval_flow_dates_bool:
+            
+            
+            # check if data containes the right date interval and if it is one of the basin in the loading list
+            if  self.basin_list.count(basin_id)>0: #interval_force_dates_bool and interval_flow_dates_bool:
                 # adjust dates
                 bool_flow_dates = np.logical_and(self.start_date <= flow_dates, flow_dates <= self.end_date)
                 flow_data = flow_data[bool_flow_dates]
@@ -235,18 +239,49 @@ class CamelDataset(Dataset):
         #self.transform_output = Globally_Scale_Data(self.min_force, self.max_force)
 
         # normalize
-        self.min_flow = torch.amin(self.input_data, dim=(0,2), keepdim=True).squeeze()
-        self.max_flow = torch.amax(self.input_data, dim=(0,2), keepdim=True).squeeze()
-        delta_input = torch.amax(self.input_data, dim=(0,2), keepdim=True)-torch.amin(self.input_data, dim=(0,2), keepdim=True)
-        #delta_input[delta_input<10e-8] = 10e-8
-        self.input_data = (self.input_data - torch.amin(self.input_data, dim=(0,2), keepdim=True))/delta_input
-        self.min_force = torch.amin(self.output_data, dim=(0,2), keepdim=True).squeeze()
-        self.max_force = torch.amax(self.output_data, dim=(0,2), keepdim=True).squeeze()
-        delta_output = torch.amax(self.output_data, dim=(0,2), keepdim=True)-torch.amin(self.output_data, dim=(0,2), keepdim=True)
-        #delta_output[delta_output<10e-8] = 10e-8
-        self.output_data = (self.output_data - torch.amin(self.output_data, dim=(0,2), keepdim=True))/delta_output
+        # self.min_flow = torch.amin(self.input_data, dim=(0,2), keepdim=True).squeeze()
+        # self.max_flow = torch.amax(self.input_data, dim=(0,2), keepdim=True).squeeze()
+        # delta_input = torch.amax(self.input_data, dim=(0,2), keepdim=True)-torch.amin(self.input_data, dim=(0,2), keepdim=True)
+        # self.input_data = (self.input_data - torch.amin(self.input_data, dim=(0,2), keepdim=True))/delta_input
+        # self.min_force = torch.amin(self.output_data, dim=(0,2), keepdim=True).squeeze()
+        # self.max_force = torch.amax(self.output_data, dim=(0,2), keepdim=True).squeeze()
+        # delta_output = torch.amax(self.output_data, dim=(0,2), keepdim=True)-torch.amin(self.output_data, dim=(0,2), keepdim=True)
+        # self.output_data = (self.output_data - torch.amin(self.output_data, dim=(0,2), keepdim=True))/delta_output
+
+        # containers for data
+        self.len_dataset = len(self.loaded_basin_ids) # 531 catchmetns (previously 562)
+       
+        self.input_data = self.input_data[:self.len_dataset]
+        self.output_data = self.output_data[:self.len_dataset]
+        self.statics_data = self.statics_data[:self.len_dataset]
+        self.hydro_data = self.hydro_data[:self.len_dataset]
+
         print("... done.")
 
+    def save_dataset(self,):
+        np.savetxt("loaded_basin_ids.txt", np.array(self.loaded_basin_ids, dtype=str),  fmt='%s')
+        dir_force = "basin_dataset/daymet"
+        dir_flow = "basin_dataset/streamflow"
+        for i in range(len(self.loaded_basin_ids)):
+            file_force = os.path.join(dir_force, self.loaded_basin_ids[i]+"_daymet.txt")
+            df_force = pd.DataFrame()
+            df_force["year"] = [self.dates[i].year for i in range(len(self.dates))]
+            df_force["month"] = [self.dates[i].month for i in range(len(self.dates))]
+            df_force["day"] = [self.dates[i].day for i in range(len(self.dates))]
+            df_force["prcp(mm/day)"] = np.array(self.output_data[i].squeeze())[:,0]
+            df_force["srad(W/m2)"] = np.array(self.output_data[i].squeeze())[:,1]
+            df_force["tmin(C)"] = np.array(self.output_data[i].squeeze())[:,2]
+            df_force["tmax(C)"] = np.array(self.output_data[i].squeeze())[:,3]
+            df_force["vp(Pa)"] = np.array(self.output_data[i].squeeze())[:,4]
+            df_force.to_csv(file_force, sep=" ")
+
+            file_flow = os.path.join(dir_flow, self.loaded_basin_ids[i]+"_streamflow.txt")
+            df_flow = pd.DataFrame()
+            df_flow["year"] = [self.dates[i].year for i in range(len(self.dates))]
+            df_flow["month"] = [self.dates[i].month for i in range(len(self.dates))]
+            df_flow["day"] = [self.dates[i].day for i in range(len(self.dates))]
+            df_flow["streamflow(mm/day)"] = np.array(self.input_data[i].squeeze())
+            df_flow.to_csv(file_flow, sep=" ")
 
     def load_statics(self):
         """
