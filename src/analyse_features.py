@@ -12,7 +12,7 @@ if __name__ == '__main__':
     ##########################################################
     # Load encoded features
     model_id = "lstm-ae-bdTrue-E3"
-    filename = "encoded_features_"+model_id+".txt"
+    filename = "encoded_features/encoded_features_"+model_id+".txt"
     df = pd.read_csv(filename, sep=" ")
     features = df.iloc[:,2::]
     features_basin_ids = df.iloc[:,1]
@@ -57,5 +57,5 @@ if __name__ == '__main__':
         
     # Colorbar
 
-    save_file = "plot_encoded_"+model_id+".png"
+    save_file = "plot/plot_encoded_"+model_id+".png"
     fig.savefig(save_file)

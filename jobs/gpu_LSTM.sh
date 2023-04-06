@@ -13,4 +13,4 @@
 
 export OMP_NUM_THREADS=$SLURM_CPUS_PER_TASK
 module load daint-gpu PyTorch      
-python3 src/LSTM_main.py --noise_dim 0 --statics 1 --bidirectional 1 --debug 0 # no noise, static features addes, bidirectional, training mode
+python3 ../src/LSTM_main.py --noise_dim 0 --statics 1 --bidirectional 1 --debug 0 # no noise, static features addes, bidirectional, training mode

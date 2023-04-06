@@ -59,7 +59,7 @@ df_SH.insert(0, "basin_id", H_ids)
 # g.set_xticklabels(g.get_xticklabels(), rotation = 70, fontsize = 10)
 # g.set_yticklabels(g.get_yticklabels(), rotation = 30, fontsize = 10)
 # #sns.heatmap(corr_noise, xticklabels=corr.columns, yticklabels=corr.columns, cmap="bwr", ax=axs[1])
-# file_corr = "plot_corrES_"+model_id+".png"
+# file_corr = "plot/plot_corrES_"+model_id+".png"
 # axs.set_title("Correlation matrix Encoded Features/Statics attributes(Kratzert)", fontsize=15)
 # fig.savefig(file_corr)
 
@@ -72,7 +72,7 @@ df_SH.insert(0, "basin_id", H_ids)
 # g.set_xticklabels(g.get_xticklabels(), rotation = 70, fontsize = 10)
 # g.set_yticklabels(g.get_yticklabels(), rotation = 30, fontsize = 10)
 # #sns.heatmap(corr_noise, xticklabels=corr.columns, yticklabels=corr.columns, cmap="bwr", ax=axs[1])
-# file_corr = "plot_corrEH_"+model_id+".png"
+# file_corr = "plot/plot_corrEH_"+model_id+".png"
 # axs.set_title("Correlation matrix Encoded Features/Hydrological Signatures", fontsize=15)
 # fig.savefig(file_corr)
 
@@ -84,7 +84,7 @@ df_SH.insert(0, "basin_id", H_ids)
 # g.set_xticklabels(g.get_xticklabels(), rotation = 70, fontsize = 10)
 # g.set_yticklabels(g.get_yticklabels(), rotation = 30, fontsize = 10)
 # #sns.heatmap(corr_noise, xticklabels=corr.columns, yticklabels=corr.columns, cmap="bwr", ax=axs[1])
-# file_corr = "plot_corrSH_"+model_id+".png"
+# file_corr = "plot/plot_corrSH_"+model_id+".png"
 # axs.set_title("Correlation matrix Static attributes(Kratzert)/Hydrological Signatures", fontsize=15)
 # fig.savefig(file_corr)
 
@@ -132,7 +132,7 @@ coor_tot = np.arange(E_dim+27)
 # ax.set_ylabel(r'$\Delta(x_2 \rightarrow x_1) $')
 
 # ax.legend(bbox_to_anchor=(0.5, 0.2, 0.5, 0.5))
-# file_corr = "plot_imbalanceES_"+model_id+".png"
+# file_corr = "plot/plot_imbalanceES_"+model_id+".png"
 # fig.savefig(file_corr)
 
 # ###### information imbalance between EH
@@ -178,7 +178,7 @@ coor_tot = np.arange(E_dim+27)
 # ax.set_ylabel(r'$\Delta(x_2 \rightarrow x_1) $')
 
 # ax.legend(bbox_to_anchor=(0.5, 0.2, 0.5, 0.5))
-# file_corr = "plot_imbalanceEH_"+model_id+".png"
+# file_corr = "plot/plot_imbalanceEH_"+model_id+".png"
 # fig.savefig(file_corr)
 
 
@@ -240,5 +240,5 @@ ax[1].set_xlabel(r'$\Delta(E \rightarrow S_k) $')
 ax[1].set_ylabel(r'$\Delta(S_k \rightarrow E) $')
 
 
-file_save = "plot_iterative_imbalance_fullS.png"
+file_save = "plot/plot_iterative_imbalance_fullS.png"
 fig.savefig(file_save)

@@ -14,4 +14,4 @@
 export OMP_NUM_THREADS=$SLURM_CPUS_PER_TASK
 module load daint-gpu PyTorch 
 #pip3 install scikit-learn seaborn 
-python3 src/analysis_basins.py 
+python3 ../src/analysis_basins.py 

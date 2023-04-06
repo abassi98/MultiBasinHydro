@@ -16,4 +16,4 @@
 module load gcc/9.4.0-pe5.34 miniconda3/4.12.0 lsfm-init-miniconda/1.0.0	
 conda activate my_env
 
-python3 src/LSTM_AE_main.py --num_features 30 --bidirectional 1 --debug 0 # bidirectional, training mode
+python3 ../src/LSTM_AE_main.py --num_features 30 --bidirectional 1 --debug 0 # bidirectional, training mode

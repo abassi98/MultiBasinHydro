@@ -110,7 +110,7 @@ if __name__ == '__main__':
     enc = enc.detach().squeeze().numpy() # size (562 * years,encoded space dim)
     
     
-    filename = "encoded_features_"+model_id+".txt"
+    filename = "encoded_features/encoded_features_"+model_id+".txt"
     df = pd.DataFrame()
     df["basin_id"] = camel_dataset.loaded_basin_ids
 
@@ -134,7 +134,7 @@ if __name__ == '__main__':
     im = ax.scatter(x=lon, y=lat,c=nse, cmap="YlOrRd", s=1)
     fig.colorbar(im, ax=ax, fraction=0.028, pad=0.02, location="bottom")
     
-    save_file = "plot_NSEmap_"+model_id+".png"
+    save_file = "plot/plot_NSEmap_"+model_id+".png"
     fig.savefig(save_file)
 
     # plot NSE vs Statics attributes
@@ -156,7 +156,7 @@ if __name__ == '__main__':
     fig1.text(0.5, 0.04, 'Statics Attribute', ha='center', fontsize=50)
     fig1.text(0.04, 0.5, 'NSE', va='center', rotation='vertical', fontsize=50)
  
-    save_file = "plot_corrStatNSE_"+model_id+".png"
+    save_file = "plot/plot_corrStatNSE_"+model_id+".png"
     fig1.savefig(save_file)
 
      # plot NSE vs Statics attributes
@@ -179,5 +179,5 @@ if __name__ == '__main__':
     fig2.text(0.5, 0.04, 'Hydro Signature', ha='center', fontsize=50)
     fig2.text(0.04, 0.5, 'NSE', va='center', rotation='vertical', fontsize=50)
  
-    save_file = "plot_corrHydroNSE_"+model_id+".png"
+    save_file = "plot/plot_corrHydroNSE_"+model_id+".png"
     fig2.savefig(save_file)

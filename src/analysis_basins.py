@@ -224,7 +224,7 @@ if __name__ == '__main__':
 
         
    
-    file = "stat_distr.png"
+    file = "plot/stat_distr.png"
     fig_stat.savefig(file)
 
     # # return and save the figure of runoff
@@ -234,7 +234,7 @@ if __name__ == '__main__':
     # fig.text(0.04, 0.5, 'Streamflow (mm/day)', va='center', rotation='vertical', fontsize=50)
     # fig.suptitle('Streamflow of best models compared to Camel data', fontsize=100)
     # fig.tight_layout
-    # fig.savefig("reconstructed-best-epochs.png")
+    # fig.savefig("plot/reconstructed-best-epochs.png")
 
     # # return and save the figure of runoff
     # handles, labels = ax1.get_legend_handles_labels()
@@ -243,7 +243,7 @@ if __name__ == '__main__':
     # fig1.text(0.04, 0.5, 'Delta Streamflow (mm/day)', va='center', rotation='vertical', fontsize=50)
     # fig1.suptitle('Absolute Streamflow difference betwen best models and Camel data', fontsize=100)
     # fig1.tight_layout
-    # fig1.savefig("abs-diff-best-epochs.png")
+    # fig1.savefig("plot/abs-diff-best-epochs.png")
 
 
    

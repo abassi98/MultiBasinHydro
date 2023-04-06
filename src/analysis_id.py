@@ -80,4 +80,4 @@ ax[3].legend(fontsize = 20)
 fig.text(0.5, 0.05, 'distance range', ha='center', fontsize=20)
 
 #fig.tight_layout()
-fig.savefig("id_hydro.png")
+fig.savefig("plot/id_hydro.png")
