@@ -37,6 +37,8 @@ if __name__ == '__main__':
     camel_dataset = CamelDataset(dates, force_attributes, debug=False)
     #dataset.adjust_dates() # adjust dates if necessary
     camel_dataset.load_data() # load data
+    camel_dataset.load_statics()
+    camel_dataset.load_hydro()
     num_basins = camel_dataset.__len__()
     seq_len = camel_dataset.seq_len
     print("Number of basins: %d" %num_basins)
@@ -85,8 +87,8 @@ if __name__ == '__main__':
    
     start_date = datetime.datetime.strptime(dates[0], '%Y/%m/%d').date()
     # get data 
-    x, y, statics = next(iter(test_dataloader))
-    
+    x, y, statics, hydro = next(iter(test_dataloader))
+   
     x_unnorm = transform_input.reverse_transform(x.detach()).squeeze().numpy()
     # build figure
     length_to_plot = 730 # 2 years
@@ -147,9 +149,9 @@ if __name__ == '__main__':
 
         else:
             model = Hydro_LSTM.load_from_checkpoint(path_best)
-            print(model.statics)
+            print(model.statics, model.hydro)
             with torch.no_grad():
-                rec = model(y, statics)
+                rec = model(y, statics, hydro)
 
         # compute NSE, mNSE and save in dataframe
         nse_df[model_id] = - loss_NSE(x.squeeze(), rec.squeeze()).detach().numpy() # array of size (num_test_data)
@@ -218,7 +220,7 @@ if __name__ == '__main__':
         axs_stat[count,2].axvline(stat_pfab.loc["25%",model_id], ls="--", lw=1, c="black")
         axs_stat[count,2].axvline(stat_pfab.loc["50%", model_id], ls="-", lw=2, c="black")
         axs_stat[count,2].axvline(stat_pfab.loc["75%", model_id], ls="--", lw=1, c="black")
-        axs_stat[count,2].set_xlim(0.0,3.0)
+        axs_stat[count,2].set_xlim(0.0,100.0)
 
         
    

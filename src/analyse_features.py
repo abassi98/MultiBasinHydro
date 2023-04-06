@@ -11,7 +11,7 @@ if __name__ == '__main__':
     # Load encoded features of chosen LSTM-AE model
     ##########################################################
     # Load encoded features
-    model_id = "lstm-ae-bdTrue-E4"
+    model_id = "lstm-ae-bdTrue-E3"
     filename = "encoded_features_"+model_id+".txt"
     df = pd.read_csv(filename, sep=" ")
     features = df.iloc[:,2::]
@@ -45,14 +45,15 @@ if __name__ == '__main__':
     for i in range(2):
         for j in range(2):
             f = 2*i +j 
-            ax = axes[i,j]
-            ax.set_xlim(-128, -65)
-            ax.set_ylim(24, 50)
-            ax.set_title("E"+str(f))
-            ax.set_axis_off()
-            countries[countries["name"] == "United States of America"].plot(color="lightgrey", ax=ax)
-            im = ax.scatter(x=lon, y=lat,c=df["E"+str(f)], cmap="YlOrRd", s=1)
-            fig.colorbar(im, ax=ax, fraction=0.028, pad=0.02, location="bottom")
+            if f<3:
+                ax = axes[i,j]
+                ax.set_xlim(-128, -65)
+                ax.set_ylim(24, 50)
+                ax.set_title("E"+str(f))
+                ax.set_axis_off()
+                countries[countries["name"] == "United States of America"].plot(color="lightgrey", ax=ax)
+                im = ax.scatter(x=lon, y=lat,c=df["E"+str(f)], cmap="YlOrRd", s=1)
+                fig.colorbar(im, ax=ax, fraction=0.028, pad=0.02, location="bottom")
         
     # Colorbar
 

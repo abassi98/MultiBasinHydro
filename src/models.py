@@ -44,6 +44,7 @@ class ConvEncoder(nn.Module):
         self.act = act
         self.seq_len = seq_len
         self.linear = linear 
+        self.pool_division = 4
       
         ### Network architecture
         # First convolutional layer (2d convolutional layer
@@ -52,7 +53,7 @@ class ConvEncoder(nn.Module):
             nn.BatchNorm1d(self.out_channels[0]),
             self.act(inplace = True),
             nn.Dropout(self.drop_p, inplace = False),
-            nn.AvgPool1d(2)
+            nn.AvgPool1d(self.pool_division)
         )
         
         # Second convolution layer
@@ -61,7 +62,7 @@ class ConvEncoder(nn.Module):
             nn.BatchNorm1d(self.out_channels[1]),
             self.act(inplace = True),
             nn.Dropout(self.drop_p, inplace = False),
-            nn.AvgPool1d(2)
+            nn.AvgPool1d(self.pool_division)
         )
         
         # Third convolutional layer
@@ -70,7 +71,7 @@ class ConvEncoder(nn.Module):
             nn.BatchNorm1d(self.out_channels[2]),
             self.act(inplace = True),
             nn.Dropout(self.drop_p, inplace = False),
-            nn.AvgPool1d(2)
+            nn.AvgPool1d(self.pool_division)
         )
 
 
@@ -78,7 +79,7 @@ class ConvEncoder(nn.Module):
         self.flatten = nn.Flatten(start_dim=1)
         
         # Liner dimension after 2 convolutional layers
-        self.lin_dim = int((((self.seq_len-self.kernel_sizes[0]+1)/2.+1-self.kernel_sizes[1])/2.+1-self.kernel_sizes[2])/2.)
+        self.lin_dim = int((((self.seq_len-self.kernel_sizes[0]+1)/self.pool_division+1-self.kernel_sizes[1])/self.pool_division+1-self.kernel_sizes[2])/self.pool_division)
         
         # Linear encoder
         self.encoder_lin = nn.Sequential(
@@ -159,6 +160,7 @@ class Hydro_LSTM_AE(pl.LightningModule):
         self.loss_fn = loss_fn
         self.num_force_attributes = num_force_attributes 
         self.warmup = warmup # warmup days
+        
 
         # Encoder
         self.encoder = ConvEncoder(in_channels, out_channels, kernel_sizes,padding, encoded_space_dim, 

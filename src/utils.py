@@ -116,7 +116,7 @@ class NSELoss(nn.Module):
         # compute NSE as batch
         assert(tar.shape==obs.shape)
         NSE_num = torch.sum((torch.abs(tar - obs))**self.alpha, dim=-1) # tensor of size (batch_size,)
-        NSE_den = torch.sum((torch.abs(tar - torch.mean(tar, dim=-1, keepdims=True)))**self.alpha, dim=-1) # tensor of size (batch_size,)
+        NSE_den = torch.sum((torch.abs(tar - torch.mean(obs, dim=-1, keepdims=True)))**self.alpha, dim=-1) # tensor of size (batch_size,)
         NSE_tensor = 1.0 - NSE_num / NSE_den
         if self.reduction == "mean":
             NSE = torch.mean(NSE_tensor)
@@ -147,9 +147,9 @@ class PFAB():
         
         high_peak_length = int(seq_len * self.ex_prob)
         
-        sorted_tar, _ = torch.sort(tar, dim=-1)
+        sorted_tar, _ = torch.sort(tar, dim=-1, descending=True)
         sorted_tar = sorted_tar[:,:high_peak_length]
-        sorted_obs, _= torch.sort(obs, dim=-1)
+        sorted_obs, _= torch.sort(obs, dim=-1, descending=True)
         sorted_obs = sorted_obs[:,:high_peak_length]
         num = torch.sum(sorted_obs - sorted_tar, dim=-1, keepdim=False)
         den = torch.sum(sorted_obs, dim=-1, keepdim=False)
@@ -163,7 +163,7 @@ class PFAB():
         else:
             raise Exception("Invalid reduction provided. Allowed 'mean', 'sum', None")
         
-        return torch.abs(out)
+        return torch.abs(out)*100
             
 
 

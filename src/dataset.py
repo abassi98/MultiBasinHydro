@@ -235,11 +235,15 @@ class CamelDataset(Dataset):
         #self.transform_output = Globally_Scale_Data(self.min_force, self.max_force)
 
         # normalize
+        self.min_flow = torch.amin(self.input_data, dim=(0,2), keepdim=True).squeeze()
+        self.max_flow = torch.amax(self.input_data, dim=(0,2), keepdim=True).squeeze()
         delta_input = torch.amax(self.input_data, dim=(0,2), keepdim=True)-torch.amin(self.input_data, dim=(0,2), keepdim=True)
-        delta_input[delta_input<10e-8] = 10e-8
+        #delta_input[delta_input<10e-8] = 10e-8
         self.input_data = (self.input_data - torch.amin(self.input_data, dim=(0,2), keepdim=True))/delta_input
+        self.min_force = torch.amin(self.output_data, dim=(0,2), keepdim=True).squeeze()
+        self.max_force = torch.amax(self.output_data, dim=(0,2), keepdim=True).squeeze()
         delta_output = torch.amax(self.output_data, dim=(0,2), keepdim=True)-torch.amin(self.output_data, dim=(0,2), keepdim=True)
-        delta_output[delta_output<10e-8] = 10e-8
+        #delta_output[delta_output<10e-8] = 10e-8
         self.output_data = (self.output_data - torch.amin(self.output_data, dim=(0,2), keepdim=True))/delta_output
         print("... done.")
 

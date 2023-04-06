@@ -2,6 +2,7 @@ import numpy as np
 import pandas as pd
 import geopandas as gpd
 import matplotlib.pyplot as plt
+from scipy.stats import linregress
 
 # pytorch
 import torch
@@ -67,10 +68,10 @@ if __name__ == '__main__':
     print("Number of workers: %d"%num_workers)
     start = "1980/10/01"
     end = "2010/09/23"
-    index_basins = np.arange(num_basins)
-    num_years = 30
-    dataset = YearlyCamelsDataset(index_basins, start, end, camel_dataset, num_years)
-    dataloader = DataLoader(dataset, batch_size=num_years, num_workers=num_workers, shuffle=False) # all dataset
+    # index_basins = np.arange(num_basins)
+    # num_years = 30
+    # dataset = YearlyCamelsDataset(index_basins, start, end, camel_dataset, num_years)
+    dataloader = DataLoader(camel_dataset, batch_size=1, num_workers=num_workers, shuffle=False) # all dataset
 
     # # extract forcing and streamflow
     # x, y, statics, hydro, ids = next(iter(dataloader))
@@ -79,32 +80,34 @@ if __name__ == '__main__':
     # print(ids)
 
     # retrieve best epoch
-    model_id = "lstm-ae-bdTrue-E4-1Y"
+    model_id = "lstm-ae-bdTrue-E3"
     best_epoch = find_best_epoch(model_id)
     ckpt_path = "checkpoints/"+model_id+"/model-epoch="+str(best_epoch)+".ckpt"
     print(ckpt_path)
     model = Hydro_LSTM_AE.load_from_checkpoint(ckpt_path)
-    warmup = model.warmup
+    
+    warmup = 0
     print("Warmup: ", warmup)
     model.eval()
    
     nse = []
     enc = torch.zeros((num_basins, model.encoded_space_dim))
+    
     loss_fn = NSELoss()
 
     with torch.no_grad():
-        for x, y, _, _, ids in dataloader:
+        i = 0
+        for x, y, _, _ in dataloader:
             enc_temp, rec = model(x,y) 
-            nse.append( - loss_fn(x.squeeze()[:,warmup:], rec.squeeze()[:,warmup:]).item())
-            enc[i] = torch.mean(enc_temp, dim=0)
+            nse.append( - loss_fn(x.squeeze().unsqueeze(0), rec.squeeze().unsqueeze(0)).item())
+            enc[i] = enc_temp.squeeze()
+            i += 1
 
     # pass thorugh sigmoid
     enc = nn.Sigmoid()(enc)
    
     # save encoded features
     enc = enc.detach().squeeze().numpy() # size (562 * years,encoded space dim)
-    print(enc.shape)
-
     
     
     filename = "encoded_features_"+model_id+".txt"
@@ -133,3 +136,48 @@ if __name__ == '__main__':
     
     save_file = "plot_NSEmap_"+model_id+".png"
     fig.savefig(save_file)
+
+    # plot NSE vs Statics attributes
+    fig1, ax1 = plt.subplots(9,3, figsize=(24,20), sharex=True, sharey=True)
+    statics = pd.read_csv("statics.txt", sep=" ").iloc[:,2::]
+   
+    for i in range(9):
+        for j in range(3):
+            c = i*3 + j
+            ax = ax1[i,j]
+            attr = statics.columns[c]
+            ax.set_title(attr)
+            x = statics.iloc[:,c]
+            ax.scatter(x, nse, s=10)
+            res= linregress(x, nse)
+            ax.plot(x, res.intercept + res.slope*x, 'r', label="Rvalue: "+ str(round(res.rvalue,3)))
+            ax.legend()
+
+    fig1.text(0.5, 0.04, 'Statics Attribute', ha='center', fontsize=50)
+    fig1.text(0.04, 0.5, 'NSE', va='center', rotation='vertical', fontsize=50)
+ 
+    save_file = "plot_corrStatNSE_"+model_id+".png"
+    fig1.savefig(save_file)
+
+     # plot NSE vs Statics attributes
+    fig2, ax2 = plt.subplots(4,3, figsize=(24,20), sharex=True, sharey=True)
+    hydro = pd.read_csv("hydro.txt", sep=" ").iloc[:,2::]
+    hydro.drop(columns=["zero_q_freq"], inplace=True)
+   
+    for i in range(4):
+        for j in range(3):
+            c = i*3 + j
+            ax = ax2[i,j]
+            attr = hydro.columns[c]
+            ax.set_title(attr)
+            x = hydro.iloc[:,c]
+            ax.scatter(x, nse, s=10)
+            res= linregress(x, nse)
+            ax.plot(x, res.intercept + res.slope*x, 'r', label="Rvalue: "+ str(round(res.rvalue,3)))
+            ax.legend()
+
+    fig2.text(0.5, 0.04, 'Hydro Signature', ha='center', fontsize=50)
+    fig2.text(0.04, 0.5, 'NSE', va='center', rotation='vertical', fontsize=50)
+ 
+    save_file = "plot_corrHydroNSE_"+model_id+".png"
+    fig2.savefig(save_file)
