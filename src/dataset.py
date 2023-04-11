@@ -11,7 +11,7 @@ from tqdm import tqdm
 
 import torch
 from torch.utils.data import Dataset
-from utils import Globally_Scale_Data
+from utils import normalize_features, reshape_data
 
 
 
@@ -21,17 +21,10 @@ class CamelDataset(Dataset):
      
         self.data_path = data_path
         self.source_data_set = source_data_set
-        self.basins_with_missing_data = [1208990, 1613050, 2051000, 2235200, 2310947,
-        2408540,2464146,3066000,3159540,3161000,3187500,3281100,3300400,3450000,
-        5062500,5087500,6037500,6043500,6188000,6441500,7290650,7295000,7373000,
-        7376000,7377000,8025500,8155200,9423350,9484000,9497800,9505200,10173450,
-        10258000,12025000,12043000,12095000,12141300,12374250,13310700]
-        
-        self.basins_with_missing_data = [str(x).rjust(8, "0") for x in self.basins_with_missing_data] # convert to string and pad
         self.debug = debug # debug mode default off
         self.basin_list = np.loadtxt("basin_list.txt", dtype=int) # kratzert's 531 catchments
         self.basin_list =  [str(x).rjust(8, "0") for x in self.basin_list] # convert to string and pad
- 
+        self.seq_length = 270
 
         # static attributes
         clim_attr = ["p_mean", "pet_mean", "p_seasonality", "frac_snow", "aridity", "high_prec_freq", "high_prec_dur","low_prec_freq", "low_prec_dur"] # 9 features
@@ -55,14 +48,12 @@ class CamelDataset(Dataset):
         self.static_attributes = self.df_statics.shape[1] # as many as Kratzert
         self.statics_ids = np.array(pd.read_csv(data_path+"/camels_clim.txt", sep=";")["gauge_id"]).astype(int)
      
-        # convert string dates to datetime format
+        # convert string dates to datetime format (take 270 before start as warmup)
         self.start_date = datetime.datetime.strptime(dates[0], '%Y/%m/%d').date() - datetime.timedelta(days=270 - 1)
         self.end_date = datetime.datetime.strptime(dates[1], '%Y/%m/%d').date()
         
 
         # initialize dates and sequence length
-        self.dates = [self.start_date +datetime.timedelta(days=x) for x in range((self.end_date-self.start_date).days+1)]
-        self.seq_len = len(self.dates)
         self.force_attributes = force_attributes
         self.num_force_attributes = len(self.force_attributes) 
         
@@ -77,22 +68,6 @@ class CamelDataset(Dataset):
         self.all_basin_hucs = [str(gauge_meta.loc[i,"HUC_02"]).rjust(2,"0") for i in range(gauge_meta.shape[0])] 
         self.all_basin_names = [str(gauge_meta.loc[i,"GAGE_NAME"]) for i in range(gauge_meta.shape[0])] 
 
-        # get rid of basin with missing data
-        missing_data_indexes = []
-        for i in range(len(self.all_basin_ids)):
-            missing_data = False
-            for j in range(len(self.basins_with_missing_data)):
-                if self.all_basin_ids[i] == self.basins_with_missing_data[j]:
-                    missing_data = True
-            if missing_data==False:
-                missing_data_indexes.append(i)
-
-        self.trimmed_basin_ids = [self.all_basin_ids[i] for i in missing_data_indexes]
-        self.trimmed_basin_hucs = [self.all_basin_hucs[i] for i in missing_data_indexes]
-        self.trimmed_basin_names = [self.all_basin_names[i] for i in missing_data_indexes]
-
-       
-      
         self.loaded_basin_hucs = []
         self.loaded_basin_ids = []
         self.loaded_basin_names = []
@@ -111,7 +86,6 @@ class CamelDataset(Dataset):
         # len(self.trimmed_basin_ids)
         count = 0
        
-    
         for i in tqdm(range(len(self.basin_list))):
             # retrieve data
             basin_id = self.basin_list[i]
@@ -140,17 +114,7 @@ class CamelDataset(Dataset):
             force_dates = np.array([datetime.date(df_forcing.iloc[i,0], df_forcing.iloc[i,1], df_forcing.iloc[i,2]) for i in range(len(df_forcing))])
             df_forcing = df_forcing[self.force_attributes]
             df_forcing.index  = force_dates
-            
-            # control length and assert they are equal
-            #assert len(flow_data) == len(force_dates)
-            
-            # get rid of cathcments whose dates range is not the input one
-            #interval_force_dates_bool = force_dates[0] <= self.start_date and force_dates[-1] >= self.end_date
-            #interval_flow_dates_bool = flow_dates[0] <= self.start_date and flow_dates[-1] >= self.end_date
 
-           
-            # check if data is contained in basin list 
-            #print(self.basin_list.count(basin_id), basin_id)
            
             # adjust dates
             bool_flow_dates = np.logical_and(self.start_date <= flow_dates, flow_dates <= self.end_date)
@@ -162,29 +126,41 @@ class CamelDataset(Dataset):
             df_forcing = df_forcing[bool_force_dates]
             force_dates = force_dates[bool_force_dates]
                 
-               
-            # control that dates are the same
-            #print("Basin %d: " %count, basin_huc, basin_id)
-            #assert len(flow_data) == len(df_forcing)
-            #assert all(force_dates == flow_dates)
-
-            # check that basins have with no missing data in the interval chosen
-            #bool_false_values = df_flow!= -999.0
-            #assert all(bool_false_values) == True
 
             # transfer from cubic feet (304.8 mm) per second to mm/day (normalized by basin area)
             df_flow = df_flow * (304.8**3)/(area * 10**6) * 86400
-                
-            # add tmean(C)
-            # df_forcing["tmean(C)"] = (df_forcing["tmin(C)"] + df_forcing["tmax(C)"])/2.0
-            # rescale day to hours
-            #df_forcing["Dayl(s)"] = df_forcing["Dayl(s)"]/3600.0
-            #df_forcing.rename(columns = {'Dayl(s)':'Dayl(h)'}, inplace = True)
-
+            
+            df_forcing["Streamflow(mm/day)"] = df_flow["Streamflow(mm/day)"]
+           
             # take data
-            #force_data = torch.tensor(df_forcing.loc[:,self.force_attributes].to_numpy(), dtype=torch.float32).unsqueeze(0) # shape (1, seq_len, feature_dim=4)
-            #flow_data = torch.tensor(flow_data, dtype=torch.float32).unsqueeze(1).unsqueeze(0) # shape (1, seq_len, feature_dim=1)
-                
+            x = df_forcing.iloc[:,:5].to_numpy()# shape (num_days, feature_dim=5)
+            y = np.expand_dims(df_forcing.iloc[:,5].to_numpy(), 1) # shape (num_days, feature_dim=1)
+            
+            # normalize forcing
+            x = normalize_features(x, variable='inputs') 
+            x, y = reshape_data(x, y, self.seq_length)
+
+    
+            # Deletes all records where no discharge was measured (-999)
+            x = np.delete(x, np.argwhere(y < 0)[:, 0], axis=0)
+            y = np.delete(y, np.argwhere(y < 0)[:, 0], axis=0)
+
+            # Delete all samples, where discharge is NaN
+            if np.sum(np.isnan(y)) > 0:
+                print(
+                    f"Deleted {np.sum(np.isnan(y))} of {len(y)} records because of NaNs in basin {basin_id}"
+                )
+                x = np.delete(x, np.argwhere(np.isnan(y)), axis=0)
+                y = np.delete(y, np.argwhere(np.isnan(y)), axis=0)
+
+        
+            y = normalize_features(y, variable='output')
+
+            # convert arrays to torch tensors
+            x = torch.from_numpy(x.astype(np.float32)).unsqueeze(1)
+            y = torch.from_numpy(y.astype(np.float32)).unsqueeze(1)
+          
+            
             # append
             self.input_data.append(df_flow)
             self.output_data.append(df_forcing)
