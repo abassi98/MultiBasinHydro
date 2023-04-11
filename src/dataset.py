@@ -31,7 +31,8 @@ class CamelDataset(Dataset):
         self.debug = debug # debug mode default off
         self.basin_list = np.loadtxt("basin_list.txt", dtype=int) # kratzert's 531 catchments
         self.basin_list =  [str(x).rjust(8, "0") for x in self.basin_list] # convert to string and pad
-       
+ 
+
         # static attributes
         clim_attr = ["p_mean", "pet_mean", "p_seasonality", "frac_snow", "aridity", "high_prec_freq", "high_prec_dur","low_prec_freq", "low_prec_dur"] # 9 features
         df_clim = pd.read_csv(data_path+"/camels_clim.txt", sep=";")[clim_attr]
@@ -69,26 +70,26 @@ class CamelDataset(Dataset):
         # ==========================================================================
         # gauge_information has to be read first to obtain correct HUC (hydrologic unit code)
         path_gauge_meta = os.path.join(self.data_path, "basin_metadata","gauge_information.txt")
-        gauge_meta = pd.read_csv(path_gauge_meta, sep="\t", header=6, names=["HUC_02","GAGE_ID","GAGE_NAME","LAT","LONG","DRAINAGE AREA (KM^2)"])
-
+        gauge_meta = pd.read_csv(path_gauge_meta, skiprows=1,sep="\t", names=["HUC_02","GAGE_ID","GAGE_NAME","LAT","LONG","DRAINAGE AREA (KM^2)"])
+        
         # retrieve basin_ids and basin_hucs and convert to string, possibly padded
-        all_basin_ids = [str(gauge_meta.loc[i,"GAGE_ID"]).rjust(8,"0") for i in range(gauge_meta.shape[0])]
-        all_basin_hucs = [str(gauge_meta.loc[i,"HUC_02"]).rjust(2,"0") for i in range(gauge_meta.shape[0])] 
-        all_basin_names = [str(gauge_meta.loc[i,"GAGE_NAME"]) for i in range(gauge_meta.shape[0])] 
+        self.all_basin_ids = [str(gauge_meta.loc[i,"GAGE_ID"]).rjust(8,"0") for i in range(gauge_meta.shape[0])]
+        self.all_basin_hucs = [str(gauge_meta.loc[i,"HUC_02"]).rjust(2,"0") for i in range(gauge_meta.shape[0])] 
+        self.all_basin_names = [str(gauge_meta.loc[i,"GAGE_NAME"]) for i in range(gauge_meta.shape[0])] 
 
         # get rid of basin with missing data
         missing_data_indexes = []
-        for i in range(len(all_basin_ids)):
+        for i in range(len(self.all_basin_ids)):
             missing_data = False
             for j in range(len(self.basins_with_missing_data)):
-                if all_basin_ids[i] == self.basins_with_missing_data[j]:
+                if self.all_basin_ids[i] == self.basins_with_missing_data[j]:
                     missing_data = True
             if missing_data==False:
                 missing_data_indexes.append(i)
 
-        self.trimmed_basin_ids = [all_basin_ids[i] for i in missing_data_indexes]
-        self.trimmed_basin_hucs = [all_basin_hucs[i] for i in missing_data_indexes]
-        self.trimmed_basin_names = [all_basin_names[i] for i in missing_data_indexes]
+        self.trimmed_basin_ids = [self.all_basin_ids[i] for i in missing_data_indexes]
+        self.trimmed_basin_hucs = [self.all_basin_hucs[i] for i in missing_data_indexes]
+        self.trimmed_basin_names = [self.all_basin_names[i] for i in missing_data_indexes]
 
        
       
@@ -96,79 +97,26 @@ class CamelDataset(Dataset):
         self.loaded_basin_ids = []
         self.loaded_basin_names = []
         self.first_lines = []
-
-        # containers for data
-        self.len_dataset = len(self.trimmed_basin_ids) # 531 catchmetns (previously 562)
-        if self.debug:
-            self.len_dataset = 15
-
         self.input_data = []
         self.output_data = []
         self.statics_data = []
         self.hydro_data =[]
         
-    def adjust_dates(self, ):   
-        """
-        Redefine the start and end date as the the maximum of 
-        the start dates and the minimum of the end dates respectively.
-        Then trim according to the missing values. Each catchment
-        must have the same sequence length to be fed into CNN.
-        To run the first time to find the correct dates
-        """
-        
-        # run over trimmed basins
-        print("Adjusting start and end dates ...")
-        
-        for i in range(len(self.trimmed_basin_ids)):
-            # retrieve dates
-            basin_id = self.trimmed_basin_ids[i]
-            basin_huc = self.trimmed_basin_hucs[i]
-            path_forcing_data = os.path.join(self.data_path, "basin_mean_forcing", self.source_data_set, basin_huc, basin_id + "_lump_cida_forcing_leap.txt")
-            path_flow_data = os.path.join(self.data_path, "usgs_streamflow", basin_huc, basin_id + "_streamflow_qc.txt")
-            
-            # read flow and forcing dates
-            df_streamflow = pd.read_csv(path_flow_data,delim_whitespace=True, header=None)
-            flow_data = df_streamflow.iloc[:,4].to_numpy()
-            flow_dates = np.array([datetime.date(df_streamflow.iloc[i,1], df_streamflow.iloc[i,2], df_streamflow.iloc[i,3]) for i in range(len(df_streamflow))])
-            df_forcing = pd.read_csv(path_forcing_data,delim_whitespace=True, skiprows=3)
-            force_dates = np.array([datetime.date(df_forcing.iloc[i,0], df_forcing.iloc[i,1], df_forcing.iloc[i,2]) for i in range(len(df_forcing))])
-            
-            bool_false_values = flow_data!= -999.0
-            if all(bool_false_values): # take only catchments with no missing values
-                # adjust dates
-                if self.start_date < flow_dates[0]:
-                    self.start_date = flow_dates[0]
-                if self.start_date < force_dates[0]:
-                    self.start_date = force_dates[0]
-
-                if flow_dates[-1] < self.end_date:
-                    self.end_date = flow_dates[-1]
-                if force_dates[-1] < self.end_date:
-                    self.end_date = force_dates[-1]
-                
-        # redefine dates and sequence length
-        self.dates = [self.start_date +datetime.timedelta(days=x) for x in range((self.end_date-self.start_date).days+1)]
-        self.seq_len = len(self.dates)
-        print("...done.")
-        
-        print("New start date: " + self.start_date.strftime("%Y/%m/%d"))
-        print("New end date: " + self.end_date.strftime("%Y/%m/%d"))
    
-        
+
     def load_data(self, ):
         
         # run over trimmed basins
         print("Loading Camels ...")
         # len(self.trimmed_basin_ids)
         count = 0
-        self.num_iter = len(self.trimmed_basin_ids)
-        if self.debug:
-            self.num_iter = 15
+       
     
-        for i in tqdm(range(self.num_iter)):
+        for i in tqdm(range(len(self.basin_list))):
             # retrieve data
-            basin_id = self.trimmed_basin_ids[i]
-            basin_huc = self.trimmed_basin_hucs[i]
+            basin_id = self.basin_list[i]
+            idx = self.all_basin_ids.index(basin_id)
+            basin_huc = self.all_basin_hucs[idx]
             path_forcing_data = os.path.join(self.data_path, "basin_mean_forcing", self.source_data_set, basin_huc, basin_id + "_lump_nldas_forcing_leap.txt")
             path_flow_data = os.path.join(self.data_path, "usgs_streamflow", basin_huc, basin_id + "_streamflow_qc.txt")
             
@@ -202,48 +150,49 @@ class CamelDataset(Dataset):
 
            
             # check if data is contained in basin list 
-            if self.basin_list.count(basin_id)>0:
-                # adjust dates
-                bool_flow_dates = np.logical_and(self.start_date <= flow_dates, flow_dates <= self.end_date)
-                df_flow = df_flow[bool_flow_dates]
-                flow_dates  = flow_dates[bool_flow_dates]
+            #print(self.basin_list.count(basin_id), basin_id)
+           
+            # adjust dates
+            bool_flow_dates = np.logical_and(self.start_date <= flow_dates, flow_dates <= self.end_date)
+            df_flow = df_flow[bool_flow_dates]
+            flow_dates  = flow_dates[bool_flow_dates]
                 
                 
-                bool_force_dates = np.logical_and(self.start_date <= force_dates, force_dates <= self.end_date)
-                df_forcing = df_forcing[bool_force_dates]
-                force_dates = force_dates[bool_force_dates]
+            bool_force_dates = np.logical_and(self.start_date <= force_dates, force_dates <= self.end_date)
+            df_forcing = df_forcing[bool_force_dates]
+            force_dates = force_dates[bool_force_dates]
                 
                
-                # control that dates are the same
-                #print("Basin %d: " %count, basin_huc, basin_id)
-                #assert len(flow_data) == len(df_forcing)
-                #assert all(force_dates == flow_dates)
+            # control that dates are the same
+            #print("Basin %d: " %count, basin_huc, basin_id)
+            #assert len(flow_data) == len(df_forcing)
+            #assert all(force_dates == flow_dates)
 
-                # check that basins have with no missing data in the interval chosen
-                bool_false_values = df_flow!= -999.0
-                assert all(bool_false_values) == True
+            # check that basins have with no missing data in the interval chosen
+            #bool_false_values = df_flow!= -999.0
+            #assert all(bool_false_values) == True
 
-                # transfer from cubic feet (304.8 mm) per second to mm/day (normalized by basin area)
-                df_flow = df_flow * (304.8**3)/(area * 10**6) * 86400
+            # transfer from cubic feet (304.8 mm) per second to mm/day (normalized by basin area)
+            df_flow = df_flow * (304.8**3)/(area * 10**6) * 86400
                 
-                # add tmean(C)
-                # df_forcing["tmean(C)"] = (df_forcing["tmin(C)"] + df_forcing["tmax(C)"])/2.0
-                # rescale day to hours
-                #df_forcing["Dayl(s)"] = df_forcing["Dayl(s)"]/3600.0
-                #df_forcing.rename(columns = {'Dayl(s)':'Dayl(h)'}, inplace = True)
+            # add tmean(C)
+            # df_forcing["tmean(C)"] = (df_forcing["tmin(C)"] + df_forcing["tmax(C)"])/2.0
+            # rescale day to hours
+            #df_forcing["Dayl(s)"] = df_forcing["Dayl(s)"]/3600.0
+            #df_forcing.rename(columns = {'Dayl(s)':'Dayl(h)'}, inplace = True)
 
-                # take data
-                #force_data = torch.tensor(df_forcing.loc[:,self.force_attributes].to_numpy(), dtype=torch.float32).unsqueeze(0) # shape (1, seq_len, feature_dim=4)
-                #flow_data = torch.tensor(flow_data, dtype=torch.float32).unsqueeze(1).unsqueeze(0) # shape (1, seq_len, feature_dim=1)
+            # take data
+            #force_data = torch.tensor(df_forcing.loc[:,self.force_attributes].to_numpy(), dtype=torch.float32).unsqueeze(0) # shape (1, seq_len, feature_dim=4)
+            #flow_data = torch.tensor(flow_data, dtype=torch.float32).unsqueeze(1).unsqueeze(0) # shape (1, seq_len, feature_dim=1)
                 
-                # append
-                self.input_data.append(df_flow)
-                self.output_data.append(df_forcing)
-                self.loaded_basin_hucs.append(self.trimmed_basin_hucs[i])
-                self.loaded_basin_ids.append(self.trimmed_basin_ids[i])
-                self.loaded_basin_names.append(self.trimmed_basin_names[i])
-                self.first_lines.append(first_force_lines)
-                count += 1
+            # append
+            self.input_data.append(df_flow)
+            self.output_data.append(df_forcing)
+            self.loaded_basin_hucs.append(self.all_basin_hucs[i])
+            self.loaded_basin_ids.append(self.all_basin_ids[i])
+            self.loaded_basin_names.append(self.all_basin_names[i])
+            self.first_lines.append(first_force_lines)
+            count += 1
             
         # redefine transformations
         #self.transform_input = Globally_Scale_Data(self.min_flow, self.max_flow)
