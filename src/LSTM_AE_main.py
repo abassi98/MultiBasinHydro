@@ -42,7 +42,7 @@ if __name__ == '__main__':
     # Dataset
     #dates = ["1989/10/01", "2009/09/30"] 
     dates = ["1980/10/01", "2010/09/30"] # interval dates to pick
-    force_attributes = ["prcp(mm/day)", "srad(W/m2)", "tmin(C)", "tmax(C)", "vp(Pa)"] # force attributes to use
+    force_attributes = ["PRCP(mm/day)", "SRAD(W/m2)", "Tmin(C)", "Tmax(C)", "Vp(Pa)"] # force attributes to use
     camel_dataset = CamelDataset(dates, force_attributes, debug=bool(args.debug))
     print("Debug mode: ", bool(camel_dataset.debug))
     print("Bidirectional LSTM: ", bool(args.bidirectional))
