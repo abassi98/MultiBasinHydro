@@ -42,22 +42,22 @@ if __name__ == '__main__':
     # Dataset
     #dates = ["1989/10/01", "2009/09/30"] 
     dates = ["1980/10/01", "2010/09/30"] # interval dates to pick
-    force_attributes = ["prcp(mm/day)", "srad(W/m2)", "tmin(C)", "tmax(C)", "vp(Pa)"] # force attributes to use
+    force_attributes = ["PRCP(mm/day)", "SRAD(W/m2)", "Tmin(C)", "Tmax(C)", "Vp(Pa)"] # force attributes to use
     camel_dataset = CamelDataset(dates, force_attributes, debug=bool(args.debug))
     print("Debug mode: ", bool(camel_dataset.debug))
     print("Bidirectional LSTM: ", bool(args.bidirectional))
 
     #dataset.adjust_dates() # adjust dates if necessary
     camel_dataset.load_data() # load data
-    loaded_basin_ids = camel_dataset.loaded_basin_ids
+    camel_dataset.load_hydro()
+    camel_dataset.load_statics()
 
     num_basins = camel_dataset.__len__()
     seq_len = camel_dataset.seq_len
     print("Number of basins: %d" %num_basins)
     print("Total number of days in Camels data: %d" %seq_len)
 
-    camel_dataset.save_dataset()
-
+    
     # ### Set proper device and train
     # # check cpus and gpus available
     # num_cpus = multiprocessing.cpu_count()
