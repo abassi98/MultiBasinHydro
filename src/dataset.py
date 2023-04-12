@@ -7,14 +7,15 @@ import numpy as np
 import pandas as pd
 import os
 import datetime
+from tqdm import tqdm
 
 import torch
-from torch.utils.data import Dataset
+from torch.utils.data import Dataset, random_split
 from tqdm import tqdm
 
 
 class CamelDataset(Dataset):
-    def __init__(self, dates: list, force_attributes: list,  data_path: str = "basin_dataset", source_data_set: str = "nldas_extended", debug=False) -> None:
+    def __init__(self, dates: list, force_attributes: list,  data_path: str = "basin_dataset", source_data_set: str = "nldas_extended") -> None:
         super().__init__()
      
         self.data_path = data_path
@@ -22,7 +23,7 @@ class CamelDataset(Dataset):
         self.basin_list = np.loadtxt(data_path+"/basin_list.txt", dtype=str)
         self.basin_list = [str(x).rjust(8, "0") for x in self.basin_list] # convert to string and pad
         self.len_dataset = len(self.basin_list)
-        self.debug = debug # debug mode default off
+    
       
         # static attributes
         clim_attr = ["p_mean", "pet_mean", "p_seasonality", "frac_snow", "aridity", "high_prec_freq", "high_prec_dur","low_prec_freq", "low_prec_dur"] # 9 features
@@ -46,13 +47,11 @@ class CamelDataset(Dataset):
         self.static_attributes = self.df_statics.shape[1] # as many as Kratzert
         self.statics_ids = np.array(pd.read_csv(data_path+"/camels_attributes_v2.0/camels_clim.txt", sep=";")["gauge_id"]).astype(int)
      
-        # convert string dates to datetime format
-        self.start_date = datetime.datetime.strptime(dates[0], '%Y/%m/%d').date()
+        # convert string dates to datetime format (take 270 before start as warmup)
+        self.start_date = datetime.datetime.strptime(dates[0], '%Y/%m/%d').date() 
         self.end_date = datetime.datetime.strptime(dates[1], '%Y/%m/%d').date()
-
+        self.seq_len = (self.end_date - self.start_date).days +1 
         # initialize dates and sequence length
-        self.dates = [self.start_date +datetime.timedelta(days=x) for x in range((self.end_date-self.start_date).days+1)]
-        self.seq_len = len(self.dates)
         self.force_attributes = force_attributes
         self.num_force_attributes = len(self.force_attributes) 
     
@@ -65,8 +64,6 @@ class CamelDataset(Dataset):
     def load_data(self, ):
         # run over trimmed basins
         print("Loading Camels ...")
-        # len(self.trimmed_basin_ids)
-        count = 0
         
         for i in tqdm(range(self.len_dataset)):
             # retrieve data
@@ -103,24 +100,24 @@ class CamelDataset(Dataset):
         dir_force = "basin_dataset/nldas_extended"
         dir_flow = "basin_dataset/streamflow"
         for i in range(len(self.loaded_basin_ids)):
-            file_force = os.path.join(dir_force, self.loaded_basin_ids[i]+"_nldas.txt")
+            file_force = os.path.join(dir_force, self.loaded_basin_ids[i]+"_daymet.txt")
             df_force = pd.DataFrame()
-            df_force["Year"] = [self.dates[i].year for i in range(len(self.dates))]
-            df_force["Month"] = [self.dates[i].month for i in range(len(self.dates))]
-            df_force["Day"] = [self.dates[i].day for i in range(len(self.dates))]
-            df_force["PRCP(mm/day)"] = np.array(self.output_data[i].squeeze())[:,0]
-            df_force["SRAD(W/m2)"] = np.array(self.output_data[i].squeeze())[:,1]
-            df_force["Tmin(C)"] = np.array(self.output_data[i].squeeze())[:,2]
-            df_force["Tmax(C)"] = np.array(self.output_data[i].squeeze())[:,3]
-            df_force["Vp(Pa)"] = np.array(self.output_data[i].squeeze())[:,4]
+            df_force["year"] = [self.dates[i].year for i in range(len(self.dates))]
+            df_force["month"] = [self.dates[i].month for i in range(len(self.dates))]
+            df_force["day"] = [self.dates[i].day for i in range(len(self.dates))]
+            df_force["prcp(mm/day)"] = np.array(self.output_data[i].squeeze())[:,0]
+            df_force["srad(W/m2)"] = np.array(self.output_data[i].squeeze())[:,1]
+            df_force["tmin(C)"] = np.array(self.output_data[i].squeeze())[:,2]
+            df_force["tmax(C)"] = np.array(self.output_data[i].squeeze())[:,3]
+            df_force["vp(Pa)"] = np.array(self.output_data[i].squeeze())[:,4]
             df_force.to_csv(file_force, sep=" ")
 
             file_flow = os.path.join(dir_flow, self.loaded_basin_ids[i]+"_streamflow.txt")
             df_flow = pd.DataFrame()
-            df_flow["Year"] = [self.dates[i].year for i in range(len(self.dates))]
-            df_flow["Month"] = [self.dates[i].month for i in range(len(self.dates))]
-            df_flow["Day"] = [self.dates[i].day for i in range(len(self.dates))]
-            df_flow["Streamflow(mm/day)"] = np.array(self.input_data[i].squeeze())
+            df_flow["year"] = [self.dates[i].year for i in range(len(self.dates))]
+            df_flow["month"] = [self.dates[i].month for i in range(len(self.dates))]
+            df_flow["day"] = [self.dates[i].day for i in range(len(self.dates))]
+            df_flow["streamflow(mm/day)"] = np.array(self.input_data[i].squeeze())
             df_flow.to_csv(file_flow, sep=" ")
 
     def load_statics(self):

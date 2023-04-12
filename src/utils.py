@@ -5,7 +5,15 @@ from torch import Tensor
 from pytorch_lightning import Callback
 import os
 import copy
+from typing import Tuple
 
+# NLDAS mean/std calculated over all basins in period 01.10.1999 until 30.09.2008
+SCALER = {
+    'input_means': np.array([3.015, 357.68, 10.864, 10.864, 1055.533]),
+    'input_stds': np.array([7.573, 129.878, 10.932, 10.932, 705.998]),
+    'output_mean': np.array([1.49996196]),
+    'output_std': np.array([3.62443672])
+}
 
 class Scale_Data:
     def __init__(self, min : Tensor, max : Tensor) -> None:
@@ -192,3 +200,93 @@ def find_best_epoch(model_id):
                 nse_mod.append(nse.item())
         idx_ae = np.argmax(nse_mod)
         return int(epochs_mod[idx_ae])
+
+
+def reshape_data(x: np.ndarray, y: np.ndarray, seq_length: int) -> Tuple[np.ndarray, np.ndarray]:
+    """Reshape data into LSTM many-to-one input samples
+    Parameters
+    ----------
+    x : np.ndarray
+        Input features of shape [num_samples, num_features]
+    y : np.ndarray
+        Output feature of shape [num_samples, 1]
+    seq_length : int
+        Length of the requested input sequences.
+    Returns
+    -------
+    x_new: np.ndarray
+        Reshaped input features of shape [num_samples*, seq_length, num_features], where 
+        num_samples* is equal to num_samples - seq_length + 1, due to the need of a warm start at
+        the beginning
+    y_new: np.ndarray
+        The target value for each sample in x_new
+    """
+    num_samples, num_features = x.shape
+
+    x_new = np.zeros((num_samples - seq_length + 1, seq_length, num_features))
+    y_new = np.zeros((num_samples - seq_length + 1, 1))
+
+    for i in range(0, x_new.shape[0]):
+        x_new[i, :, :num_features] = x[i:i + seq_length, :]
+        y_new[i, :] = y[i + seq_length - 1, 0]
+
+    return x_new, y_new
+
+
+def normalize_features(feature: np.ndarray, variable: str) -> np.ndarray:
+    """Normalize features using global pre-computed statistics.
+    Parameters
+    ----------
+    feature : np.ndarray
+        Data to normalize
+    variable : str
+        One of ['inputs', 'output'], where `inputs` mean, that the `feature` input are the model
+        inputs (meteorological forcing data) and `output` that the `feature` input are discharge
+        values.
+    Returns
+    -------
+    np.ndarray
+        Normalized features
+    Raises
+    ------
+    RuntimeError
+        If `variable` is neither 'inputs' nor 'output'
+    """
+
+    if variable == 'inputs':
+        feature = (feature - SCALER["input_means"]) / SCALER["input_stds"]
+    elif variable == 'output':
+        feature = (feature - SCALER["output_mean"]) / SCALER["output_std"]
+    else:
+        raise RuntimeError(f"Unknown variable type {variable}")
+
+    return feature
+
+
+def rescale_features(feature: np.ndarray, variable: str) -> np.ndarray:
+    """Rescale features using global pre-computed statistics.
+    Parameters
+    ----------
+    feature : np.ndarray
+        Data to rescale
+    variable : str
+        One of ['inputs', 'output'], where `inputs` mean, that the `feature` input are the model
+        inputs (meteorological forcing data) and `output` that the `feature` input are discharge
+        values.
+    Returns
+    -------
+    np.ndarray
+        Rescaled features
+    Raises
+    ------
+    RuntimeError
+        If `variable` is neither 'inputs' nor 'output'
+    """
+    if variable == 'inputs':
+        feature = feature * SCALER["input_stds"] + SCALER["input_means"]
+    elif variable == 'output':
+        feature = feature * SCALER["output_std"] + SCALER["output_mean"]
+    else:
+        raise RuntimeError(f"Unknown variable type {variable}")
+
+    return feature

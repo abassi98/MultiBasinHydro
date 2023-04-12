@@ -13,12 +13,12 @@ df_S = pd.read_csv("statics.txt", sep=" ").iloc[:,1::]
 S_ids = df_S.iloc[:,0]
 df_S = df_S.iloc[:,1::]
 df_S = (df_S- df_S.min())/(df_S.max()-df_S.min())
-print(df_S)
+
 # retrieve encoded features
-E_dim = 27
+E_dim = 3
 model_id = "lstm-ae-bdTrue-E"+str(E_dim)
 
-filename = "encoded_features_"+model_id+".txt"
+filename = "encoded_features/encoded_features_"+model_id+".txt"
 df_E = pd.read_csv(filename, sep=" ").iloc[:,1::]
 E_ids = df_E.iloc[:,0]
 df_E = df_E.iloc[:,1::]
@@ -182,47 +182,25 @@ coor_tot = np.arange(E_dim+27)
 # fig.savefig(file_corr)
 
 
-X = np.array(df_S)
+X = np.array(df_ES.iloc[:,1:])
+
 # define an instance of the MetricComparisons class
 d = MetricComparisons(X)
 d.compute_distances(X.shape[0]-1)
 fig, ax = plt.subplots(1,2,figsize=(10,10))
 
-# ### assess which subset of static features is more contained in learned AE featues
-# all_min_x = []
-# all_min_y = []
-# all_min_subsests_x = []
-# x_axis = range(1,6)
-# coor_S = np.arange(27)
-# l = []
-
-    
-# for i in range(27):
-#     subsets = coor_S - l
-#     k_imbalance_x = []
-#     k_imbalance_y = []
-#     new_l = l
-#     for new in subsets:
-#         new_l.append(new)
-#         imb = d.return_inf_imb_two_selected_coords(coords1= coor_S, coords2= new_l)
-#         k_imbalance_x.append(imb[0])
-#         k_imbalance_y.append(imb[1])
-
-#     min_x = min(k_imbalance_x)
-#     index_min_x = k_imbalance_x.index(min_x)
-#     min_subset_x = subsets[index_min_x]
-
-#     all_min_x.append(min_x)
-#     all_min_subsests_x.append(min_subset_x)
-#     all_min_y.append(k_imbalance_y[index_min_x])
 
 
-best_sets, best_imbs, all_imbs = d.greedy_feature_selection_target(target_ranks=d.dist_indices, n_coords=27, n_best=1, k=1)
-print(df_S.columns)
-for set in best_sets:
-    print(df_S.columns[set])
+best_sets, best_imbs, all_imbs = d.greedy_feature_selection_target(target_ranks=d.dist_indices, n_coords=27+E_dim, n_best=1, k=1)
 
-x_axis = np.arange(27)
+file_sets = "plot/plot_bestSets_imbalance_"+model_id+".txt"
+print(best_sets)
+with open(file_sets, 'w') as f:
+    for set in best_sets:
+        np.savetxt(f, df_ES.columns[set], newline=" ", fmt="%s")
+        f.write('\n')
+
+x_axis = np.arange(27+E_dim)
 ax[0].scatter(x_axis, np.log(best_imbs[:,0]))
 ax[0].set_xlabel("k Features out of S")
 ax[0].set_ylabel(r'$\Delta(E \rightarrow S_k) $')
@@ -240,5 +218,5 @@ ax[1].set_xlabel(r'$\Delta(E \rightarrow S_k) $')
 ax[1].set_ylabel(r'$\Delta(S_k \rightarrow E) $')
 
 
-file_save = "plot/plot_iterative_imbalance_fullS.png"
+file_save = "plot/plot_iterative_imbalance_"+model_id+".png"
 fig.savefig(file_save)
