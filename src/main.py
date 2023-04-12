@@ -84,7 +84,7 @@ def get_args() -> Dict:
     parser.add_argument(
         '--camels_root',
         type=str,
-        default='../data/basin_dataset_public_v1p2/',
+        default='data/basin_dataset_public_v1p2/',
         help="Root directory of CAMELS data set")
     parser.add_argument('--seed', type=int, required=False, help="Random seed")
     parser.add_argument('--run_dir', type=str, help="For evaluation mode. Path to run directory.")
@@ -100,12 +100,12 @@ def get_args() -> Dict:
     parser.add_argument(
         '--no_static',
         type=str2bool,
-        default=False,
+        default=True,
         help="If True, trains LSTM without static features")
     parser.add_argument(
         '--concat_static',
         type=str2bool,
-        default=False,
+        default=True,
         help="If True, train LSTM with static feats concatenated at each time step")
     parser.add_argument(
         '--use_mse',
@@ -115,7 +115,7 @@ def get_args() -> Dict:
     parser.add_argument(
         '--n_splits',
         type=int,
-        default=None,
+        default=12,
         help="Number of splits to create for cross validation")
     parser.add_argument(
         '--basin_file',
