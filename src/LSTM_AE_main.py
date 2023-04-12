@@ -93,10 +93,10 @@ if __name__ == '__main__':
     # possibly adjust kernel sizes according to seq_len
     model = Hydro_LSTM_AE(in_channels=(1,8,16), 
                     out_channels=(8,16,32), 
-                    kernel_sizes=(8,4,3), 
+                    kernel_sizes=(6,7,4), 
                     encoded_space_dim=args.num_features,
                     drop_p=0.5,
-                    seq_len=365,
+                    seq_len=seq_len,
                     lr = 1e-5,
                     act=nn.LeakyReLU,
                     loss_fn=loss_fn,
