@@ -33,7 +33,8 @@ if __name__ == '__main__':
         # reorder
         epochs_mod, nse_mod = zip(*sorted(zip(epochs_mod, nse_mod)))
         # plot
-        ax.plot(epochs_mod,nse_mod, label=name)
+        ax.set_ylim(0,1)
+        ax.plot(epochs_mod[:400],nse_mod[:400], label=name)
         # find best model
         idx_ae = np.argmax(nse_mod)
         epoch_max_nse = epochs_mod[idx_ae]

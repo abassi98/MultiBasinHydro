@@ -34,7 +34,7 @@ if __name__ == '__main__':
     #dates = ["1989/10/01", "2009/09/30"] 
     dates = ["1980/10/01", "2010/09/30"] # interval dates to pick
     force_attributes = ["prcp(mm/day)", "srad(W/m2)", "tmin(C)", "tmax(C)", "vp(Pa)"] # force attributes to use
-    camel_dataset = CamelDataset(dates, force_attributes, debug=False)
+    camel_dataset = CamelDataset(dates, force_attributes)
     #dataset.adjust_dates() # adjust dates if necessary
     camel_dataset.load_data() # load data
     camel_dataset.load_statics()
@@ -76,7 +76,7 @@ if __name__ == '__main__':
     # entire test dataset as one batch
     test_dataloader = DataLoader(test_dataset, batch_size=num_test_data, num_workers=num_workers, shuffle=False)
     split_indices = test_dataset.indices
-    basin_names = [camel_dataset.loaded_basin_names[idx] for idx in split_indices]
+    #basin_names = [camel_dataset.loaded_basin_names[idx] for idx in split_indices]
     print("Indices for training dataset: ", train_dataset.indices)
     print("Indices for validation dataset: ", val_dataset.indices)
     print("Indices for test dataset: ", split_indices)
