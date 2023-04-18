@@ -1,0 +1,31 @@
+aridity 
+aridity p_seasonality 
+aridity pet_mean p_seasonality 
+aridity geol_permeability pet_mean p_seasonality 
+pet_mean p_seasonality aridity geol_permeability lai_diff 
+pet_mean p_seasonality aridity geol_permeability lai_diff soil_porosity 
+pet_mean p_seasonality aridity geol_permeability lai_diff gvf_max soil_porosity 
+pet_mean p_seasonality aridity geol_permeability lai_diff gvf_max gvf_diff soil_porosity 
+pet_mean p_seasonality aridity low_prec_dur geol_permeability lai_diff gvf_max gvf_diff soil_porosity 
+pet_mean p_seasonality aridity low_prec_dur geol_permeability lai_diff gvf_max gvf_diff soil_porosity soil_conductivity 
+pet_mean p_seasonality aridity low_prec_dur geol_permeability lai_max lai_diff gvf_max gvf_diff soil_porosity soil_conductivity 
+E2 pet_mean p_seasonality aridity low_prec_dur geol_permeability lai_max lai_diff gvf_max gvf_diff soil_porosity soil_conductivity 
+E2 pet_mean p_seasonality aridity low_prec_dur geol_permeability lai_max lai_diff gvf_max gvf_diff soil_porosity soil_conductivity sand_frac 
+E2 pet_mean p_seasonality aridity low_prec_dur geol_permeability lai_max lai_diff gvf_max gvf_diff soil_depth_pelletier soil_porosity soil_conductivity sand_frac 
+E1 E2 pet_mean p_seasonality aridity low_prec_dur geol_permeability lai_max lai_diff gvf_max gvf_diff soil_depth_pelletier soil_porosity soil_conductivity sand_frac 
+E0 E1 E2 pet_mean p_seasonality aridity low_prec_dur geol_permeability lai_max lai_diff gvf_max gvf_diff soil_depth_pelletier soil_porosity soil_conductivity sand_frac 
+E0 E1 E2 pet_mean p_seasonality aridity low_prec_dur geol_permeability area_gages2 lai_max lai_diff gvf_max gvf_diff soil_depth_pelletier soil_porosity soil_conductivity sand_frac 
+E0 E1 E2 pet_mean p_seasonality aridity low_prec_dur carbonate_rocks_frac geol_permeability area_gages2 lai_max lai_diff gvf_max gvf_diff soil_depth_pelletier soil_porosity soil_conductivity sand_frac 
+basin_id E0 E1 E2 pet_mean p_seasonality aridity low_prec_dur carbonate_rocks_frac geol_permeability area_gages2 lai_max lai_diff gvf_max gvf_diff soil_depth_pelletier soil_porosity soil_conductivity sand_frac 
+basin_id E0 E1 E2 pet_mean p_seasonality aridity low_prec_dur carbonate_rocks_frac geol_permeability area_gages2 lai_max lai_diff gvf_max gvf_diff soil_depth_pelletier soil_porosity soil_conductivity sand_frac silt_frac 
+basin_id E0 E1 E2 p_mean pet_mean p_seasonality aridity low_prec_dur carbonate_rocks_frac geol_permeability area_gages2 lai_max lai_diff gvf_max gvf_diff soil_depth_pelletier soil_porosity soil_conductivity sand_frac silt_frac 
+basin_id E0 E1 E2 p_mean pet_mean p_seasonality aridity low_prec_dur carbonate_rocks_frac geol_permeability elev_mean area_gages2 lai_max lai_diff gvf_max gvf_diff soil_depth_pelletier soil_porosity soil_conductivity sand_frac silt_frac 
+basin_id E0 E1 E2 p_mean pet_mean p_seasonality aridity high_prec_freq low_prec_dur carbonate_rocks_frac geol_permeability elev_mean area_gages2 lai_max lai_diff gvf_max gvf_diff soil_depth_pelletier soil_porosity soil_conductivity sand_frac silt_frac 
+basin_id E0 E1 E2 E3 p_mean pet_mean p_seasonality aridity high_prec_freq low_prec_dur carbonate_rocks_frac geol_permeability elev_mean area_gages2 lai_max lai_diff gvf_max gvf_diff soil_depth_pelletier soil_porosity soil_conductivity sand_frac silt_frac 
+basin_id E0 E1 E2 E3 p_mean pet_mean p_seasonality aridity high_prec_freq high_prec_dur low_prec_dur carbonate_rocks_frac geol_permeability elev_mean area_gages2 lai_max lai_diff gvf_max gvf_diff soil_depth_pelletier soil_porosity soil_conductivity sand_frac silt_frac 
+basin_id E0 E1 E2 E3 p_mean pet_mean p_seasonality aridity high_prec_freq high_prec_dur low_prec_dur carbonate_rocks_frac geol_permeability elev_mean area_gages2 lai_max lai_diff gvf_max gvf_diff soil_depth_pelletier soil_depth_statsgo soil_porosity soil_conductivity sand_frac silt_frac 
+basin_id E0 E1 E2 E3 p_mean pet_mean p_seasonality aridity high_prec_freq high_prec_dur low_prec_dur carbonate_rocks_frac geol_permeability elev_mean slope_mean area_gages2 lai_max lai_diff gvf_max gvf_diff soil_depth_pelletier soil_depth_statsgo soil_porosity soil_conductivity sand_frac silt_frac 
+basin_id E0 E1 E2 E3 p_mean pet_mean p_seasonality aridity high_prec_freq high_prec_dur low_prec_dur carbonate_rocks_frac geol_permeability elev_mean slope_mean area_gages2 lai_max lai_diff gvf_max gvf_diff soil_depth_pelletier soil_depth_statsgo soil_porosity soil_conductivity max_water_content sand_frac silt_frac 
+basin_id E0 E1 E2 E3 p_mean pet_mean p_seasonality aridity high_prec_freq high_prec_dur low_prec_dur carbonate_rocks_frac geol_permeability elev_mean slope_mean area_gages2 frac_forest lai_max lai_diff gvf_max gvf_diff soil_depth_pelletier soil_depth_statsgo soil_porosity soil_conductivity max_water_content sand_frac silt_frac 
+basin_id E0 E1 E2 E3 p_mean pet_mean p_seasonality frac_snow aridity high_prec_freq high_prec_dur low_prec_dur carbonate_rocks_frac geol_permeability elev_mean slope_mean area_gages2 frac_forest lai_max lai_diff gvf_max gvf_diff soil_depth_pelletier soil_depth_statsgo soil_porosity soil_conductivity max_water_content sand_frac silt_frac 
+basin_id E0 E1 E2 E3 p_mean pet_mean p_seasonality frac_snow aridity high_prec_freq high_prec_dur low_prec_freq low_prec_dur carbonate_rocks_frac geol_permeability elev_mean slope_mean area_gages2 frac_forest lai_max lai_diff gvf_max gvf_diff soil_depth_pelletier soil_depth_statsgo soil_porosity soil_conductivity max_water_content sand_frac silt_frac 

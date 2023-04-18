@@ -1,0 +1,13 @@
+high_q_freq 
+q95 high_q_freq 
+low_q_freq q95 high_q_freq 
+low_q_freq hfd_mean q95 high_q_freq 
+slope_fdc q95 high_q_freq low_q_freq hfd_mean 
+slope_fdc stream_elas q95 high_q_freq low_q_freq hfd_mean 
+slope_fdc baseflow_index stream_elas q95 high_q_freq low_q_freq hfd_mean 
+runoff_ratio slope_fdc baseflow_index stream_elas q95 high_q_freq low_q_freq hfd_mean 
+runoff_ratio slope_fdc baseflow_index stream_elas q95 high_q_freq high_q_dur low_q_freq hfd_mean 
+runoff_ratio slope_fdc baseflow_index stream_elas q5 q95 high_q_freq high_q_dur low_q_freq hfd_mean 
+runoff_ratio slope_fdc baseflow_index stream_elas q5 q95 high_q_freq high_q_dur low_q_freq zero_q_freq hfd_mean 
+runoff_ratio slope_fdc baseflow_index stream_elas q5 q95 high_q_freq high_q_dur low_q_freq low_q_dur zero_q_freq hfd_mean 
+q_mean runoff_ratio slope_fdc baseflow_index stream_elas q5 q95 high_q_freq high_q_dur low_q_freq low_q_dur zero_q_freq hfd_mean 
