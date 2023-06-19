@@ -10,16 +10,18 @@ import copy
 
 # retrieve statics
 df_S = pd.read_csv("statics.txt", sep=" ").iloc[:,1::]
+
 S_ids = df_S.iloc[:,0]
 df_S = df_S.iloc[:,1::]
 df_S = (df_S- df_S.min())/(df_S.max()-df_S.min())
 
 # retrieve encoded features
-E_dim = 3
+E_dim = 4
 model_id = "lstm-ae-bdTrue-E"+str(E_dim)
 
-filename = "encoded_features/encoded_features_"+model_id+".txt"
-df_E = pd.read_csv(filename, sep=" ").iloc[:,1::]
+filename = f"encoded_features/encoded_{E_dim}.txt"
+df_E = pd.read_csv(filename, sep=" ").iloc[:,1:5]
+print(df_E)
 E_ids = df_E.iloc[:,0]
 df_E = df_E.iloc[:,1::]
 df_E = (df_E -df_E .min())/(df_E .max()- df_E .min())
